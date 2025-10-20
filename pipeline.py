@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run python
 """Entry point for shallow-review pipeline."""
 
 from shallow_review.cli import main

@@ -36,6 +36,7 @@ env/
 data/
 runs/
 .llm_cache/
+.playwright-mcp/
 
 # Logs
 *.log

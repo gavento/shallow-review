@@ -6,20 +6,27 @@ collect_page:
     
     # AI Safety and AI Alignment Scope
     
+    **Core Definition:** We target "work that intends to prevent very competent cognitive systems from having large unintended effects on the world."
+    
     **Relevant topics include:**
-    - AI alignment: ensuring AI systems behave according to human values and intentions
+    - Technical AI alignment: ensuring AI systems behave according to human values and intentions
     - AI safety: making AI systems robust, reliable, and safe
     - Existential risk from advanced AI (x-risk, AGI safety)
-    - AI governance, policy, and strategy
-    - Interpretability and transparency of AI systems
+    - Interpretability and understanding of AI systems
+    - AI control, monitoring, and evaluation methods
+    - Multi-agent AI safety and coordination
+    - Formal methods, verification, and provable safety for AI
+    - Agent foundations and theoretical alignment work
     - Robustness, adversarial examples, and security
     - Value learning and preference learning
     - Reward modeling and RLHF (Reinforcement Learning from Human Feedback)
-    - Scalable oversight and debate
-    - AI ethics focused on long-term safety implications
+    - Scalable oversight, debate, and recursive reward modeling
+    - Governance-adjacent technical work (evals, standards, safety cases)
     - Machine learning safety techniques (e.g., safe exploration, distributional shift)
-    - Theoretical foundations of aligned AI
+    - Borderline technical topics offering novel causal perspectives on AI X-risk (e.g., Gradual Disempowerment, Multi-Agent Risk scenarios)
     - AI forecasting and timelines (when relevant to safety)
+    
+    **Intent over method:** If work aims to understand or prevent unintended effects from advanced AI systems, it's relevant, regardless of specific technical approach or framing.
     
     **NOT relevant (examples):**
     - General machine learning or AI capabilities research (unless it explicitly discusses safety implications)
@@ -28,7 +35,7 @@ collect_page:
     - General tech news or company announcements
     - Clickbait or promotional content
     - Navigation links, admin pages, login pages
-    - Social media links, unless they link to substantial safety-related content
+    - Social media commentary, opinions, discussions (see special criteria below)
     
     # Your Task
     
@@ -63,6 +70,12 @@ collect_page:
     - **Be inclusive rather than exclusive**: If unsure whether something is relevant (score ≥ 0.3), include it. False positives are okay; we'll filter later.
     - **Ignore obvious non-content**: Skip navigation menus, footer links, social media buttons, login/admin links, advertisements, "Back to top" links, etc.
     - **Focus on substantial content**: Prioritize links to papers, blog posts, articles, talks, courses, research agendas
+    - **Social media special criteria**: For Twitter/X, Reddit, or similar platforms, ONLY include links that are:
+      - Major announcements (new research agendas, breakthrough results, paper releases)
+      - From researchers/organizations announcing their own work
+      - NOT commentary, opinions, threads analyzing others' work, or discussions
+      - Examples to INCLUDE: "Announcing our new interpretability agenda...", "Released: paper on X-risk..."
+      - Examples to EXCLUDE: "Here's my take on...", "Thread: why approach X won't work...", "Great paper by @someone..."
     - **Resolve relative URLs**: Convert all relative URLs to absolute URLs using the page's base URL
     - **Be concise but informative**: Context should be one clear sentence explaining what the link is about
     - **Use link text and surrounding context**: Look at headings, descriptions, abstracts, or surrounding paragraphs to understand what the link points to

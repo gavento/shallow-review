@@ -6,6 +6,20 @@ Documentation for the classification phase: determining AI safety/alignment rele
 
 Classify processes candidate URLs (from collect or manual addition) to determine if they are relevant AI safety/alignment content and extract detailed metadata.
 
+**AI Safety Scope**: Following the Shallow Review 2024 definition, we target "work that intends to prevent very competent cognitive systems from having large unintended effects on the world." This includes:
+- Technical AI alignment and safety research
+- Interpretability and understanding of AI systems
+- AI control, monitoring, and evaluation methods
+- Multi-agent AI safety and coordination
+- Formal methods, verification, and provable safety
+- Agent foundations and theoretical alignment work
+- Governance-adjacent technical work (evals, standards, etc.)
+- Borderline technical topics that offer novel causal perspectives on AI X-risk
+
+**Intent over method**: If work aims to understand or prevent unintended effects from advanced AI systems, it's relevant, regardless of the specific technical approach or framing used.
+
+**Content types**: Papers, blog posts, videos, social media announcements (see criteria in DATA.md), etc. - format matters less than content and intent.
+
 ## Design Philosophy
 
 - **Fine-grained filtering**: More selective than collect phase
@@ -53,6 +67,7 @@ Stored as columns:
 - `kind`: Content type - independent of relevancy (see ClassifyKind enum in DATA.md)
   - Example: `paper_page` can be relevant (0.9) or irrelevant (0.1)
   - All content gets both a kind and a relevancy score
+  - For `social_media` kind: stricter criteria apply (see DATA.md) - only announcements and major events etc.
 
 LLM extracts detailed metadata (stored in data JSON):
 - `tokens_full`: Full HTML token count

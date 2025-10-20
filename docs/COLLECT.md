@@ -6,6 +6,36 @@ Documentation for the collection phase: extracting links from aggregator pages.
 
 Collect scrapes and parses HTML pages of conferences, newsletters, survey posts, summer schools, etc., extracting links that potentially point to AI safety/alignment-relevant content.
 
+**AI Safety Scope**: Following the Shallow Review 2024 definition, we target "work that intends to prevent very competent cognitive systems from having large unintended effects on the world." This includes:
+- Technical AI alignment and safety research
+- Interpretability and understanding of AI systems
+- AI control and monitoring
+- Multi-agent AI safety and coordination
+- Formal methods and verification for AI
+- Governance-adjacent technical work
+- Borderline technical topics (e.g., Gradual Disempowerment, Multi-Agent Risk scenarios) that offer novel causal views on AI X-risk
+
+**Intent over method**: If work aims to understand or prevent unintended effects from advanced AI, it's relevant, regardless of specific technical approach.
+
+## Source Types
+
+We collect from diverse aggregator pages:
+- **Academic**: Conference pages, workshop pages, summer schools
+- **Community**: Newsletter archives, blog aggregators, reading lists
+- **Organizations**: Research org pages, resource compilations
+- **Social media**: Twitter/X threads, Reddit posts (STRICT CRITERIA - see below)
+
+**Social media inclusion criteria**:
+- ✅ Include: Major announcements (new agendas, breakthrough results, paper releases)
+- ❌ Exclude: Commentary, opinions, discussions, retweets
+- Use sparingly - most social media content is too ephemeral or low-signal
+
+Examples:
+- ✅ "Announcing our new interpretability research agenda..."
+- ✅ "Released: paper on X-risk from multi-agent systems"
+- ❌ "Here's my hot take on the latest alignment debate..."
+- ❌ "Thread: why I'm skeptical of approach X"
+
 ## Design Philosophy
 
 - **Inclusive over exclusive**: Better false positives than false negatives

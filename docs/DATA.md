@@ -222,7 +222,7 @@ Online content:
 - `blog_post` - Blog post or article
 - `lesswrong` - LessWrong or AI Alignment Forum post
 - `news_article` - News article
-- `social_media` - Twitter, Reddit, etc.
+- `social_media` - Twitter, Reddit, etc. posts (announcements only - see below)
 
 Media:
 - `video` - Video content (YouTube, etc.)
@@ -238,6 +238,22 @@ Other:
 - `404` - Page not found
 - `blocked` - Blocked access (captcha, login, etc.)
 - `other` - Other types
+
+**Social media inclusion criteria:**
+
+Social media posts (`social_media` kind) should be included ONLY when they are significant announcements:
+- ✅ Include: New agenda announcements, breakthrough discoveries, major paper releases, significant research updates
+- ❌ Exclude: Commentary, opinions, discussions, retweets, summaries of others' work
+
+Examples of what to include:
+- "Announcing our new research agenda on X"
+- "We've discovered Y breakthrough result"
+- "Released: new paper on Z" (if from authors)
+
+Examples of what to exclude:
+- "Here's my take on recent AI developments..."
+- "Thread: Why I think approach X won't work"
+- "Great paper by @someone on topic Y" (unless adding substantial new insight)
 
 ### Status Values
 
