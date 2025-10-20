@@ -10,10 +10,12 @@ ROOT_PATH = Path(__file__).parent.parent.resolve()
 DATA_PATH = ROOT_PATH / "data"
 PROMPTS_PATH = ROOT_PATH / "prompts"
 RUNS_PATH = ROOT_PATH / "runs"
+SCRAPED_PATH = DATA_PATH / "scraped"
 
 # Ensure directories exist
 DATA_PATH.mkdir(exist_ok=True, parents=True)
 RUNS_PATH.mkdir(exist_ok=True, parents=True)
+SCRAPED_PATH.mkdir(exist_ok=True, parents=True)
 
 # Global shutdown flag for graceful termination
 _shutdown_event = threading.Event()

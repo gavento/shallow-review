@@ -46,7 +46,7 @@ These are the instructions for AI coding and research assistants.
 
 ### Library and scripts
 
-Almost all the python code is stored under `pipeline/` module. 
+Almost all the python code is stored under `shallow_review/` module. 
 
 Notable files:
 - `__init__.py` is essentially empty.

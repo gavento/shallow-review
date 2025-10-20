@@ -6,10 +6,11 @@ import sqlite3
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import IO, Any, Literal
 
 from playwright.sync_api import Browser, sync_playwright
 
-from .common import DATA_PATH
+from .common import DATA_PATH, SCRAPED_PATH
 from .stats import get_stats
 from .utils import smart_open
 
@@ -26,12 +27,11 @@ def get_scrape_db() -> sqlite3.Connection:
 
     Schema:
         scraped (
-            url_hash TEXT PRIMARY KEY,
-            url TEXT NOT NULL,
+            url TEXT PRIMARY KEY,
+            url_hash TEXT NOT NULL UNIQUE,
             kind TEXT NOT NULL,
             timestamp TEXT NOT NULL,
             status_code INTEGER,
-            content_path TEXT,  -- relative path to .html.zst file
             error TEXT
         )
 
@@ -50,18 +50,24 @@ def get_scrape_db() -> sqlite3.Connection:
             _scrape_db.execute(
                 """
                 CREATE TABLE IF NOT EXISTS scraped (
-                    url_hash TEXT PRIMARY KEY,
-                    url TEXT NOT NULL,
+                    url TEXT PRIMARY KEY,
+                    url_hash TEXT NOT NULL UNIQUE,
                     kind TEXT NOT NULL,
                     timestamp TEXT NOT NULL,
                     status_code INTEGER,
-                    content_path TEXT,
                     error TEXT
                 )
                 """
             )
 
             # Indexes for common queries
+            _scrape_db.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_scraped_url_hash 
+                ON scraped(url_hash)
+                """
+            )
+
             _scrape_db.execute(
                 """
                 CREATE INDEX IF NOT EXISTS idx_scraped_kind 
@@ -82,20 +88,53 @@ def get_scrape_db() -> sqlite3.Connection:
         return _scrape_db
 
 
-def _compute_url_hash(url: str, kind: str) -> str:
+def _compute_url_hash(url: str) -> str:
     """
-    Compute hash for URL and kind combination.
+    Compute hash for URL.
 
     Args:
         url: URL to hash
-        kind: Kind/context of scrape
 
     Returns:
         Hex digest of hash
     """
-    # Include kind in hash to allow same URL with different contexts
-    hash_input = f"{kind}:{url}".encode("utf-8")
-    return hashlib.sha256(hash_input).hexdigest()
+    return hashlib.sha256(url.encode("utf-8")).hexdigest()
+
+
+def get_scrape_path(url: str) -> Path:
+    """
+    Get the file path for a scraped URL.
+
+    Args:
+        url: URL to get path for
+
+    Returns:
+        Path to .html.zst file
+    """
+    url_hash = _compute_url_hash(url)
+    return SCRAPED_PATH / f"{url_hash}.html.zst"
+
+
+def open_scraped(
+    url: str,
+    mode: Literal["rt", "wt", "rb", "wb"],
+    encoding: str | None = None,
+    **kwargs: Any,
+) -> IO:
+    """
+    Open a scraped file with automatic compression.
+
+    Args:
+        url: URL to open scraped content for
+        mode: Open mode (rt/wt for text, rb/wb for binary)
+        encoding: Text encoding (for text modes)
+        **kwargs: Additional args passed to smart_open()
+
+    Returns:
+        File-like object
+    """
+    path = get_scrape_path(url)
+    return smart_open(path, mode, encoding=encoding, **kwargs)
 
 
 def get_browser_context(browser: Browser, **kwargs):
@@ -129,7 +168,6 @@ def get_browser_context(browser: Browser, **kwargs):
 def compute_scrape(
     url: str,
     kind: str,
-    cache_dir: Path | None = None,
     headless: bool = True,
     wait_for: str = "networkidle",
     scroll: bool = True,
@@ -138,12 +176,11 @@ def compute_scrape(
     Scrape URL with playwright, cache to data/scraped/<hash>.html.zst
 
     Caches results in SQLite database and file system. Subsequent calls with
-    same URL and kind will return cached path without re-scraping.
+    same URL will return cached path without re-scraping.
 
     Args:
         url: URL to scrape
         kind: Kind/context of scrape (e.g., "incident", "report")
-        cache_dir: Directory for cached HTML files. Defaults to data/scraped/
         headless: Run browser in headless mode
         wait_for: Playwright wait condition ("networkidle", "load", "domcontentloaded")
         scroll: Scroll page to trigger lazy loading
@@ -154,46 +191,46 @@ def compute_scrape(
     Raises:
         RuntimeError: If scraping fails after retries
     """
-    if cache_dir is None:
-        cache_dir = DATA_PATH / "scraped"
-
-    cache_dir.mkdir(parents=True, exist_ok=True)
-
-    # Compute hash for this URL+kind combination
-    url_hash = _compute_url_hash(url, kind)
+    # Compute hash and get path
+    url_hash = _compute_url_hash(url)
+    scrape_path = get_scrape_path(url)
 
     # Check database cache
     db = get_scrape_db()
     cursor = db.execute(
-        "SELECT content_path, status_code, error FROM scraped WHERE url_hash = ?",
-        (url_hash,),
+        "SELECT status_code, error FROM scraped WHERE url = ?",
+        (url,),
     )
     row = cursor.fetchone()
 
     if row is not None:
-        content_path = row["content_path"]
         status_code = row["status_code"]
         error = row["error"]
-
-        if content_path:
-            # Have cached content
-            full_path = DATA_PATH / content_path
-            if full_path.exists():
-                # Update stats
-                try:
-                    stats = get_stats()
-                    with stats.lock:
-                        stats.scraped_pages.cached.add(url_hash)
-                except RuntimeError:
-                    pass
-
-                logger.debug(f"Using cached scrape for {url} (kind={kind})")
-                return full_path
 
         if error:
             # Have cached error
             logger.warning(f"Using cached error for {url} (kind={kind}): {error}")
+            # Update stats
+            try:
+                stats = get_stats()
+                with stats.lock:
+                    stats.scraped_pages.errors[url] = error
+            except RuntimeError:
+                pass
             raise RuntimeError(f"Cached scraping error: {error}")
+        
+        # Have cached successful scrape
+        if scrape_path.exists():
+            # Update stats
+            try:
+                stats = get_stats()
+                with stats.lock:
+                    stats.scraped_pages.cached.add(url)
+            except RuntimeError:
+                pass
+
+            logger.debug(f"Using cached scrape for {url} (kind={kind})")
+            return scrape_path
 
     # Need to scrape
     logger.info(f"Scraping {url} (kind={kind})")
@@ -227,10 +264,7 @@ def compute_scrape(
             browser.close()
 
         # Save to file
-        relative_path = f"scraped/{url_hash}.html.zst"
-        full_path = DATA_PATH / relative_path
-
-        with smart_open(full_path, "wt", encoding="utf-8") as f:
+        with open_scraped(url, "wt", encoding="utf-8") as f:
             f.write(content)
 
         # Update database
@@ -238,10 +272,10 @@ def compute_scrape(
         db.execute(
             """
             INSERT OR REPLACE INTO scraped 
-            (url_hash, url, kind, timestamp, status_code, content_path, error)
-            VALUES (?, ?, ?, ?, ?, ?, NULL)
+            (url, url_hash, kind, timestamp, status_code, error)
+            VALUES (?, ?, ?, ?, ?, NULL)
             """,
-            (url_hash, url, kind, timestamp, status_code, relative_path),
+            (url, url_hash, kind, timestamp, status_code),
         )
         db.commit()
 
@@ -249,12 +283,12 @@ def compute_scrape(
         try:
             stats = get_stats()
             with stats.lock:
-                stats.scraped_pages.new.add(url_hash)
+                stats.scraped_pages.new.add(url)
         except RuntimeError:
             pass
 
         logger.info(f"Successfully scraped {url} (kind={kind}, status={status_code})")
-        return full_path
+        return scrape_path
 
     except Exception as e:
         error_msg = str(e)
@@ -265,10 +299,10 @@ def compute_scrape(
         db.execute(
             """
             INSERT OR REPLACE INTO scraped 
-            (url_hash, url, kind, timestamp, status_code, content_path, error)
-            VALUES (?, ?, ?, ?, NULL, NULL, ?)
+            (url, url_hash, kind, timestamp, status_code, error)
+            VALUES (?, ?, ?, ?, NULL, ?)
             """,
-            (url_hash, url, kind, timestamp, error_msg),
+            (url, url_hash, kind, timestamp, error_msg),
         )
         db.commit()
 
@@ -276,7 +310,7 @@ def compute_scrape(
         try:
             stats = get_stats()
             with stats.lock:
-                stats.scraped_pages.errors[url_hash] = error_msg
+                stats.scraped_pages.errors[url] = error_msg
         except RuntimeError:
             pass
 
