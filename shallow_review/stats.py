@@ -91,13 +91,19 @@ class Stats:
         # Scraping
         self.scraped_pages = CountStats()
 
-        # Collection (expandable)
-        self.collection_items = CountStats()
-        self.collection_tokens = TokenStats()
+        # Collection
+        self.collect_sources = CountStats()
+        self.collect_links = CountStats()
+        self.collect_sources_already_exist: int = 0
+        self.collect_links_already_exist: int = 0
+        self.collect_tokens = TokenStats()
+        self.collect_preprocessing: list[dict[str, float]] = []
 
-        # Classification (expandable)
-        self.classification_items = CountStats()
-        self.classification_tokens = TokenStats()
+        # Classification
+        self.classify_candidates = CountStats()
+        self.classify_candidates_already_exist: int = 0
+        self.classify_tokens = TokenStats()
+        self.classify_preprocessing: list[dict[str, float]] = []
 
     def to_dict(self) -> dict[str, Any]:
         """Convert stats to dictionary format."""
@@ -105,10 +111,16 @@ class Stats:
             "commandline": self.commandline,
             "timestamp": self.timestamp,
             "scraped_pages": self.scraped_pages.model_dump(),
-            "collection_items": self.collection_items.model_dump(),
-            "collection_tokens": self.collection_tokens.model_dump(),
-            "classification_items": self.classification_items.model_dump(),
-            "classification_tokens": self.classification_tokens.model_dump(),
+            "collect_sources": self.collect_sources.model_dump(),
+            "collect_links": self.collect_links.model_dump(),
+            "collect_sources_already_exist": self.collect_sources_already_exist,
+            "collect_links_already_exist": self.collect_links_already_exist,
+            "collect_tokens": self.collect_tokens.model_dump(),
+            "collect_preprocessing": self.collect_preprocessing,
+            "classify_candidates": self.classify_candidates.model_dump(),
+            "classify_candidates_already_exist": self.classify_candidates_already_exist,
+            "classify_tokens": self.classify_tokens.model_dump(),
+            "classify_preprocessing": self.classify_preprocessing,
         }
 
     def save(self, output_dir: Path) -> Path:
@@ -149,49 +161,70 @@ class Stats:
             console.print()
 
         # Collection section
-        if self.collection_items.total > 0:
+        if self.collect_sources.total > 0 or self.collect_links.total > 0:
             table = Table(title="Collection", show_header=True)
             table.add_column("Operation")
             table.add_column("New", justify="right")
-            table.add_column("Cached", justify="right")
+            table.add_column("Done", justify="right")
             table.add_column("Errors", justify="right")
+            table.add_column("Already Exist", justify="right")
             table.add_column("Total", justify="right")
 
             table.add_row(
-                "Items collected",
-                str(len(self.collection_items.new)),
-                str(len(self.collection_items.cached)),
-                str(len(self.collection_items.errors)),
-                str(self.collection_items.total),
+                "Sources",
+                str(len(self.collect_sources.new)),
+                str(len(self.collect_sources.cached)),
+                str(len(self.collect_sources.errors)),
+                str(self.collect_sources_already_exist),
+                str(self.collect_sources.total),
+            )
+
+            table.add_row(
+                "Links",
+                str(len(self.collect_links.new)),
+                "-",
+                str(len(self.collect_links.errors)),
+                str(self.collect_links_already_exist),
+                str(self.collect_links.total),
             )
 
             console.print(table)
 
-            if self.collection_tokens.cost > 0:
-                self._print_token_stats("Collection Tokens", self.collection_tokens)
+            if self.collect_tokens.cost > 0:
+                self._print_token_stats("Collection Tokens", self.collect_tokens)
+            
+            if self.collect_preprocessing:
+                self._print_preprocessing_stats("Collection Preprocessing", self.collect_preprocessing)
+            
             console.print()
 
         # Classification section
-        if self.classification_items.total > 0:
+        if self.classify_candidates.total > 0:
             table = Table(title="Classification", show_header=True)
             table.add_column("Operation")
             table.add_column("New", justify="right")
-            table.add_column("Cached", justify="right")
+            table.add_column("Done", justify="right")
             table.add_column("Errors", justify="right")
+            table.add_column("Already Exist", justify="right")
             table.add_column("Total", justify="right")
 
             table.add_row(
-                "Items classified",
-                str(len(self.classification_items.new)),
-                str(len(self.classification_items.cached)),
-                str(len(self.classification_items.errors)),
-                str(self.classification_items.total),
+                "Candidates",
+                str(len(self.classify_candidates.new)),
+                str(len(self.classify_candidates.cached)),
+                str(len(self.classify_candidates.errors)),
+                str(self.classify_candidates_already_exist),
+                str(self.classify_candidates.total),
             )
 
             console.print(table)
 
-            if self.classification_tokens.cost > 0:
-                self._print_token_stats("Classification Tokens", self.classification_tokens)
+            if self.classify_tokens.cost > 0:
+                self._print_token_stats("Classification Tokens", self.classify_tokens)
+            
+            if self.classify_preprocessing:
+                self._print_preprocessing_stats("Classification Preprocessing", self.classify_preprocessing)
+            
             console.print()
 
     def _print_token_stats(self, title: str, tokens: TokenStats) -> None:
@@ -208,6 +241,51 @@ class Stats:
         if tokens.reasoning > 0:
             table.add_row("  Reasoning", f"{tokens.reasoning:,}")
         table.add_row("Total cost", f"${tokens.cost:.4f}")
+
+        console.print(table)
+
+    def _print_preprocessing_stats(self, title: str, stats_list: list[dict[str, float]]) -> None:
+        """Print HTML preprocessing statistics."""
+        if not stats_list:
+            return
+
+        import statistics
+
+        # Calculate aggregate stats
+        tokens_before_all = [s["tokens_before"] for s in stats_list]
+        tokens_after_all = [s["tokens_after"] for s in stats_list]
+        reduction_pct_all = [s["reduction_pct"] for s in stats_list]
+
+        table = Table(title=title, show_header=True)
+        table.add_column("Metric")
+        table.add_column("Mean", justify="right")
+        table.add_column("Min", justify="right")
+        table.add_column("Max", justify="right")
+        table.add_column("Std Dev", justify="right")
+
+        table.add_row(
+            "Tokens before",
+            f"{statistics.mean(tokens_before_all):,.0f}",
+            f"{min(tokens_before_all):,.0f}",
+            f"{max(tokens_before_all):,.0f}",
+            f"{statistics.stdev(tokens_before_all) if len(tokens_before_all) > 1 else 0:,.0f}",
+        )
+
+        table.add_row(
+            "Tokens after",
+            f"{statistics.mean(tokens_after_all):,.0f}",
+            f"{min(tokens_after_all):,.0f}",
+            f"{max(tokens_after_all):,.0f}",
+            f"{statistics.stdev(tokens_after_all) if len(tokens_after_all) > 1 else 0:,.0f}",
+        )
+
+        table.add_row(
+            "Reduction %",
+            f"{statistics.mean(reduction_pct_all):.1f}%",
+            f"{min(reduction_pct_all):.1f}%",
+            f"{max(reduction_pct_all):.1f}%",
+            f"{statistics.stdev(reduction_pct_all) if len(reduction_pct_all) > 1 else 0:.1f}%",
+        )
 
         console.print(table)
 

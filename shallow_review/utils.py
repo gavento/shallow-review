@@ -17,6 +17,14 @@ from .common import RUNS_PATH
 # Global rich console for all output
 console = Console()
 
+# Token counting - use tiktoken for approximation
+try:
+    import tiktoken
+
+    _tiktoken_available = True
+except ImportError:
+    _tiktoken_available = False
+
 
 def smart_open(
     path: Path | str,
@@ -108,5 +116,148 @@ def setup_logging(log_file: Path | None = None) -> None:
 
     logger = logging.getLogger(__name__)
     logger.info(f"Logging initialized. Log file: {log_file}")
+
+
+def format_error(e: Exception, levels: int = 2) -> str:
+    """
+    Format exception with limited traceback depth.
+
+    Args:
+        e: Exception to format
+        levels: Number of traceback levels to include (default: 2)
+
+    Returns:
+        Formatted error string with traceback
+    """
+    import traceback
+
+    # Get the traceback
+    tb = traceback.extract_tb(e.__traceback__)
+
+    # Take only the last N levels
+    tb_limited = tb[-levels:] if len(tb) > levels else tb
+
+    # Format the traceback
+    lines = []
+    for frame in tb_limited:
+        lines.append(f"  File \"{frame.filename}\", line {frame.lineno}, in {frame.name}")
+        if frame.line:
+            lines.append(f"    {frame.line}")
+
+    # Add the exception message
+    lines.append(f"{type(e).__name__}: {str(e)}")
+
+    return "\n".join(lines)
+
+
+def count_tokens(text: str, model: str = "gpt-4") -> int:
+    """
+    Count approximate tokens in text for a given model.
+
+    Uses tiktoken for accurate counting. Falls back to character-based estimate
+    if tiktoken is not available.
+
+    Args:
+        text: Text to count tokens for
+        model: Model name (e.g., "gpt-4", "claude-sonnet-4")
+
+    Returns:
+        Approximate token count
+    """
+    if not _tiktoken_available:
+        # Fallback: rough estimate (1 token ≈ 4 characters for English)
+        return len(text) // 4
+
+    # Map model names to tiktoken encodings
+    # Claude models use similar tokenization to GPT-4
+    if "claude" in model.lower() or "sonnet" in model.lower():
+        encoding_name = "cl100k_base"  # GPT-4/Claude approximation
+    elif "gpt-4" in model.lower():
+        encoding_name = "cl100k_base"
+    elif "gpt-3.5" in model.lower():
+        encoding_name = "cl100k_base"
+    else:
+        # Default to GPT-4 encoding
+        encoding_name = "cl100k_base"
+
+    try:
+        encoding = tiktoken.get_encoding(encoding_name)
+        return len(encoding.encode(text))
+    except Exception:
+        # Fallback on any error
+        return len(text) // 4
+
+
+def preprocess_html(html: str, model: str = "gpt-4") -> tuple[str, dict[str, int]]:
+    """
+    Preprocess HTML for LLM consumption by removing unnecessary elements.
+
+    Strips:
+    - <script> tags and content
+    - <style> tags and content
+    - Base64-encoded images (data: URIs in src/href attributes)
+    - HTML comments
+    - Excessive whitespace
+
+    Args:
+        html: Raw HTML content
+        model: Model name for token counting
+
+    Returns:
+        Tuple of (cleaned_html, stats) where stats contains:
+        - tokens_before: Token count before cleaning
+        - tokens_after: Token count after cleaning
+        - tokens_saved: Tokens saved by cleaning
+        - reduction_pct: Percentage reduction
+    """
+    from bs4 import BeautifulSoup
+    import re
+
+    # Count tokens before
+    tokens_before = count_tokens(html, model)
+
+    # Parse HTML
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Remove script tags
+    for script in soup.find_all("script"):
+        script.decompose()
+
+    # Remove style tags
+    for style in soup.find_all("style"):
+        style.decompose()
+
+    # Remove base64 images (data: URIs)
+    for tag in soup.find_all(attrs={"src": True}):
+        if tag["src"].startswith("data:"):
+            tag["src"] = "[base64-image-removed]"
+
+    for tag in soup.find_all(attrs={"href": True}):
+        if tag["href"].startswith("data:"):
+            tag["href"] = "[base64-data-removed]"
+
+    # Get cleaned HTML
+    cleaned_html = str(soup)
+
+    # Remove HTML comments
+    cleaned_html = re.sub(r"<!--.*?-->", "", cleaned_html, flags=re.DOTALL)
+
+    # Remove excessive whitespace
+    cleaned_html = re.sub(r"\n\s*\n+", "\n\n", cleaned_html)
+    cleaned_html = re.sub(r"[ \t]+", " ", cleaned_html)
+
+    # Count tokens after
+    tokens_after = count_tokens(cleaned_html, model)
+    tokens_saved = tokens_before - tokens_after
+    reduction_pct = (tokens_saved / tokens_before * 100) if tokens_before > 0 else 0
+
+    stats = {
+        "tokens_before": tokens_before,
+        "tokens_after": tokens_after,
+        "tokens_saved": tokens_saved,
+        "reduction_pct": reduction_pct,
+    }
+
+    return cleaned_html, stats
 
 

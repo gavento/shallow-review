@@ -1,9 +1,10 @@
 """Shared types, constants, and global state for shallow-review pipeline."""
 
 import threading
+from enum import Enum
 from pathlib import Path
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # Paths - derived from package location, independent of pwd
 ROOT_PATH = Path(__file__).parent.parent.resolve()
@@ -29,6 +30,77 @@ def is_shutdown_requested() -> bool:
 def request_shutdown() -> None:
     """Request shutdown of all threads."""
     _shutdown_event.set()
+
+
+# Enums
+class SourceKind(str, Enum):
+    """Types of collection sources."""
+
+    CONFERENCE = "conference"
+    NEWSLETTER = "newsletter"
+    BLOG_AGGREGATOR = "blog_aggregator"
+    RESOURCE_LIST = "resource_list"
+    WORKSHOP = "workshop"
+    SUMMER_SCHOOL = "summer_school"
+    READING_LIST = "reading_list"
+    ORGANIZATION_PAGE = "organization_page"
+    PAPER_PAGE = "paper_page"  # Individual paper (no links to collect)
+    BLOCKED_CONTENT = "blocked_content"  # Captcha, login wall, etc.
+    OTHER = "other"
+
+
+class CollectStatus(str, Enum):
+    """Status of collection source processing."""
+
+    NEW = "new"  # Not yet processed
+    SCRAPE_ERROR = "scrape_error"  # Failed to scrape
+    EXTRACT_ERROR = "extract_error"  # LLM extraction failed
+    DONE = "done"  # Successfully completed
+
+
+class ClassifyStatus(str, Enum):
+    """Status of classification candidate processing."""
+
+    NEW = "new"  # Not yet processed
+    SCRAPE_ERROR = "scrape_error"  # Failed to scrape
+    CLASSIFY_ERROR = "classify_error"  # LLM classification failed
+    DONE = "done"  # Successfully completed
+
+
+# Configuration objects
+class RunCollectConfig(BaseModel):
+    """Configuration for collect phase runs."""
+
+    model_config = {"frozen": True}
+
+    limit: int = Field(default=100, ge=1, description="Max sources to process")
+    workers: int = Field(default=4, ge=1, le=32, description="Number of worker threads")
+    relevancy_threshold: float = Field(
+        default=0.3, ge=0.0, le=1.0, description="Minimum relevancy to extract links"
+    )
+    model: str = Field(default="claude-sonnet-4", description="LLM model to use")
+    max_html_tokens: int = Field(
+        default=100000, ge=1000, description="Max tokens in HTML before error"
+    )
+
+
+class RunClassifyConfig(BaseModel):
+    """Configuration for classify phase runs."""
+
+    model_config = {"frozen": True}
+
+    limit: int = Field(default=100, ge=1, description="Max candidates to process")
+    workers: int = Field(default=4, ge=1, le=32, description="Number of worker threads")
+    relevancy_threshold: float = Field(
+        default=0.5,
+        ge=0.0,
+        le=1.0,
+        description="Minimum relevancy to consider high-priority",
+    )
+    model: str = Field(default="claude-sonnet-4", description="LLM model to use")
+    max_html_tokens: int = Field(
+        default=100000, ge=1000, description="Max tokens in HTML before error"
+    )
 
 
 # Common base models (extend as needed)

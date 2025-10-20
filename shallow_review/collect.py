@@ -1,11 +1,478 @@
-"""Collection phase: gather items from sources.
+"""Collection phase: gather links from AI safety/alignment aggregator pages."""
 
-This module will implement:
-- compute_collect(): Main function to collect items from sources
-- get_collect_db(): SQLite database for collected items
-- CollectionItem: Pydantic model for collected items
-"""
+import json
+import logging
+import sqlite3
+import threading
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
 
-# TODO: Implement collection phase
+import yaml
+from pydantic import BaseModel, Field
+
+from .common import (
+    DATA_PATH,
+    PROMPTS_PATH,
+    CollectStatus,
+    RunCollectConfig,
+    SourceKind,
+    is_shutdown_requested,
+)
+from .llm import get_completion
+from .scrape import compute_scrape, open_scraped
+from .stats import get_stats
+from .utils import count_tokens, format_error, preprocess_html
+
+logger = logging.getLogger(__name__)
+
+# Global database connection (lazy singleton)
+_collect_db: sqlite3.Connection | None = None
+_collect_db_lock = threading.Lock()
 
 
+# Pydantic models for LLM responses
+class ExtractedLink(BaseModel):
+    """A link extracted from a collection page."""
+
+    url: str
+    link_text: str
+    context: str
+    ai_safety_relevancy: float = Field(ge=0.0, le=1.0)
+
+
+class CollectionResult(BaseModel):
+    """Result of collecting from a source page."""
+
+    title: str
+    kind: SourceKind
+    collection_quality_score: float = Field(ge=0.0, le=1.0)
+    comments: str
+    links: list[ExtractedLink] = Field(default_factory=list)
+
+
+def get_collect_db() -> sqlite3.Connection:
+    """
+    Get or create the collection database connection (lazy singleton).
+
+    Schema:
+        collect_sources: Source pages to collect from
+        collect_links: Extracted links from sources
+
+    Returns:
+        SQLite connection
+    """
+    global _collect_db
+
+    with _collect_db_lock:
+        if _collect_db is None:
+            db_path = DATA_PATH / "collect.db"
+            _collect_db = sqlite3.connect(str(db_path), check_same_thread=False)
+            _collect_db.row_factory = sqlite3.Row
+
+            # Create collect_sources table
+            _collect_db.execute(
+                """
+                CREATE TABLE IF NOT EXISTS collect_sources (
+                    url TEXT PRIMARY KEY,
+                    status TEXT NOT NULL,
+                    source TEXT,
+                    added_at TEXT NOT NULL,
+                    processed_at TEXT,
+                    data JSON,
+                    error TEXT,
+                    preprocessing_stats JSON,
+                    CHECK(status IN ('new', 'scrape_error', 'extract_error', 'done'))
+                )
+                """
+            )
+
+            _collect_db.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_collect_sources_status 
+                ON collect_sources(status)
+                """
+            )
+
+            _collect_db.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_collect_sources_added_at 
+                ON collect_sources(added_at)
+                """
+            )
+
+            # Create collect_links table
+            _collect_db.execute(
+                """
+                CREATE TABLE IF NOT EXISTS collect_links (
+                    url TEXT PRIMARY KEY,
+                    source_url TEXT NOT NULL,
+                    link_text TEXT NOT NULL,
+                    context TEXT NOT NULL,
+                    ai_safety_relevancy REAL NOT NULL,
+                    extracted_at TEXT NOT NULL,
+                    promoted_to_classify BOOLEAN DEFAULT FALSE,
+                    FOREIGN KEY(source_url) REFERENCES collect_sources(url),
+                    CHECK(ai_safety_relevancy >= 0.0 AND ai_safety_relevancy <= 1.0)
+                )
+                """
+            )
+
+            _collect_db.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_collect_links_source_url 
+                ON collect_links(source_url)
+                """
+            )
+
+            _collect_db.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_collect_links_relevancy 
+                ON collect_links(ai_safety_relevancy)
+                """
+            )
+
+            _collect_db.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_collect_links_promoted 
+                ON collect_links(promoted_to_classify)
+                """
+            )
+
+            _collect_db.commit()
+            logger.info(f"Initialized collection database at {db_path}")
+
+        return _collect_db
+
+
+def add_collect_source(url: str, source: str | None = None) -> bool:
+    """
+    Add a URL to collect from.
+
+    Args:
+        url: URL of source page
+        source: Optional user-supplied source label
+
+    Returns:
+        True if added (new), False if already exists
+    """
+    db = get_collect_db()
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    try:
+        db.execute(
+            """
+            INSERT INTO collect_sources (url, status, source, added_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (url, CollectStatus.NEW.value, source, timestamp),
+        )
+        db.commit()
+
+        # Update stats
+        try:
+            stats = get_stats()
+            with stats.lock:
+                stats.collect_sources.new.add(url)
+        except RuntimeError:
+            pass
+
+        logger.info(f"Added collect source: {url}")
+        return True
+
+    except sqlite3.IntegrityError:
+        # URL already exists
+        try:
+            stats = get_stats()
+            with stats.lock:
+                stats.collect_sources_already_exist += 1
+        except RuntimeError:
+            pass
+
+        logger.debug(f"Collect source already exists: {url}")
+        return False
+
+
+def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = False) -> CollectionResult:
+    """
+    Collect links from a source page.
+
+    Workflow:
+    1. Scrape the page (kind="collect")
+    2. Preprocess HTML (strip scripts/styles/base64)
+    3. Check token limit
+    4. Run LLM extraction
+    5. Store results in database
+    6. Promote links to classify phase
+
+    Args:
+        url: URL of source page to collect from
+        config: Configuration for collection run
+        force_recompute: If True, re-run LLM extraction even if status is extract_error
+
+    Returns:
+        CollectionResult with extracted links
+
+    Raises:
+        RuntimeError: If scraping, preprocessing, or extraction fails
+    """
+    db = get_collect_db()
+
+    # Check if already processed
+    cursor = db.execute("SELECT status FROM collect_sources WHERE url = ?", (url,))
+    row = cursor.fetchone()
+
+    if row and row["status"] != CollectStatus.NEW.value:
+        # Allow retrying extract_error with force_recompute
+        if force_recompute and row["status"] == CollectStatus.EXTRACT_ERROR.value:
+            logger.info(f"Retrying extraction for {url} (was extract_error)")
+            # Reset status to new so it can be reprocessed
+            db.execute(
+                "UPDATE collect_sources SET status = ? WHERE url = ?",
+                (CollectStatus.NEW.value, url),
+            )
+            db.commit()
+        elif row["status"] == CollectStatus.DONE.value:
+            logger.warning(f"Source {url} already processed successfully")
+            # Return cached result
+            cursor = db.execute("SELECT data FROM collect_sources WHERE url = ?", (url,))
+            data_row = cursor.fetchone()
+            if data_row and data_row["data"]:
+                data = json.loads(data_row["data"])
+                return CollectionResult(**data)
+            raise RuntimeError(f"Source {url} marked done but no data found")
+        else:
+            raise RuntimeError(f"Source {url} in status {row['status']}, use --retry-errors for extract_error")
+
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    # Step 1: Scrape the page
+    try:
+        scrape_path = compute_scrape(url, kind="collect", headless=True)
+    except Exception as e:
+        error_msg = format_error(e, levels=2)
+        logger.error(f"Failed to scrape {url}: {error_msg}")
+        db.execute(
+            """
+            UPDATE collect_sources
+            SET status = ?, processed_at = ?, error = ?
+            WHERE url = ?
+            """,
+            (CollectStatus.SCRAPE_ERROR.value, timestamp, error_msg, url),
+        )
+        db.commit()
+
+        # Update stats
+        try:
+            stats = get_stats()
+            with stats.lock:
+                stats.collect_sources.errors[url] = error_msg
+        except RuntimeError:
+            pass
+
+        raise RuntimeError(f"Scrape error: {e}") from e
+
+    # Step 2: Read and preprocess HTML
+    try:
+        with open_scraped(url, "rt", encoding="utf-8") as f:
+            raw_html = f.read()
+
+        cleaned_html, preprocessing_stats = preprocess_html(raw_html, config.model)
+
+    except Exception as e:
+        error_msg = format_error(e, levels=2)
+        logger.error(f"Failed to preprocess HTML for {url}: {error_msg}")
+        db.execute(
+            """
+            UPDATE collect_sources
+            SET status = ?, processed_at = ?, error = ?
+            WHERE url = ?
+            """,
+            (CollectStatus.EXTRACT_ERROR.value, timestamp, error_msg, url),
+        )
+        db.commit()
+
+        # Update stats
+        try:
+            stats = get_stats()
+            with stats.lock:
+                stats.collect_sources.errors[url] = error_msg
+        except RuntimeError:
+            pass
+
+        raise RuntimeError(f"Preprocessing error: {e}") from e
+
+    # Step 3: Check token limit
+    tokens_after = preprocessing_stats["tokens_after"]
+    if tokens_after > config.max_html_tokens:
+        error_msg = (
+            f"HTML exceeds max_html_tokens limit: {tokens_after} > {config.max_html_tokens}"
+        )
+        logger.error(f"{error_msg} for {url}")
+
+        db.execute(
+            """
+            UPDATE collect_sources
+            SET status = ?, processed_at = ?, error = ?, preprocessing_stats = ?
+            WHERE url = ?
+            """,
+            (
+                CollectStatus.EXTRACT_ERROR.value,
+                timestamp,
+                error_msg,
+                json.dumps(preprocessing_stats),
+                url,
+            ),
+        )
+        db.commit()
+
+        # Update stats
+        try:
+            stats = get_stats()
+            with stats.lock:
+                stats.collect_sources.errors[url] = error_msg
+        except RuntimeError:
+            pass
+
+        raise RuntimeError(error_msg)
+
+    # Step 4: Run LLM extraction
+    try:
+        # Load prompts
+        prompts_file = PROMPTS_PATH / "collect.yaml"
+        with open(prompts_file) as f:
+            prompts = yaml.safe_load(f)
+
+        # Call LLM
+        result = get_completion(
+            template_vars={"url": url, "html_content": cleaned_html},
+            model=config.model,
+            stats_subtree="collect_tokens",
+            response_type=CollectionResult,
+            system_prompt_template=prompts["collect_page"]["system"],
+            user_prompt_template=prompts["collect_page"]["user"],
+        )
+
+    except Exception as e:
+        error_msg = format_error(e, levels=2)
+        logger.error(f"Failed LLM extraction for {url}: {error_msg}")
+        db.execute(
+            """
+            UPDATE collect_sources
+            SET status = ?, processed_at = ?, error = ?, preprocessing_stats = ?
+            WHERE url = ?
+            """,
+            (
+                CollectStatus.EXTRACT_ERROR.value,
+                timestamp,
+                error_msg,
+                json.dumps(preprocessing_stats),
+                url,
+            ),
+        )
+        db.commit()
+
+        # Update stats
+        try:
+            stats = get_stats()
+            with stats.lock:
+                stats.collect_sources.errors[url] = error_msg
+        except RuntimeError:
+            pass
+
+        raise RuntimeError(f"LLM extraction error: {e}") from e
+
+    # Step 5: Store links in database and promote to classify
+    from .classify import add_classify_candidate
+
+    extracted_at = datetime.now(timezone.utc).isoformat()
+
+    for link in result.links:
+        # Only store links above threshold
+        if link.ai_safety_relevancy >= config.relevancy_threshold:
+            try:
+                db.execute(
+                    """
+                    INSERT INTO collect_links 
+                    (url, source_url, link_text, context, ai_safety_relevancy, extracted_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        link.url,
+                        url,
+                        link.link_text,
+                        link.context,
+                        link.ai_safety_relevancy,
+                        extracted_at,
+                    ),
+                )
+
+                # Update stats
+                try:
+                    stats = get_stats()
+                    with stats.lock:
+                        stats.collect_links.new.add(link.url)
+                except RuntimeError:
+                    pass
+
+                # Promote to classify phase
+                add_classify_candidate(
+                    url=link.url,
+                    source="collect",
+                    source_url=url,
+                    collect_relevancy=link.ai_safety_relevancy,
+                )
+
+            except sqlite3.IntegrityError:
+                # Link already exists (from another source)
+                try:
+                    stats = get_stats()
+                    with stats.lock:
+                        stats.collect_links_already_exist += 1
+                except RuntimeError:
+                    pass
+
+                logger.debug(f"Link already exists: {link.url}")
+
+    db.commit()
+
+    # Step 6: Update source status to done
+    data_json = result.model_dump_json()
+
+    db.execute(
+        """
+        UPDATE collect_sources
+        SET status = ?, processed_at = ?, data = ?, preprocessing_stats = ?
+        WHERE url = ?
+        """,
+        (
+            CollectStatus.DONE.value,
+            timestamp,
+            data_json,
+            json.dumps(preprocessing_stats),
+            url,
+        ),
+    )
+    db.commit()
+
+    # Update stats
+    try:
+        stats = get_stats()
+        with stats.lock:
+            stats.collect_sources.cached.add(url)  # Mark as completed
+            # Track preprocessing stats
+            if not hasattr(stats, "collect_preprocessing"):
+                stats.collect_preprocessing = []
+            stats.collect_preprocessing.append(preprocessing_stats)
+    except RuntimeError:
+        pass
+
+    logger.info(
+        f"Successfully collected {len(result.links)} links from {url} "
+        f"(quality: {result.collection_quality_score:.2f})"
+    )
+
+    # Step 7: Promote links to classify (done in separate function/CLI command)
+    # This allows for batch promotion with filtering
+
+    return result

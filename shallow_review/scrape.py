@@ -263,21 +263,30 @@ def compute_scrape(
 
             browser.close()
 
-        # Save to file
-        with open_scraped(url, "wt", encoding="utf-8") as f:
-            f.write(content)
+        # Save to file and update DB atomically with transaction
+        try:
+            # Write file first
+            with open_scraped(url, "wt", encoding="utf-8") as f:
+                f.write(content)
 
-        # Update database
-        timestamp = datetime.now(timezone.utc).isoformat()
-        db.execute(
-            """
-            INSERT OR REPLACE INTO scraped 
-            (url, url_hash, kind, timestamp, status_code, error)
-            VALUES (?, ?, ?, ?, ?, NULL)
-            """,
-            (url, url_hash, kind, timestamp, status_code),
-        )
-        db.commit()
+            # Update database in transaction
+            timestamp = datetime.now(timezone.utc).isoformat()
+            db.execute("BEGIN TRANSACTION")
+            db.execute(
+                """
+                INSERT OR REPLACE INTO scraped 
+                (url, url_hash, kind, timestamp, status_code, error)
+                VALUES (?, ?, ?, ?, ?, NULL)
+                """,
+                (url, url_hash, kind, timestamp, status_code),
+            )
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            # Clean up file if DB update failed
+            if scrape_path.exists():
+                scrape_path.unlink()
+            raise RuntimeError(f"Failed to save scrape atomically: {e}") from e
 
         # Update stats
         try:

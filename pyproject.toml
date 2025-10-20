@@ -16,7 +16,9 @@ dependencies = [
     "pyyaml>=6.0.3",
     "requests>=2.32.5",
     "rich>=14.2.0",
+    "scipy>=1.16.2",
     "tenacity>=9.1.2",
+    "tiktoken>=0.8.0",
     "typer>=0.19.2",
     "zstandard>=0.25.0",
 ]
