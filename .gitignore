@@ -38,6 +38,10 @@ runs/
 .llm_cache/
 .playwright-mcp/
 
+# Secrets
+.env
+.env.*
+
 # Logs
 *.log
 

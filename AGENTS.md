@@ -63,7 +63,7 @@ For detailed coding conventions, see `docs/CODE.md`. Key points:
 
 ### Technology stack
 
-**Observability:** Using Helicone.ai proxy
+**Observability:** Using Helicone.ai callback for LLM monitoring - automatically configured if `HELICONE_API_KEY` env var is set
 
 **Instructions:**
 - Use these libraries and features unless there is a new functionality required. If there is, make suggestions to the user before moving ahead.

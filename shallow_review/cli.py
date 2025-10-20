@@ -8,7 +8,7 @@ from typing import Optional
 import typer
 
 from . import __version__
-from .common import RUNS_PATH, request_shutdown
+from .common import RUNS_PATH, is_shutdown_requested, request_shutdown
 from .stats import stats_context
 from .utils import console, setup_logging
 
@@ -29,15 +29,11 @@ app = typer.Typer(
 
 
 @app.command()
-def version() -> None:
-    """Show version information."""
-    console.print(f"shallow-review version {__version__}")
-
-
-@app.command()
 def info() -> None:
-    """Show configuration and paths."""
+    """Show configuration, paths, and database statistics."""
+    from rich.table import Table
     from .common import DATA_PATH, PROMPTS_PATH, ROOT_PATH
+    from .data_db import get_data_db
 
     console.print("[bold]Shallow Review Configuration[/bold]\n")
     console.print(f"Version: {__version__}")
@@ -45,6 +41,72 @@ def info() -> None:
     console.print(f"Data path: {DATA_PATH}")
     console.print(f"Prompts path: {PROMPTS_PATH}")
     console.print(f"Runs path: {RUNS_PATH}")
+    console.print()
+
+    # Database statistics
+    console.print("[bold]Database Statistics[/bold]\n")
+    db = get_data_db()
+
+    # Scrape table stats
+    scrape_table = Table(title="Scrape Table", show_header=True, header_style="bold cyan")
+    scrape_table.add_column("Total", justify="right")
+    scrape_table.add_column("Success (2xx)", justify="right")
+    scrape_table.add_column("Errors", justify="right")
+
+    total_scrapes = db.execute("SELECT COUNT(*) as cnt FROM scrape").fetchone()["cnt"]
+    success_scrapes = db.execute("SELECT COUNT(*) as cnt FROM scrape WHERE status_code >= 200 AND status_code < 300").fetchone()["cnt"]
+    error_scrapes = db.execute("SELECT COUNT(*) as cnt FROM scrape WHERE error IS NOT NULL OR status_code >= 400").fetchone()["cnt"]
+
+    scrape_table.add_row(str(total_scrapes), str(success_scrapes), str(error_scrapes))
+    console.print(scrape_table)
+    console.print()
+
+    # Collect table stats
+    collect_table = Table(title="Collect Table", show_header=True, header_style="bold cyan")
+    collect_table.add_column("Total", justify="right")
+    collect_table.add_column("New", justify="right")
+    collect_table.add_column("Done", justify="right")
+    collect_table.add_column("Scrape Errors", justify="right")
+    collect_table.add_column("Extract Errors", justify="right")
+
+    total_collect = db.execute("SELECT COUNT(*) as cnt FROM collect").fetchone()["cnt"]
+    new_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'new'").fetchone()["cnt"]
+    done_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'done'").fetchone()["cnt"]
+    scrape_err_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'scrape_error'").fetchone()["cnt"]
+    extract_err_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'extract_error'").fetchone()["cnt"]
+
+    collect_table.add_row(
+        str(total_collect),
+        str(new_collect),
+        str(done_collect),
+        str(scrape_err_collect),
+        str(extract_err_collect)
+    )
+    console.print(collect_table)
+    console.print()
+
+    # Classify table stats
+    classify_table = Table(title="Classify Table", show_header=True, header_style="bold cyan")
+    classify_table.add_column("Total", justify="right")
+    classify_table.add_column("New", justify="right")
+    classify_table.add_column("Done", justify="right")
+    classify_table.add_column("Scrape Errors", justify="right")
+    classify_table.add_column("Classify Errors", justify="right")
+
+    total_classify = db.execute("SELECT COUNT(*) as cnt FROM classify").fetchone()["cnt"]
+    new_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'new'").fetchone()["cnt"]
+    done_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'done'").fetchone()["cnt"]
+    scrape_err_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'scrape_error'").fetchone()["cnt"]
+    classify_err_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'classify_error'").fetchone()["cnt"]
+
+    classify_table.add_row(
+        str(total_classify),
+        str(new_classify),
+        str(done_classify),
+        str(scrape_err_classify),
+        str(classify_err_classify)
+    )
+    console.print(classify_table)
 
 
 @app.command()
@@ -115,7 +177,7 @@ def collect(
     limit: int = typer.Option(100, help="Maximum sources to process"),
     workers: int = typer.Option(4, help="Number of worker threads"),
     relevancy: float = typer.Option(0.3, help="Minimum relevancy threshold for links"),
-    model: str = typer.Option("claude-sonnet-4", help="LLM model to use"),
+    model: str = typer.Option("helicone/claude-4.5-sonnet", help="LLM model to use"),
     max_tokens: int = typer.Option(100000, help="Max HTML tokens before error"),
     retry_errors: bool = typer.Option(False, "--retry-errors", help="Retry sources with extract_error status"),
 ) -> None:

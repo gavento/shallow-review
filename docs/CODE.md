@@ -66,7 +66,10 @@ db.commit()  # Explicit commits required
 
 **Disk caching:** Automatic via litellm (stored in `data/.llm_cache/`)
 
-**Helicone tracing:** Enabled if `HELICONE_API_KEY` env var is set
+**Helicone observability:** Configured automatically if `HELICONE_API_KEY` env var is set
+- Uses Helicone callback (`litellm.success_callback = ["helicone"]`)
+- Logs all LLM requests/responses to Helicone for monitoring and analytics
+- Set `HELICONE_API_KEY` in environment or `.env` file
 
 **Usage pattern:**
 
@@ -133,6 +136,8 @@ logger.info("Message")
 
 **Features:**
 - Writes to both file (`runs/<timestamp>_<pid>.log`) and console
+- File logs include timestamps, logger names, levels
+- Console uses RichHandler with built-in timestamps (no redundancy)
 - Rich console with colored output and tracebacks
 - Tracebacks show locals (configured in RichHandler)
 

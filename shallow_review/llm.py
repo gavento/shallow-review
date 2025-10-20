@@ -66,11 +66,12 @@ def setup_litellm(cache_dir: Path | None = None) -> None:
         cache_dir.mkdir(exist_ok=True, parents=True)
         litellm.cache = Cache(type="disk", disk_cache_dir=str(cache_dir))  # type: ignore[arg-type]
 
-        # Configure for Helicone if environment variables are set
+        # Configure Helicone callback for observability
         if os.getenv("HELICONE_API_KEY"):
-            logger.info("Helicone API key found, tracing enabled")
+            litellm.success_callback = ["helicone"]
+            logger.info("Helicone callback enabled for observability")
         else:
-            logger.warning("Helicone API key not set, tracing disabled")
+            logger.warning("Helicone API key not set, observability disabled")
 
         _setup_done = True
         logger.info(f"Litellm initialized with cache at {cache_dir}")

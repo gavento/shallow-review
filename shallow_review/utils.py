@@ -97,21 +97,26 @@ def setup_logging(log_file: Path | None = None) -> None:
     # Ensure parent directory exists
     log_file.parent.mkdir(exist_ok=True, parents=True)
 
+    # Create handlers with different formats
+    # File handler: includes timestamp
+    file_handler = logging.FileHandler(log_file, mode="w", encoding="utf-8")
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+    )
+
+    # Rich console handler: RichHandler adds its own timestamp, so format excludes it
+    rich_handler = RichHandler(
+        console=console,
+        rich_tracebacks=True,
+        tracebacks_show_locals=True,
+        markup=True,
+    )
+    rich_handler.setFormatter(logging.Formatter("%(name)s: %(message)s"))
+
     # Configure root logger
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        handlers=[
-            # File handler (plain text)
-            logging.FileHandler(log_file, mode="w", encoding="utf-8"),
-            # Rich console handler
-            RichHandler(
-                console=console,
-                rich_tracebacks=True,
-                tracebacks_show_locals=True,
-                markup=True,
-            ),
-        ],
+        handlers=[file_handler, rich_handler],
     )
 
     logger = logging.getLogger(__name__)
