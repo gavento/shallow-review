@@ -1,114 +1,273 @@
-# Data Overview
+# Data Storage and Database Schemas
 
-This document describes the data structures, databases, and file formats used in the shallow-review pipeline.
+**Ground truth for all data structures, database schemas, and file formats.**
 
 ## Directory Structure
 
 ```
 data/
 ├── .llm_cache/          # Litellm disk cache (gitignored)
-├── scrape.db            # Scraping metadata database
+├── data.db              # Unified database (scrape, collect, classify tables)
 └── scraped/             # Scraped HTML content
     └── <hash>.html.zst  # Zstandard-compressed HTML files
 ```
 
-## Databases
+## Unified Database: data.db
 
-### scrape.db
+All tables stored in `data/data.db` with **NO foreign key constraints**.
+
+### scrape table
 
 Stores metadata for scraped web pages.
 
-**Schema:**
-
 ```sql
-CREATE TABLE scraped (
-    url TEXT PRIMARY KEY,            -- Original URL (unique)
-    url_hash TEXT NOT NULL UNIQUE,   -- SHA256(url)
-    kind TEXT NOT NULL,              -- Context/type of scrape
-    timestamp TEXT NOT NULL,         -- ISO 8601 UTC timestamp
-    status_code INTEGER,             -- HTTP status code
-    error TEXT                       -- Error message if scrape failed
+CREATE TABLE scrape (
+    url TEXT PRIMARY KEY,
+    url_hash TEXT NOT NULL UNIQUE,
+    kind TEXT NOT NULL,
+    timestamp TEXT NOT NULL,
+    status_code INTEGER,
+    error TEXT
 );
 
-CREATE INDEX idx_scraped_url_hash ON scraped(url_hash);
-CREATE INDEX idx_scraped_kind ON scraped(kind);
-CREATE INDEX idx_scraped_timestamp ON scraped(timestamp);
+CREATE INDEX idx_scrape_url_hash ON scrape(url_hash);
+CREATE INDEX idx_scrape_kind ON scrape(kind);
+CREATE INDEX idx_scrape_timestamp ON scrape(timestamp);
+```
+
+**Fields:**
+- `url`: Original URL (primary key - unique)
+- `url_hash`: SHA256(url) for file naming
+- `kind`: Context/type of scrape (e.g., "collect", "classify")
+- `timestamp`: ISO 8601 UTC timestamp with timezone
+- `status_code`: HTTP status code (if successful)
+- `error`: Error message (if failed)
+
+**Notes:**
+- Each URL scraped only once, cached indefinitely
+- Failed scrapes are cached to avoid repeated failures
+- File path: `data/scraped/{url_hash}.html.zst`
+- Use `get_scrape_path(url)` or `open_scraped(url, mode)` to access files
+
+### collect table
+
+Tracks source pages being collected from (conferences, newsletters, etc.).
+
+```sql
+CREATE TABLE collect (
+    url TEXT PRIMARY KEY,
+    status TEXT NOT NULL,
+    source TEXT,
+    added_at TEXT NOT NULL,
+    processed_at TEXT,
+    data JSON,
+    error TEXT,
+    CHECK(status IN ('new', 'scrape_error', 'extract_error', 'done'))
+);
+
+CREATE INDEX idx_collect_status ON collect(status);
+CREATE INDEX idx_collect_added_at ON collect(added_at);
+```
+
+**Fields:**
+- `url`: Source page URL (primary key)
+- `status`: Processing state (new → scrape_error/extract_error/done)
+- `source`: Optional user-supplied label for tracking
+- `added_at`: ISO 8601 UTC timestamp when added
+- `processed_at`: ISO 8601 UTC timestamp when completed
+- `data`: JSON with LLM-extracted data and preprocessing info (see below)
+- `error`: Error message if failed
+
+**data JSON structure** (when status='done'):
+```json
+{
+  "tokens_full": 50000,
+  "tokens_stripped": 15000,
+  "title": "Page title",
+  "kind": "conference|newsletter|blog_aggregator|...",
+  "collection_quality_score": 0.85,
+  "comments": "2-4 sentence description",
+  "links": [
+    {
+      "url": "https://...",
+      "link_text": "verbatim link text",
+      "context": "one-sentence context",
+      "ai_safety_relevancy": 0.75
+    }
+  ]
+}
 ```
 
 **Notes:**
-- `url` is the primary key - each URL can only be scraped once, ensuring no duplicates
-- `url_hash` is computed as SHA256 of the URL for file naming (UNIQUE constraint)
-- File path is computed as `SCRAPED_PATH / "{url_hash}.html.zst"`
-- Either `status_code` (success) OR `error` (failure) is set
-- Failed scrapes are cached to avoid repeated failures
-- Use `get_scrape_path(url)` or `open_scraped(url, mode)` to access files
-- Stats tracking uses `url` as the unique identifier (not `url_hash`)
+- `tokens_full`: Token count of full HTML
+- `tokens_stripped`: Token count after preprocessing (scripts/styles removed)
+- Other fields are LLM-extracted
 
-### collect.db (TODO)
+### classify table
 
-Will store collected items from sources.
+Tracks URLs to classify (for AI safety/alignment relevance).
 
-### classify.db (TODO)
+```sql
+CREATE TABLE classify (
+    url TEXT PRIMARY KEY,
+    status TEXT NOT NULL,
+    source TEXT NOT NULL,
+    source_url TEXT,
+    collect_relevancy REAL,
+    added_at TEXT NOT NULL,
+    processed_at TEXT,
+    classify_relevancy REAL,
+    kind TEXT,
+    data JSON,
+    error TEXT,
+    CHECK(status IN ('new', 'scrape_error', 'classify_error', 'done'))
+);
 
-Will store classification results for collected items.
+CREATE INDEX idx_classify_status ON classify(status);
+CREATE INDEX idx_classify_source ON classify(source);
+CREATE INDEX idx_classify_source_url ON classify(source_url);
+CREATE INDEX idx_classify_added_at ON classify(added_at);
+CREATE INDEX idx_classify_relevancy ON classify(classify_relevancy);
+CREATE INDEX idx_classify_kind ON classify(kind);
+```
+
+**Fields:**
+- `url`: URL to classify (primary key)
+- `status`: Processing state (new → scrape_error/classify_error/done)
+- `source`: "collect" or user-supplied label
+- `source_url`: URL of collect source page (if from collect, **not a foreign key**)
+- `collect_relevancy`: Relevancy score from collect phase (if applicable)
+- `added_at`: ISO 8601 UTC timestamp when added
+- `processed_at`: ISO 8601 UTC timestamp when completed
+- `classify_relevancy`: AI safety/alignment relevancy score 0.0-1.0 (from LLM)
+- `kind`: Content type - independent of relevancy (see ClassifyKind enum below)
+- `data`: JSON with classification results and preprocessing info (see below)
+- `error`: Error message if failed
+
+**data JSON structure** (when status='done'):
+```json
+{
+  "tokens_full": 50000,
+  "tokens_stripped": 15000,
+  "title": "...",
+  "authors": ["..."],
+  "published_date": "...",
+  "topics": ["alignment", "interpretability"],
+  "summary": "2-3 sentence summary",
+  "key_points": ["..."],
+  "venue": "...",
+  "arxiv_id": "...",
+  "organization": "..."
+}
+```
+
+**Notes:**
+- `tokens_full`: Token count of full HTML
+- `tokens_stripped`: Token count after preprocessing
+- `classify_relevancy` and `kind` stored as columns (not in data JSON)
+- Other fields are LLM-extracted
 
 ## File Formats
 
 ### Scraped HTML (.html.zst)
 
-- **Format:** HTML text compressed with Zstandard (level 15)
-- **Location:** `SCRAPED_PATH / "<hash>.html.zst"` where `SCRAPED_PATH = data/scraped/`
-- **Hash:** SHA256 of the URL only
-- **Compression:** Zstandard level 15 (as per AGENTS.md guidelines)
+- **Format:** HTML text compressed with Zstandard level 15
+- **Location:** `data/scraped/<hash>.html.zst`
+- **Hash:** SHA256 of URL only
 - **Access:** Use `open_scraped(url, mode)` or `get_scrape_path(url)` from `scrape.py`
 
-### Parquet Files (TODO)
+### Parquet Files
 
-When used, parquet files will be written with:
+When used, parquet files written with:
 - Compression: Zstandard level 15
-- Location: TBD based on phase
+- Location: TBD based on output
 
-## Data Types and Enums
+## Enums and Constants
 
-### Scrape Kinds
+### SourceKind (collect.data.kind)
 
-The `kind` parameter distinguishes different contexts for scraped pages. Current/planned values:
+Types of collection sources:
+- `conference` - Conference websites
+- `newsletter` - Email newsletters, digests
+- `blog_aggregator` - Aggregator sites (LessWrong, EA Forum)
+- `resource_list` - Curated resource lists
+- `workshop` - Workshop pages
+- `summer_school` - Summer school programs
+- `reading_list` - Reading/bibliography lists
+- `organization_page` - Organization homepages
+- `paper_page` - Individual paper page (no links to collect)
+- `blocked_content` - Captcha, login wall, etc.
+- `other` - Other types
 
-- (To be defined based on use cases)
+### ClassifyKind (classify.kind)
 
-## Data Sources
+Content type classification (independent of AI safety/alignment relevancy).
 
-(To be documented as sources are added)
+**Important:** `kind` describes the content type only. AI safety/alignment relevance is determined by the `classify_relevancy` score (0.0-1.0). Any kind can have any relevancy score.
 
-## Stats Tracking
+Examples:
+- `paper_page` + `classify_relevancy=0.9` → relevant AI safety paper
+- `paper_page` + `classify_relevancy=0.1` → irrelevant paper (e.g., biology)
+- `blog_post` + `classify_relevancy=0.8` → relevant alignment blog post
+- `blog_post` + `classify_relevancy=0.0` → irrelevant blog post
 
-The pipeline tracks statistics in memory during runs and saves to `runs/run-stats-<timestamp>.json`:
+**Kind values:**
 
-- **scraped_pages**: CountStats (new, cached, errors)
-- **collection_items**: CountStats + TokenStats
-- **classification_items**: CountStats + TokenStats
+Research content:
+- `paper_page` - Academic paper page (HTML)
+- `paper_pdf` - PDF paper
+- `arxiv` - ArXiv paper page
 
-Stats format:
-```json
-{
-  "commandline": "...",
-  "timestamp": "ISO 8601 UTC",
-  "scraped_pages": {
-    "new": <count>,
-    "cached": <count>,
-    "errors": <count>,
-    "new_ids": ["hash1", "hash2", ...],
-    "cached_ids": [...],
-    "error_details": {"hash": "error message"}
-  },
-  "collection_tokens": {
-    "cache_read": <int>,
-    "cache_write": <int>,
-    "uncached": <int>,
-    "reasoning": <int>,
-    "output": <int>,
-    "cost": <float>
-  }
-}
-```
+Online content:
+- `blog_post` - Blog post or article
+- `lesswrong` - LessWrong or AI Alignment Forum post
+- `news_article` - News article
+- `social_media` - Twitter, Reddit, etc.
 
+Media:
+- `video` - Video content (YouTube, etc.)
+- `podcast` - Podcast episode
+
+Educational:
+- `course` - Course or tutorial
+- `slides` - Presentation slides
+
+Other:
+- `commercial` - Product/service pages
+- `personal_page` - Personal homepage
+- `404` - Page not found
+- `blocked` - Blocked access (captcha, login, etc.)
+- `other` - Other types
+
+### Status Values
+
+**CollectStatus:**
+- `new` - Not yet processed
+- `scrape_error` - Failed to scrape
+- `extract_error` - LLM/extraction failed
+- `done` - Successfully completed
+
+**ClassifyStatus:**
+- `new` - Not yet processed
+- `scrape_error` - Failed to scrape
+- `classify_error` - LLM/classification failed
+- `done` - Successfully completed
+
+## Data Flow
+
+1. **Scraping**: URL → `scrape` table + `data/scraped/<hash>.html.zst`
+2. **Collection**: Source URL → `collect` table → extract links → `classify` table
+3. **Classification**: Candidate URL → `classify` table with results
+
+**Key points:**
+- Scrapes are shared across all phases (one scrape per URL)
+- Links from collect are directly added to classify table (no intermediate table)
+- Tables do NOT reference each other with foreign key constraints
+- All timestamps are ISO 8601 with timezone (UTC)
+
+## Database Access
+
+Use `get_data_db()` from `data_db.py` to access the unified database:
+- Thread-safe lazy singleton
+- Creates tables/indexes on first access
+- Don't hold connection for long periods

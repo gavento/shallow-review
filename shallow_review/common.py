@@ -67,6 +67,37 @@ class ClassifyStatus(str, Enum):
     DONE = "done"  # Successfully completed
 
 
+class ClassifyKind(str, Enum):
+    """Content type classification (independent of AI safety/alignment relevancy).
+    
+    Note: All kinds can have any relevancy score. For example, a paper_page
+    can be irrelevant (relevancy=0.1) or highly relevant (relevancy=0.9).
+    Use classify_relevancy field to determine AI safety/alignment relevance.
+    """
+
+    # Research content
+    PAPER_PAGE = "paper_page"  # Academic paper page (HTML)
+    PAPER_PDF = "paper_pdf"  # PDF paper
+    ARXIV = "arxiv"  # ArXiv paper page
+    # Online content
+    BLOG_POST = "blog_post"  # Blog post or article
+    LESSWRONG = "lesswrong"  # LessWrong or AI Alignment Forum post
+    NEWS_ARTICLE = "news_article"  # News article
+    SOCIAL_MEDIA = "social_media"  # Twitter, Reddit, etc.
+    # Media
+    VIDEO = "video"  # Video content (YouTube, etc.)
+    PODCAST = "podcast"  # Podcast episode
+    # Educational
+    COURSE = "course"  # Course or tutorial
+    SLIDES = "slides"  # Presentation slides
+    # Other types
+    COMMERCIAL = "commercial"  # Product/service pages
+    PERSONAL_PAGE = "personal_page"  # Personal homepage
+    NOT_FOUND = "404"  # Page not found
+    BLOCKED = "blocked"  # Blocked access (captcha, login, etc.)
+    OTHER = "other"  # Other types
+
+
 # Configuration objects
 class RunCollectConfig(BaseModel):
     """Configuration for collect phase runs."""

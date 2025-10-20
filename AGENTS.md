@@ -15,14 +15,21 @@ These are the instructions for AI coding and research assistants.
 
 ## Documentation
 
-- `docs/DEVLOG.md`: Development log with problems, solutions, lessons learned, etc.; append only, keep updated after bigger steps - do not clutter with all the details. Read only when needed.
-- `docs/DATA.md`: Overview of the data types stored in the databases, parquet files, etc., including explaining all the tags or enums used, collecting data sources etc. Keep it updated.
-- `README.md`: An overview for the users and other (human) developers, a brief overview.
+**Ground truth documents** (keep updated when making changes):
+
+- `docs/DATA.md`: **Ground truth** for all database schemas, data structures, file formats, enums, and constants. Keep fully synchronized with code.
+- `docs/COLLECT.md`: Collection phase process, logic, requirements, observations, and design decisions. Do NOT repeat DB schemas (reference DATA.md).
+- `docs/CLASSIFY.md`: Classification phase process, logic, requirements, observations, and design decisions. Do NOT repeat DB schemas (reference DATA.md).
+- `docs/SCRAPE.md`: Minimal scraping infrastructure documentation. Do NOT repeat DB schemas (reference DATA.md).
+- `docs/DEVLOG.md`: Development log with major problems, solutions, lessons learned, and design decisions. Append-only, updated after significant changes. Do not clutter with minor details.
+- `README.md`: Brief overview for users and developers, cli usage, etc.
 
 **Instructions:**
-- DO NOT create other documentation files unless instructed to do so.
-- When creating novel documentation create it in docs/ and suggest an update to this file to list the new files here.
-- When making extensive changes, make sure that the documentation is consistent with the code.
+- **DO NOT create other documentation files** unless explicitly instructed to do so.
+- When making database or data structure changes, update `docs/DATA.md` first.
+- When making process changes, update the relevant process doc (COLLECT.md, CLASSIFY.md, or SCRAPE.md).
+- After significant milestones, append to `docs/DEVLOG.md`.
+- Never duplicate database schemas across docs - they live in DATA.md only.
 
 ## Code and project structure
 
