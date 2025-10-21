@@ -291,31 +291,34 @@ def detect_url_type(url: str, model: str = "anthropic/claude-haiku-4-5") -> URLT
         raise RuntimeError(f"LLM detection error: {e}") from e
 
 
-def check_url_exists(url: str) -> tuple[bool, str | None]:
+def check_url_exists(url: str, phase: str | None = None) -> tuple[bool, str | None]:
     """
     Check if URL already exists in collect or classify tables.
     
     Args:
         url: URL to check
+        phase: If specified ("collect" or "classify"), only check that table.
+               If None (default), check both tables.
         
     Returns:
         Tuple of (exists, phase) where phase is "collect", "classify", or None
     """
-    from .data_db import get_data_db
+    from .data_db import data_db_locked
     
-    db = get_data_db()
-    
-    # Check collect table
-    cursor = db.execute("SELECT 1 FROM collect WHERE url = ?", (url,))
-    if cursor.fetchone():
-        return (True, "collect")
-    
-    # Check classify table
-    cursor = db.execute("SELECT 1 FROM classify WHERE url = ?", (url,))
-    if cursor.fetchone():
-        return (True, "classify")
-    
-    return (False, None)
+    with data_db_locked() as db:
+        if phase is None or phase == "collect":
+            # Check collect table
+            cursor = db.execute("SELECT 1 FROM collect WHERE url = ?", (url,))
+            if cursor.fetchone():
+                return (True, "collect")
+        
+        if phase is None or phase == "classify":
+            # Check classify table
+            cursor = db.execute("SELECT 1 FROM classify WHERE url = ?", (url,))
+            if cursor.fetchone():
+                return (True, "classify")
+        
+        return (False, None)
 
 
 def add_item_auto(

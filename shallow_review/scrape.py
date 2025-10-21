@@ -1,4 +1,4 @@
-"""Web scraping utilities with playwright."""
+"""Web scraping utilities with playwright and selenium."""
 
 import hashlib
 import logging
@@ -10,21 +10,30 @@ from typing import IO, Any, Literal
 from playwright.sync_api import Browser, sync_playwright
 
 from .common import SCRAPED_PATH
-from .data_db import get_data_db
+from .data_db import data_db_locked
 from .stats import get_stats
 from .utils import smart_open
 
 logger = logging.getLogger(__name__)
 
-# Global lock for Playwright operations
+# Scraping backend selection
+# Set to True to use Selenium (thread-safe), False for Playwright (faster but needs workers=1)
+USE_SELENIUM = True
+
+# Save stripped HTML for debugging (uncompressed)
+# Set to True to save preprocessed HTML as *-stripped.html files
+SAVE_STRIPPED_HTML = False
+
+# Global lock for Playwright operations (only used if USE_SELENIUM=False)
 # Playwright's sync API uses greenlets which are not thread-safe.
 # This lock ensures only ONE thread scrapes at a time, preventing
 # "browser has been closed" errors from greenlet context switching.
-# This is acceptable since:
-# - Scraping is I/O-bound (network waits)
-# - Most scrapes hit cache (instant)
-# - LLM calls still run in parallel (the expensive part)
 _playwright_lock = threading.Lock()
+
+# Lock for Selenium WebDriver creation (prevents ChromeDriver resource exhaustion)
+# Creating too many WebDriver instances simultaneously can crash ChromeDriver
+# Lock only driver creation, not the whole scraping (scraping can run in parallel)
+_selenium_create_lock = threading.Lock()
 
 
 def _compute_url_hash(url: str) -> str:
@@ -104,6 +113,139 @@ def get_browser_context(browser: Browser, **kwargs):
     return browser.new_context(**default_kwargs)
 
 
+def scrape_playwright(url: str, headless: bool = True, wait_for: str = "networkidle", scroll: bool = True) -> tuple[str, int]:
+    """
+    Scrape URL using Playwright.
+    
+    NOT thread-safe - caller must use _playwright_lock.
+    
+    Args:
+        url: URL to scrape
+        headless: Run browser in headless mode
+        wait_for: Wait condition ("networkidle", "load", "domcontentloaded")
+        scroll: Scroll page to trigger lazy loading
+        
+    Returns:
+        Tuple of (html_content, status_code)
+        
+    Raises:
+        Exception: If scraping fails
+    """
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=headless)
+        context = get_browser_context(browser)
+        page = context.new_page()
+
+        # Navigate to URL
+        response = page.goto(url, wait_until=wait_for, timeout=60000)
+        status_code = response.status if response else 0
+
+        # Scroll to trigger lazy loading
+        if scroll:
+            page.evaluate(
+                """
+                () => {
+                    window.scrollTo(0, document.body.scrollHeight / 2);
+                }
+                """
+            )
+            page.wait_for_timeout(500)
+            page.evaluate("() => { window.scrollTo(0, document.body.scrollHeight); }")
+            page.wait_for_timeout(500)
+
+        # Get page content
+        content = page.content()
+
+        browser.close()
+    
+    return (content, status_code)
+
+
+def scrape_selenium(url: str, headless: bool = True, scroll: bool = True) -> tuple[str, int]:
+    """
+    Scrape URL using Selenium.
+    
+    Thread-safe - each call creates its own WebDriver instance.
+    
+    Args:
+        url: URL to scrape
+        headless: Run browser in headless mode
+        scroll: Scroll page to trigger lazy loading
+        
+    Returns:
+        Tuple of (html_content, status_code)
+        
+    Raises:
+        Exception: If scraping fails
+    """
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.support.ui import WebDriverWait
+    import time
+    
+    # Configure Chrome options
+    chrome_options = Options()
+    if headless:
+        chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option("useAutomationExtension", False)
+    
+    # Realistic user agent
+    chrome_options.add_argument(
+        "user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    )
+    
+    # Create driver with lock to prevent ChromeDriver resource exhaustion
+    # Lock only creation, not the whole scraping (allows parallel scraping)
+    with _selenium_create_lock:
+        driver = webdriver.Chrome(options=chrome_options)
+    
+    try:
+        # Navigate to URL
+        driver.get(url)
+        
+        # Wait for page to be ready
+        WebDriverWait(driver, 10).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+        )
+        
+        # Additional wait for network idle (approximate)
+        time.sleep(1)
+        
+        # Scroll to trigger lazy loading
+        if scroll:
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight / 2);")
+            time.sleep(0.5)
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(0.5)
+        
+        # Get page content
+        content = driver.page_source
+        
+        # Selenium doesn't provide status codes directly
+        # Assume 200 if we successfully loaded the page
+        status_code = 200
+        
+        # Try to detect errors from page title/content
+        title = driver.title.lower()
+        if "404" in title or "not found" in title:
+            status_code = 404
+        elif "403" in title or "forbidden" in title:
+            status_code = 403
+        elif "500" in title or "error" in title:
+            status_code = 500
+            
+        return (content, status_code)
+        
+    finally:
+        driver.quit()
+
+
 def compute_scrape(
     url: str,
     kind: str,
@@ -112,35 +254,39 @@ def compute_scrape(
     scroll: bool = True,
 ) -> Path:
     """
-    Scrape URL with playwright, cache to data/scraped/<hash>.html.zst
+    Scrape URL and cache to data/scraped/<hash>.html.zst
+    
+    Backend selection via USE_SELENIUM constant:
+    - Selenium: Thread-safe, slower, realistic browser (USE_SELENIUM=True)
+    - Playwright: Faster, needs workers=1 due to greenlets (USE_SELENIUM=False)
 
     Caches results in SQLite database and file system. Subsequent calls with
     same URL will return cached path without re-scraping.
 
     Args:
         url: URL to scrape
-        kind: Kind/context of scrape (e.g., "incident", "report")
+        kind: Kind/context of scrape (e.g., "collect", "classify")
         headless: Run browser in headless mode
-        wait_for: Playwright wait condition ("networkidle", "load", "domcontentloaded")
+        wait_for: Wait condition for Playwright ("networkidle", "load", "domcontentloaded")
         scroll: Scroll page to trigger lazy loading
 
     Returns:
         Path to cached .html.zst file
 
     Raises:
-        RuntimeError: If scraping fails after retries
+        RuntimeError: If scraping fails
     """
     # Compute hash and get path
     url_hash = _compute_url_hash(url)
     scrape_path = get_scrape_path(url)
 
     # Check database cache
-    db = get_data_db()
-    cursor = db.execute(
-        "SELECT status_code, error FROM scrape WHERE url = ?",
-        (url,),
-    )
-    row = cursor.fetchone()
+    with data_db_locked() as db:
+        cursor = db.execute(
+            "SELECT status_code, error FROM scrape WHERE url = ?",
+            (url,),
+        )
+        row = cursor.fetchone()
 
     if row is not None:
         status_code = row["status_code"]
@@ -172,7 +318,8 @@ def compute_scrape(
             return scrape_path
 
     # Need to scrape
-    logger.info(f"Scraping {url} (kind={kind})")
+    backend = "selenium" if USE_SELENIUM else "playwright"
+    logger.info(f"Scraping {url} (kind={kind}, backend={backend})")
     
     import json
     import time
@@ -181,35 +328,13 @@ def compute_scrape(
     scrape_start = time.time()
     
     try:
-        # Lock around Playwright to prevent thread-safety issues
-        # Playwright sync API is not fully thread-safe when creating browsers concurrently
-        with _playwright_lock:
-            with sync_playwright() as p:
-                browser = p.chromium.launch(headless=headless)
-                context = get_browser_context(browser)
-                page = context.new_page()
-
-                # Navigate to URL
-                response = page.goto(url, wait_until=wait_for, timeout=60000)
-                status_code = response.status if response else 0
-
-                # Scroll to trigger lazy loading
-                if scroll:
-                    page.evaluate(
-                        """
-                        () => {
-                            window.scrollTo(0, document.body.scrollHeight / 2);
-                        }
-                        """
-                    )
-                    page.wait_for_timeout(500)
-                    page.evaluate("() => { window.scrollTo(0, document.body.scrollHeight); }")
-                    page.wait_for_timeout(500)
-
-                # Get page content
-                content = page.content()
-
-                browser.close()
+        if USE_SELENIUM:
+            # Use Selenium (thread-safe)
+            content, status_code = scrape_selenium(url, headless=headless, scroll=scroll)
+        else:
+            # Use Playwright (needs lock)
+            with _playwright_lock:
+                content, status_code = scrape_playwright(url, headless=headless, wait_for=wait_for, scroll=scroll)
 
         scrape_duration = time.time() - scrape_start
 
@@ -232,8 +357,8 @@ def compute_scrape(
             with open_scraped(url, "wt", encoding="utf-8") as f:
                 f.write(content)
             
-            # Save stripped HTML for debugging (uncompressed)
-            if stripped_html:
+            # Save stripped HTML for debugging (uncompressed) - optional
+            if SAVE_STRIPPED_HTML and stripped_html:
                 stripped_path = SCRAPED_PATH / f"{url_hash}-stripped.html"
                 with open(stripped_path, "w", encoding="utf-8") as f:
                     f.write(stripped_html)
@@ -252,18 +377,22 @@ def compute_scrape(
 
             # Update database in transaction
             timestamp = datetime.now(timezone.utc).isoformat()
-            db.execute("BEGIN TRANSACTION")
-            db.execute(
-                """
-                INSERT OR REPLACE INTO scrape 
-                (url, url_hash, kind, timestamp, status_code, error, data)
-                VALUES (?, ?, ?, ?, ?, NULL, ?)
-                """,
-                (url, url_hash, kind, timestamp, status_code, data_json),
-            )
-            db.commit()
+            with data_db_locked() as db:
+                db.execute("BEGIN TRANSACTION")
+                try:
+                    db.execute(
+                        """
+                        INSERT OR REPLACE INTO scrape 
+                        (url, url_hash, kind, timestamp, status_code, error, data)
+                        VALUES (?, ?, ?, ?, ?, NULL, ?)
+                        """,
+                        (url, url_hash, kind, timestamp, status_code, data_json),
+                    )
+                    db.commit()
+                except Exception:
+                    db.rollback()
+                    raise
         except Exception as e:
-            db.rollback()
             # Clean up file if DB update failed
             if scrape_path.exists():
                 scrape_path.unlink()
@@ -286,15 +415,15 @@ def compute_scrape(
 
         # Cache error in database
         timestamp = datetime.now(timezone.utc).isoformat()
-        db.execute(
-            """
-            INSERT OR REPLACE INTO scrape 
-            (url, url_hash, kind, timestamp, status_code, error)
-            VALUES (?, ?, ?, ?, NULL, ?)
-            """,
-            (url, url_hash, kind, timestamp, error_msg),
-        )
-        db.commit()
+        with data_db_locked() as db:
+            db.execute(
+                """
+                INSERT OR REPLACE INTO scrape 
+                (url, url_hash, kind, timestamp, status_code, error)
+                VALUES (?, ?, ?, ?, NULL, ?)
+                """,
+                (url, url_hash, kind, timestamp, error_msg),
+            )
 
         # Update stats
         try:

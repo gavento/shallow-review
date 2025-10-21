@@ -63,12 +63,13 @@ Via `RunClassifyConfig` in `common.py`:
 ## Classification Output
 
 Stored as columns:
-- `classify_relevancy`: 0.0-1.0 score (AI safety/alignment relevance)
-- `kind`: Content type - independent of relevancy (see ClassifyKind enum in DATA.md)
-  - Example: `paper_page` can be relevant (0.9) or irrelevant (0.1)
-  - All content gets both a kind and a relevancy score
+- `ai_safety_relevance`: 0.0-1.0 score (how relevant is the topic to AI safety/alignment)
+- `shallow_review_inclusion`: 0.0-1.0 score (how suitable for Shallow Review - technical contribution level)
+- `kind`: Content type - independent of relevancy/inclusion (see ClassifyKind enum in DATA.md)
+  - Example: `paper_page` can have high safety relevance (0.9) but low inclusion (0.1) if not technical
+  - All content gets a kind and both scores
   - For `social_media` kind: stricter criteria apply (see DATA.md) - only announcements and major events etc.
-- `category`: One leaf category ID from taxonomy (see taxonomy section below)
+- `category`: 1-3 leaf category IDs from taxonomy (see taxonomy section below)
 
 LLM extracts detailed metadata (stored in data JSON):
 - `tokens_full`: Full HTML token count
@@ -169,7 +170,9 @@ Tracked per run:
 - Candidates: new, cached, errors (by type)
 - Tokens: HTML size (full vs stripped, mean, std, min, max)
 - Tokens: LLM usage (cache_read, cache_write, uncached, cost)
-- Relevancy distribution: How many at each classify_relevancy score level
+- AI safety relevance distribution: How many at each ai_safety_relevance score level
+- Shallow review inclusion distribution: How many at each shallow_review_inclusion score level
+- Confidence distribution: How many at each confidence score level
 - Kind distribution: Count by content type
 
 ## Implementation Status

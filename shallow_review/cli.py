@@ -32,7 +32,7 @@ def info() -> None:
     """Show configuration, paths, and database statistics."""
     from rich.table import Table
     from .common import DATA_PATH, PROMPTS_PATH, ROOT_PATH
-    from .data_db import get_data_db
+    from .data_db import data_db_locked
 
     console.print("[bold]Shallow Review Configuration[/bold]\n")
     console.print(f"Version: {__version__}")
@@ -44,67 +44,72 @@ def info() -> None:
 
     # Database statistics
     console.print("[bold]Database Statistics[/bold]\n")
-    db = get_data_db()
+    
+    with data_db_locked() as db:
+        # Scrape table stats
+        scrape_table = Table(title="Scrape Table", show_header=True, header_style="bold cyan")
+        scrape_table.add_column("Total", justify="right")
+        scrape_table.add_column("Success (2xx)", justify="right")
+        scrape_table.add_column("Errors", justify="right")
 
-    # Scrape table stats
-    scrape_table = Table(title="Scrape Table", show_header=True, header_style="bold cyan")
-    scrape_table.add_column("Total", justify="right")
-    scrape_table.add_column("Success (2xx)", justify="right")
-    scrape_table.add_column("Errors", justify="right")
+        total_scrapes = db.execute("SELECT COUNT(*) as cnt FROM scrape").fetchone()["cnt"]
+        success_scrapes = db.execute("SELECT COUNT(*) as cnt FROM scrape WHERE status_code >= 200 AND status_code < 300").fetchone()["cnt"]
+        error_scrapes = db.execute("SELECT COUNT(*) as cnt FROM scrape WHERE error IS NOT NULL OR status_code >= 400").fetchone()["cnt"]
 
-    total_scrapes = db.execute("SELECT COUNT(*) as cnt FROM scrape").fetchone()["cnt"]
-    success_scrapes = db.execute("SELECT COUNT(*) as cnt FROM scrape WHERE status_code >= 200 AND status_code < 300").fetchone()["cnt"]
-    error_scrapes = db.execute("SELECT COUNT(*) as cnt FROM scrape WHERE error IS NOT NULL OR status_code >= 400").fetchone()["cnt"]
-
-    scrape_table.add_row(str(total_scrapes), str(success_scrapes), str(error_scrapes))
+        scrape_table.add_row(str(total_scrapes), str(success_scrapes), str(error_scrapes))
+    
     console.print(scrape_table)
     console.print()
 
     # Collect table stats
-    collect_table = Table(title="Collect Table", show_header=True, header_style="bold cyan")
-    collect_table.add_column("Total", justify="right")
-    collect_table.add_column("New", justify="right")
-    collect_table.add_column("Done", justify="right")
-    collect_table.add_column("Scrape Errors", justify="right")
-    collect_table.add_column("Extract Errors", justify="right")
+    with data_db_locked() as db:
+        collect_table = Table(title="Collect Table", show_header=True, header_style="bold cyan")
+        collect_table.add_column("Total", justify="right")
+        collect_table.add_column("New", justify="right")
+        collect_table.add_column("Done", justify="right")
+        collect_table.add_column("Scrape Errors", justify="right")
+        collect_table.add_column("Extract Errors", justify="right")
 
-    total_collect = db.execute("SELECT COUNT(*) as cnt FROM collect").fetchone()["cnt"]
-    new_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'new'").fetchone()["cnt"]
-    done_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'done'").fetchone()["cnt"]
-    scrape_err_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'scrape_error'").fetchone()["cnt"]
-    extract_err_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'extract_error'").fetchone()["cnt"]
+        total_collect = db.execute("SELECT COUNT(*) as cnt FROM collect").fetchone()["cnt"]
+        new_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'new'").fetchone()["cnt"]
+        done_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'done'").fetchone()["cnt"]
+        scrape_err_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'scrape_error'").fetchone()["cnt"]
+        extract_err_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'extract_error'").fetchone()["cnt"]
 
-    collect_table.add_row(
-        str(total_collect),
-        str(new_collect),
-        str(done_collect),
-        str(scrape_err_collect),
-        str(extract_err_collect)
-    )
+        collect_table.add_row(
+            str(total_collect),
+            str(new_collect),
+            str(done_collect),
+            str(scrape_err_collect),
+            str(extract_err_collect)
+        )
+    
     console.print(collect_table)
     console.print()
 
     # Classify table stats
-    classify_table = Table(title="Classify Table", show_header=True, header_style="bold cyan")
-    classify_table.add_column("Total", justify="right")
-    classify_table.add_column("New", justify="right")
-    classify_table.add_column("Done", justify="right")
-    classify_table.add_column("Scrape Errors", justify="right")
-    classify_table.add_column("Classify Errors", justify="right")
+    with data_db_locked() as db:
+        classify_table = Table(title="Classify Table", show_header=True, header_style="bold cyan")
+        classify_table.add_column("Total", justify="right")
+        classify_table.add_column("New", justify="right")
+        classify_table.add_column("Done", justify="right")
+        classify_table.add_column("Scrape Errors", justify="right")
+        classify_table.add_column("Classify Errors", justify="right")
 
-    total_classify = db.execute("SELECT COUNT(*) as cnt FROM classify").fetchone()["cnt"]
-    new_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'new'").fetchone()["cnt"]
-    done_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'done'").fetchone()["cnt"]
-    scrape_err_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'scrape_error'").fetchone()["cnt"]
-    classify_err_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'classify_error'").fetchone()["cnt"]
+        total_classify = db.execute("SELECT COUNT(*) as cnt FROM classify").fetchone()["cnt"]
+        new_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'new'").fetchone()["cnt"]
+        done_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'done'").fetchone()["cnt"]
+        scrape_err_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'scrape_error'").fetchone()["cnt"]
+        classify_err_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'classify_error'").fetchone()["cnt"]
 
-    classify_table.add_row(
-        str(total_classify),
-        str(new_classify),
-        str(done_classify),
-        str(scrape_err_classify),
-        str(classify_err_classify)
-    )
+        classify_table.add_row(
+            str(total_classify),
+            str(new_classify),
+            str(done_classify),
+            str(scrape_err_classify),
+            str(classify_err_classify)
+        )
+    
     console.print(classify_table)
 
 
@@ -113,20 +118,16 @@ def add(
     file: str = typer.Argument(..., help="File with URLs (one per line, or CSV)"),
     phase: str = typer.Option("auto", help="Phase: auto|collect|classify (auto=detect automatically)"),
     source: Optional[str] = typer.Option(None, help="Source label for tracking"),
-    workers: int = typer.Option(1, help="Number of worker threads (WARNING: >1 may cause Playwright issues)"),
+    workers: int = typer.Option(1, help="Number of worker threads (safe with Selenium, use 1 with Playwright)"),
     model: str = typer.Option("anthropic/claude-haiku-4-5", help="Model for auto-detection"),
 ) -> None:
-    """Add URLs to collect or classify phases (auto-detects by default).
-    
-    Note: Auto-detection involves scraping, which uses Playwright. Due to Playwright's 
-    greenlet-based implementation, workers > 1 may cause errors. Use workers=1 (default) 
-    for stability.
-    """
+    """Add URLs to collect or classify phases (auto-detects by default)."""
     from pathlib import Path
 
     from .add_items import add_item_auto, check_url_exists, normalize_url
     from .classify import add_classify_candidate
     from .collect import add_collect_source
+    from .scrape import USE_SELENIUM
     from .stats import stats_context
 
     # Validate phase
@@ -170,10 +171,11 @@ def add(
         console.print("[yellow]No valid URLs found in file[/yellow]")
         return
 
+    backend = "selenium" if USE_SELENIUM else "playwright"
     if phase == "auto":
-        console.print(f"Adding {len(urls)} URLs with [bold]auto-detection[/bold] (model: {model}, workers: {workers})...")
-        if workers > 1:
-            console.print("[yellow]⚠ WARNING: workers > 1 may cause Playwright errors. Use workers=1 for stability.[/yellow]")
+        console.print(f"Adding {len(urls)} URLs with [bold]auto-detection[/bold] (model: {model}, workers: {workers}, backend: {backend})...")
+        if workers > 1 and not USE_SELENIUM:
+            console.print("[yellow]⚠ WARNING: Playwright backend with workers > 1 may cause errors. Use workers=1 or switch to Selenium.[/yellow]")
     else:
         console.print(f"Adding {len(urls)} URLs to [bold]{phase}[/bold] phase...")
     console.print()
@@ -197,7 +199,8 @@ def add(
                 
             elif phase == "collect":
                 normalized_url = normalize_url(url)
-                url_exists, existing_phase = check_url_exists(normalized_url)
+                # Only check collect table when explicitly adding to collect
+                url_exists, existing_phase = check_url_exists(normalized_url, phase="collect")
                 if url_exists:
                     return (existing_phase or "collect", normalized_url, "exists", False)
                 else:
@@ -206,7 +209,8 @@ def add(
                     
             else:  # classify
                 normalized_url = normalize_url(url)
-                url_exists, existing_phase = check_url_exists(normalized_url)
+                # Only check classify table when explicitly adding to classify
+                url_exists, existing_phase = check_url_exists(normalized_url, phase="classify")
                 if url_exists:
                     return (existing_phase or "classify", normalized_url, "exists", False)
                 else:
@@ -283,23 +287,19 @@ def add(
 @app.command()
 def collect(
     limit: int = typer.Option(100, help="Maximum sources to process"),
-    workers: int = typer.Option(1, help="Number of worker threads (>1 may cause Playwright issues, use with caution)"),
+    workers: int = typer.Option(1, help="Number of worker threads (safe with Selenium, use 1 with Playwright)"),
     relevancy: float = typer.Option(0.3, help="Minimum relevancy threshold for links"),
     model: str = typer.Option("anthropic/claude-sonnet-4-5", help="LLM model to use"),
     max_tokens: int = typer.Option(100000, help="Max HTML tokens before error"),
     retry_errors: bool = typer.Option(False, "--retry-errors", help="Retry sources with extract_error status"),
 ) -> None:
-    """Collect links from source pages.
-    
-    Note: Uses Playwright for scraping. workers > 1 may cause errors due to Playwright's 
-    greenlet-based implementation. Default workers=1 is recommended. With scrape caching, 
-    this is usually fast enough.
-    """
+    """Collect links from source pages."""
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
     from .collect import compute_collect
     from .common import CollectStatus, RunCollectConfig
-    from .data_db import get_data_db
+    from .data_db import data_db_locked
+    from .scrape import USE_SELENIUM
     from .stats import stats_context
 
     # Create config
@@ -311,41 +311,41 @@ def collect(
         max_html_tokens=max_tokens,
     )
 
+    backend = "selenium" if USE_SELENIUM else "playwright"
     console.print("[bold]Starting collection phase...[/bold]\n")
-    console.print(f"Config: limit={limit}, workers={workers}, relevancy≥{relevancy}, model={model}")
-    if workers > 1:
-        console.print("[yellow]⚠ WARNING: workers > 1 may cause Playwright errors. Use workers=1 for stability.[/yellow]")
+    console.print(f"Config: limit={limit}, workers={workers}, relevancy≥{relevancy}, model={model}, backend={backend}")
+    if workers > 1 and not USE_SELENIUM:
+        console.print("[yellow]⚠ WARNING: Playwright backend with workers > 1 may cause errors. Switch USE_SELENIUM=True in scrape.py.[/yellow]")
     if retry_errors:
         console.print("[yellow]Retry mode: Will retry sources with extract_error status[/yellow]")
     console.print()
 
     # Get sources to process
-    db = get_data_db()
-    
-    if retry_errors:
-        # Include both new and extract_error sources
-        cursor = db.execute(
-            """
-            SELECT url FROM collect 
-            WHERE status IN (?, ?) 
-            ORDER BY added_at 
-            LIMIT ?
-            """,
-            (CollectStatus.NEW.value, CollectStatus.EXTRACT_ERROR.value, limit),
-        )
-    else:
-        # Only new sources
-        cursor = db.execute(
-            """
-            SELECT url FROM collect 
-            WHERE status = ? 
-            ORDER BY added_at 
-            LIMIT ?
-            """,
-            (CollectStatus.NEW.value, limit),
-        )
-    
-    sources = [row["url"] for row in cursor.fetchall()]
+    with data_db_locked() as db:
+        if retry_errors:
+            # Include both new and extract_error sources
+            cursor = db.execute(
+                """
+                SELECT url FROM collect 
+                WHERE status IN (?, ?) 
+                ORDER BY added_at 
+                LIMIT ?
+                """,
+                (CollectStatus.NEW.value, CollectStatus.EXTRACT_ERROR.value, limit),
+            )
+        else:
+            # Only new sources
+            cursor = db.execute(
+                """
+                SELECT url FROM collect 
+                WHERE status = ? 
+                ORDER BY added_at 
+                LIMIT ?
+                """,
+                (CollectStatus.NEW.value, limit),
+            )
+        
+        sources = [row["url"] for row in cursor.fetchall()]
 
     if not sources:
         console.print("[yellow]No sources to process[/yellow]")
@@ -393,23 +393,19 @@ def collect(
 @app.command()
 def classify(
     limit: int = typer.Option(100, help="Maximum candidates to process"),
-    workers: int = typer.Option(1, help="Number of worker threads (>1 may cause Playwright issues, use with caution)"),
+    workers: int = typer.Option(1, help="Number of worker threads (safe with Selenium, use 1 with Playwright)"),
     min_relevancy: float = typer.Option(0.0, help="Minimum collect_relevancy to process (filter)"),
     model: str = typer.Option("anthropic/claude-sonnet-4-5", help="LLM model to use"),
     max_tokens: int = typer.Option(100000, help="Max HTML tokens before error"),
     retry_errors: bool = typer.Option(False, "--retry-errors", help="Retry candidates with classify_error status"),
 ) -> None:
-    """Classify AI safety/alignment content.
-    
-    Note: Uses Playwright for scraping. workers > 1 may cause errors due to Playwright's 
-    greenlet-based implementation. Default workers=1 is recommended. With scrape caching,  
-    this is usually fast enough.
-    """
+    """Classify AI safety/alignment content."""
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
     from .classify import compute_classify
     from .common import ClassifyStatus, RunClassifyConfig
-    from .data_db import get_data_db
+    from .data_db import data_db_locked
+    from .scrape import USE_SELENIUM
     from .stats import stats_context
 
     # Create config
@@ -421,10 +417,11 @@ def classify(
         max_html_tokens=max_tokens,
     )
 
+    backend = "selenium" if USE_SELENIUM else "playwright"
     console.print("[bold]Starting classification phase...[/bold]\n")
-    console.print(f"Config: limit={limit}, workers={workers}, model={model}")
-    if workers > 1:
-        console.print("[yellow]⚠ WARNING: workers > 1 may cause Playwright errors. Use workers=1 for stability.[/yellow]")
+    console.print(f"Config: limit={limit}, workers={workers}, model={model}, backend={backend}")
+    if workers > 1 and not USE_SELENIUM:
+        console.print("[yellow]⚠ WARNING: Playwright backend with workers > 1 may cause errors. Switch USE_SELENIUM=True in scrape.py.[/yellow]")
     if retry_errors:
         console.print("[yellow]Retry mode: Will retry candidates with classify_error status[/yellow]")
     if min_relevancy > 0.0:
@@ -432,34 +429,33 @@ def classify(
     console.print()
 
     # Get candidates to process
-    db = get_data_db()
-    
-    if retry_errors:
-        # Include both new and classify_error candidates
-        cursor = db.execute(
-            """
-            SELECT url FROM classify 
-            WHERE status IN (?, ?) 
-            AND (collect_relevancy >= ? OR collect_relevancy IS NULL)
-            ORDER BY added_at 
-            LIMIT ?
-            """,
-            (ClassifyStatus.NEW.value, ClassifyStatus.CLASSIFY_ERROR.value, min_relevancy, limit),
-        )
-    else:
-        # Only new candidates
-        cursor = db.execute(
-            """
-            SELECT url FROM classify 
-            WHERE status = ? 
-            AND (collect_relevancy >= ? OR collect_relevancy IS NULL)
-            ORDER BY added_at 
-            LIMIT ?
-            """,
-            (ClassifyStatus.NEW.value, min_relevancy, limit),
-        )
-    
-    candidates = [row["url"] for row in cursor.fetchall()]
+    with data_db_locked() as db:
+        if retry_errors:
+            # Include both new and classify_error candidates
+            cursor = db.execute(
+                """
+                SELECT url FROM classify 
+                WHERE status IN (?, ?) 
+                AND (collect_relevancy >= ? OR collect_relevancy IS NULL)
+                ORDER BY added_at 
+                LIMIT ?
+                """,
+                (ClassifyStatus.NEW.value, ClassifyStatus.CLASSIFY_ERROR.value, min_relevancy, limit),
+            )
+        else:
+            # Only new candidates
+            cursor = db.execute(
+                """
+                SELECT url FROM classify 
+                WHERE status = ? 
+                AND (collect_relevancy >= ? OR collect_relevancy IS NULL)
+                ORDER BY added_at 
+                LIMIT ?
+                """,
+                (ClassifyStatus.NEW.value, min_relevancy, limit),
+            )
+        
+        candidates = [row["url"] for row in cursor.fetchall()]
 
     if not candidates:
         console.print("[yellow]No candidates to process[/yellow]")
@@ -494,7 +490,8 @@ def classify(
                     top_cat = result.categories[0].id if result.categories else "none"
                     console.print(
                         f"[{processed}/{len(candidates)}] [green]✓[/green] {url[:60]}: "
-                        f"rel={result.classify_relevancy:.2f}, "
+                        f"safety={result.ai_safety_relevance:.2f}, "
+                        f"incl={result.shallow_review_inclusion:.2f}, "
                         f"cat={top_cat}, "
                         f"conf={result.confidence:.2f}"
                     )

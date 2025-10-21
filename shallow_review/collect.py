@@ -14,7 +14,7 @@ from .common import (
     RunCollectConfig,
     SourceKind,
 )
-from .data_db import get_data_db
+from .data_db import data_db_locked
 from .llm import get_completion
 from .scrape import compute_scrape, open_scraped
 from .stats import get_stats
@@ -56,18 +56,17 @@ def add_collect_source(url: str, source: str | None = None) -> bool:
     Returns:
         True if added (new), False if already exists
     """
-    db = get_data_db()
     timestamp = datetime.now(timezone.utc).isoformat()
 
     try:
-        db.execute(
-            """
-            INSERT INTO collect (url, status, source, added_at)
-            VALUES (?, ?, ?, ?)
-            """,
-            (url, CollectStatus.NEW.value, source, timestamp),
-        )
-        db.commit()
+        with data_db_locked() as db:
+            db.execute(
+                """
+                INSERT INTO collect (url, status, source, added_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (url, CollectStatus.NEW.value, source, timestamp),
+            )
 
         # Update stats
         try:
@@ -119,33 +118,32 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
     import time
     
     collect_start = time.time()
-    db = get_data_db()
 
     # Check if already processed
-    cursor = db.execute("SELECT status FROM collect WHERE url = ?", (url,))
-    row = cursor.fetchone()
+    with data_db_locked() as db:
+        cursor = db.execute("SELECT status FROM collect WHERE url = ?", (url,))
+        row = cursor.fetchone()
 
-    if row and row["status"] != CollectStatus.NEW.value:
-        # Allow retrying extract_error with force_recompute
-        if force_recompute and row["status"] == CollectStatus.EXTRACT_ERROR.value:
-            logger.info(f"Retrying extraction for {url} (was extract_error)")
-            # Reset status to new so it can be reprocessed
-            db.execute(
-                "UPDATE collect SET status = ? WHERE url = ?",
-                (CollectStatus.NEW.value, url),
-            )
-            db.commit()
-        elif row["status"] == CollectStatus.DONE.value:
-            logger.warning(f"Source {url} already processed successfully")
-            # Return cached result
-            cursor = db.execute("SELECT data FROM collect WHERE url = ?", (url,))
-            data_row = cursor.fetchone()
-            if data_row and data_row["data"]:
-                data = json.loads(data_row["data"])
-                return CollectionResult(**data)
-            raise RuntimeError(f"Source {url} marked done but no data found")
-        else:
-            raise RuntimeError(f"Source {url} in status {row['status']}, use --retry-errors for extract_error")
+        if row and row["status"] != CollectStatus.NEW.value:
+            # Allow retrying extract_error with force_recompute
+            if force_recompute and row["status"] == CollectStatus.EXTRACT_ERROR.value:
+                logger.info(f"Retrying extraction for {url} (was extract_error)")
+                # Reset status to new so it can be reprocessed
+                db.execute(
+                    "UPDATE collect SET status = ? WHERE url = ?",
+                    (CollectStatus.NEW.value, url),
+                )
+            elif row["status"] == CollectStatus.DONE.value:
+                logger.warning(f"Source {url} already processed successfully")
+                # Return cached result
+                cursor = db.execute("SELECT data FROM collect WHERE url = ?", (url,))
+                data_row = cursor.fetchone()
+                if data_row and data_row["data"]:
+                    data = json.loads(data_row["data"])
+                    return CollectionResult(**data)
+                raise RuntimeError(f"Source {url} marked done but no data found")
+            else:
+                raise RuntimeError(f"Source {url} in status {row['status']}, use --retry-errors for extract_error")
 
     timestamp = datetime.now(timezone.utc).isoformat()
 
@@ -155,15 +153,15 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
     except Exception as e:
         error_msg = format_error(e, levels=2)
         logger.error(f"Failed to scrape {url}: {error_msg}")
-        db.execute(
-            """
-            UPDATE collect
-            SET status = ?, processed_at = ?, error = ?
-            WHERE url = ?
-            """,
-            (CollectStatus.SCRAPE_ERROR.value, timestamp, error_msg, url),
-        )
-        db.commit()
+        with data_db_locked() as db:
+            db.execute(
+                """
+                UPDATE collect
+                SET status = ?, processed_at = ?, error = ?
+                WHERE url = ?
+                """,
+                (CollectStatus.SCRAPE_ERROR.value, timestamp, error_msg, url),
+            )
 
         # Update stats
         try:
@@ -185,15 +183,15 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
     except Exception as e:
         error_msg = format_error(e, levels=2)
         logger.error(f"Failed to preprocess HTML for {url}: {error_msg}")
-        db.execute(
-            """
-            UPDATE collect
-            SET status = ?, processed_at = ?, error = ?
-            WHERE url = ?
-            """,
-            (CollectStatus.EXTRACT_ERROR.value, timestamp, error_msg, url),
-        )
-        db.commit()
+        with data_db_locked() as db:
+            db.execute(
+                """
+                UPDATE collect
+                SET status = ?, processed_at = ?, error = ?
+                WHERE url = ?
+                """,
+                (CollectStatus.EXTRACT_ERROR.value, timestamp, error_msg, url),
+            )
 
         # Update stats
         try:
@@ -213,20 +211,20 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
         )
         logger.error(f"{error_msg} for {url}")
 
-        db.execute(
-            """
-            UPDATE collect
-            SET status = ?, processed_at = ?, error = ?
-            WHERE url = ?
-            """,
-            (
-                CollectStatus.EXTRACT_ERROR.value,
-                timestamp,
-                error_msg,
-                url,
-            ),
-        )
-        db.commit()
+        with data_db_locked() as db:
+            db.execute(
+                """
+                UPDATE collect
+                SET status = ?, processed_at = ?, error = ?
+                WHERE url = ?
+                """,
+                (
+                    CollectStatus.EXTRACT_ERROR.value,
+                    timestamp,
+                    error_msg,
+                    url,
+                ),
+            )
 
         # Update stats
         try:
@@ -260,20 +258,20 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
     except Exception as e:
         error_msg = format_error(e, levels=2)
         logger.error(f"Failed LLM extraction for {url}: {error_msg}")
-        db.execute(
-            """
-            UPDATE collect
-            SET status = ?, processed_at = ?, error = ?
-            WHERE url = ?
-            """,
-            (
-                CollectStatus.EXTRACT_ERROR.value,
-                timestamp,
-                error_msg,
-                url,
-            ),
-        )
-        db.commit()
+        with data_db_locked() as db:
+            db.execute(
+                """
+                UPDATE collect
+                SET status = ?, processed_at = ?, error = ?
+                WHERE url = ?
+                """,
+                (
+                    CollectStatus.EXTRACT_ERROR.value,
+                    timestamp,
+                    error_msg,
+                    url,
+                ),
+            )
 
         # Update stats
         try:
@@ -294,8 +292,10 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
     from .classify import add_classify_candidate
 
     # Get the source from collect table to preserve it
-    cursor = db.execute("SELECT source FROM collect WHERE url = ?", (url,))
-    source_row = cursor.fetchone()
+    with data_db_locked() as db:
+        cursor = db.execute("SELECT source FROM collect WHERE url = ?", (url,))
+        source_row = cursor.fetchone()
+    
     original_source = source_row["source"] if source_row else None
     
     # Build collected source label
@@ -321,20 +321,20 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
     data_dict["collect_duration"] = round(collect_duration, 2)
     data_json = json.dumps(data_dict)
 
-    db.execute(
-        """
-        UPDATE collect
-        SET status = ?, processed_at = ?, data = ?
-        WHERE url = ?
-        """,
-        (
-            CollectStatus.DONE.value,
-            timestamp,
-            data_json,
-            url,
-        ),
-    )
-    db.commit()
+    with data_db_locked() as db:
+        db.execute(
+            """
+            UPDATE collect
+            SET status = ?, processed_at = ?, data = ?
+            WHERE url = ?
+            """,
+            (
+                CollectStatus.DONE.value,
+                timestamp,
+                data_json,
+                url,
+            ),
+        )
 
     # Update stats
     try:

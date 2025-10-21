@@ -146,26 +146,93 @@ classify_content:
     - For papers with both theory and experiments, choose based on primary contribution
     - For multi-faceted work, choose the most novel aspect
     
-    ## 11. classify_relevancy (float, required)
+    ## 11. ai_safety_relevance (float, required)
     
-    How relevant is this to AI safety/alignment? Score from 0.0 to 1.0.
+    How relevant is this content to AI safety/alignment as a topic area? Score from 0.0 to 1.0.
     
     **Scale:**
-    - `0.9-1.0`: Core AI safety research - directly addresses alignment/safety problems
-    - `0.7-0.9`: Clearly relevant - safety-focused work on adjacent problems
-    - `0.5-0.7`: Moderately relevant - could inform safety work, has safety implications
-    - `0.3-0.5`: Tangentially relevant - general AI research with potential safety connections
-    - `0.1-0.3`: Barely relevant - mainstream AI/ML with weak safety connection
-    - `0.0-0.1`: Not relevant - general AI capabilities, unrelated work
+    - `0.9-1.0`: Core AI safety/alignment topic - directly about safety problems, alignment challenges, or X-risk from advanced AI
+    - `0.7-0.9`: Clearly AI safety-relevant - discusses safety-focused work, alignment research, or safety implications
+    - `0.5-0.7`: Moderately relevant - mentions safety aspects, could inform safety work, or discusses relevant capabilities
+    - `0.3-0.5`: Tangentially relevant - general AI research with some safety connection or implications
+    - `0.1-0.3`: Barely relevant - mainstream AI/ML with weak or speculative safety connection
+    - `0.0-0.1`: Not relevant - no connection to AI safety/alignment
     
     **Examples:**
-    - `0.95` - "Sleeper Agents: Training Deceptive LLMs That Persist Through Safety Training"
-    - `0.85` - "Sparse Autoencoders for Interpretability" (interpretability for safety)
-    - `0.60` - "Scaling Laws for Neural Language Models" (informs safety through understanding)
-    - `0.30` - "GPT-4 Technical Report" (capabilities research, some safety discussion)
-    - `0.10` - "LLMs for Customer Service" (pure application)
+    - `0.95` - Paper on deception in LLMs, interpretability methods, or alignment techniques
+    - `0.85` - Blog post discussing AI safety implications of a new capability
+    - `0.60` - Scaling laws paper (informs understanding of AI progress)
+    - `0.35` - General ML paper with brief safety discussion
+    - `0.05` - Pure capabilities work with no safety discussion
     
-    ## 12. categories (list of objects, required)
+    ## 12. shallow_review_inclusion (float, required)
+    
+    How suitable is this for inclusion in Shallow Review 2025? Measures whether content presents **technical research or technical agendas**, not just commentary. Score from 0.0 to 1.0.
+    
+    **Core inclusion criteria:**
+    - ✅ Original technical research (empirical or theoretical)
+    - ✅ Technical research agendas, roadmaps, or frameworks
+    - ✅ Novel technical tools, benchmarks, or datasets for safety research
+    - ✅ Technical critiques with substantive analysis
+    - ❌ News/commentary about research (unless unclear if we have the original)
+    - ❌ Opinion pieces or think pieces without technical contribution
+    - ❌ Summaries or reviews without novel insights
+    - ❌ Mainstream AI work tangentially mentioning safety
+    
+    **Scale:**
+    - `0.9-1.0`: Crucial - Core technical AI safety research or major agenda announcement. Must include.
+      - **Form**: Full technical papers, detailed technical blog posts, comprehensive agenda documents
+      - New alignment techniques, interpretability methods, or safety frameworks
+      - Major research agendas or paradigm-shifting proposals
+      - Breakthrough empirical results on safety-relevant problems
+      
+    - `0.7-0.9`: Important - Significant technical contribution, highly relevant but not central
+      - **Form**: Should ideally be technical papers/posts, extended detailed announcements
+      - Solid empirical work on safety-relevant topics
+      - Technical extensions or applications of existing methods
+      - Well-developed theoretical frameworks
+      - Technical critiques with substantive analysis
+      - Note: Pieces merely *about* research (not the research itself) typically score <0.75
+      
+    - `0.5-0.7`: Optional but valuable - Technical work worth including in broader review
+      - **Form**: Can be shorter technical posts, preliminary reports, tool releases
+      - Incremental technical improvements
+      - Exploratory empirical studies
+      - Position papers with technical substance
+      - Technical surveys synthesizing a research area
+      - Benchmark/dataset releases
+      - Announcements *about* technical research (when original unclear)
+      
+    - `0.3-0.5`: Marginal - Weak technical contribution or borderline relevance
+      - Preliminary results or toy problems
+      - Technical work on peripherally relevant topics
+      - News/summaries about research when original source unclear (gray zone)
+      - Light technical content mixed with commentary
+      
+    - `0.1-0.3`: Low value - Minimal technical contribution
+      - Commentary or opinion pieces with minimal technical depth
+      - Summaries of others' work without novel analysis
+      - News articles about AI safety without original research
+      
+    - `0.0-0.1`: Not suitable - No technical contribution
+      - Pure news/journalism
+      - Non-technical commentary or think pieces
+      - Social media discussion threads
+      - General AI capabilities work without safety focus
+    
+    **Examples:**
+    - `0.95` - "Sleeper Agents" paper (major empirical safety result)
+    - `0.90` - Anthropic's scaling monosemanticity post (significant technical work)
+    - `0.85` - Technical blog post introducing a new research agenda
+    - `0.75` - Solid interpretability paper extending SAE methods
+    - `0.65` - New safety evaluation benchmark release
+    - `0.55` - Position paper on alignment with some technical proposals
+    - `0.40` - News article about safety research (original paper unclear)
+    - `0.25` - Commentary on AI safety challenges without technical proposals
+    - `0.10` - Opinion piece discussing AI risks
+    - `0.05` - News coverage of AI developments mentioning safety
+    
+    ## 13. categories (list of objects, required)
     
     Top 1-3 most relevant leaf categories from the taxonomy. Each category is an object with:
     - `id` (string): The category ID (must be a valid leaf category from taxonomy)
@@ -182,16 +249,21 @@ classify_content:
     - `[{"id": "deception_mech_anomaly", "score": 0.85}, {"id": "interp_applied", "score": 0.70}]` (spans two)
     - `[{"id": "evals_autonomy", "score": 0.90}, {"id": "evals_security", "score": 0.60}, {"id": "deception_control_evals", "score": 0.55}]` (autonomous agent security evals)
     
-    ## 13. category_comment (string, required)
+    ## 14. category_comment (string, required)
     
-    1-3 sentences explaining your categorization decisions. Address any ambiguity or multiple possible categories.
+    3-4 sentences explaining your categorization decisions, AI safety relevance score, and inclusion suitability score. Address any ambiguity or multiple possible categories.
+    
+    **Required structure:**
+    - 1 sentence: Why these categories? (Address ambiguity if multiple categories fit)
+    - 1 sentence: Why this AI safety relevance score? (What makes it this relevant/not relevant to safety?)
+    - 1 sentence: Why this inclusion suitability score? (Technical contribution level, form of content)
     
     **Examples:**
-    - `"Primarily sparse autoencoder work (interp_sparse_coding) but also demonstrates application to real models, hence partial fit to interp_applied. Focus on methodology over application."`
-    - `"Clear control evaluation work testing deployment protocols. Could also fit deception_mech_anomaly due to anomaly detection component, but protocol evaluation is primary focus."`
-    - `"Autonomous agent evaluation focused on security capabilities, strongly fits evals_autonomy. Also relevant to evals_security for cybersecurity aspects."`
+    - `"Primarily sparse autoencoder work (interp_sparse_coding) but also demonstrates application to real models, hence partial fit to interp_applied. Relevance 0.95 because interpretability is core to understanding and controlling advanced AI systems. Inclusion 0.90 as this is original technical research presented in detailed blog post with novel empirical results and clear methodology."`
+    - `"Clear control evaluation work testing deployment protocols, fits deception_control_evals. Relevance 0.98 as directly addresses alignment under potential deception, a critical safety challenge. Inclusion 0.95 as comprehensive technical paper with both theoretical framework and empirical validation."`
+    - `"News coverage of interpretability research, categorized by the research discussed (interp_sparse_coding). Relevance 0.80 since it discusses important safety work in interpretability. Inclusion 0.35 as journalism about research rather than the research itself, likely redundant if we have the original."`
     
-    ## 14. confidence (float, required)
+    ## 15. confidence (float, required)
     
     Your confidence in this classification on 0.0-1.0 scale. This is NOT about the work's quality - it's about YOUR certainty in classifying it.
     
@@ -218,14 +290,20 @@ classify_content:
     
     # Classification Strategy
     
+    Follow this order:
+    
     1. **Read the content** to understand what it's about
-    2. **Determine relevancy** to AI safety/alignment (classify_relevancy)
-    3. **Extract metadata** (title, authors, dates, venue, etc.)
-    4. **Identify contribution type** (empirical/theoretical/benchmark/etc.)
-    5. **Find key result** (for empirical work - the main finding)
-    6. **Match to taxonomy** (find 1-3 best fitting leaf categories)
-    7. **Assess confidence** (how certain are you about this classification?)
-    8. **Explain categorization** (category_comment)
+    2. **Extract metadata** (title, authors, author_organizations, date, published_year, venue)
+    3. **Identify kind and contribution type** (what type of content is this?)
+    4. **Write summary** (2-3 sentences on what and why it matters)
+    5. **Find key result** (for empirical work - the main finding, 1-2 sentences)
+    6. **Determine AI safety relevance** (ai_safety_relevance): Is the topic AI safety-related?
+    7. **Determine inclusion suitability** (shallow_review_inclusion): Does it present technical research/agendas?
+    8. **Match to taxonomy** (find 1-3 best fitting leaf categories)
+    9. **Assess confidence** (how certain are you about this classification?)
+    10. **Explain categorization** (category_comment with brief mention of both scores)
+    
+    **Key distinction:** Content can be highly relevant to AI safety (high ai_safety_relevance) but unsuitable for Shallow Review if it's just news/commentary (low shallow_review_inclusion). Both scores matter.
     
     # Taxonomy
     
@@ -242,17 +320,18 @@ classify_content:
       "author_organizations": ["org1", "org2"],
       "date": "YYYY-MM-DD or null",
       "published_year": 2024,
-      "kind": "paper_published|paper_preprint|blog_post|video|podcast|code_tool|dataset_benchmark|agenda_manifesto|news_announcement|social_media|course_educational|other",
       "venue": "string or null",
+      "kind": "paper_published|paper_preprint|blog_post|video|podcast|code_tool|dataset_benchmark|agenda_manifesto|news_announcement|social_media|course_educational|other",
+      "contribution_type": "empirical_results|theoretical_framework|benchmark_dataset|tool_software|critique|survey_review|position_agenda|demo_case_study|other",
       "summary": "2-3 sentence summary of the work and its safety relevance",
       "key_result": "1-2 sentence main finding (null if theoretical/non-empirical)",
-      "contribution_type": "empirical_results|theoretical_framework|benchmark_dataset|tool_software|critique|survey_review|position_agenda|demo_case_study|other",
-      "classify_relevancy": 0.85,
+      "ai_safety_relevance": 0.85,
+      "shallow_review_inclusion": 0.75,
       "categories": [
         {"id": "category_id_1", "score": 0.90},
         {"id": "category_id_2", "score": 0.65}
       ],
-      "category_comment": "1-3 sentences explaining categorization and any ambiguity",
+      "category_comment": "2-4 sentences explaining categorization, relevance score, and inclusion score",
       "confidence": 0.80
     }
     ```
@@ -267,17 +346,18 @@ classify_content:
       "author_organizations": ["Anthropic"],
       "date": "2024-05-21",
       "published_year": 2024,
-      "kind": "blog_post",
       "venue": "Anthropic Research Blog",
+      "kind": "blog_post",
+      "contribution_type": "empirical_results",
       "summary": "Demonstrates sparse autoencoders can decompose Claude 3 Sonnet's activations into 34 million interpretable features. Shows many features correspond to abstract concepts like security vulnerabilities or famous people. Major advance in scaling dictionary learning to production models.",
       "key_result": "Successfully trained SAEs on production Claude 3 Sonnet, finding interpretable features at scale including abstract concepts, multilingual features, and safety-relevant patterns.",
-      "contribution_type": "empirical_results",
-      "classify_relevancy": 0.95,
+      "ai_safety_relevance": 0.95,
+      "shallow_review_inclusion": 0.90,
       "categories": [
         {"id": "interp_sparse_coding", "score": 0.98},
         {"id": "interp_applied", "score": 0.85}
       ],
-      "category_comment": "Primarily sparse autoencoder methodology (interp_sparse_coding) with strong applied component since it analyzes a production frontier model. Clear fit to both categories with SAE work as primary.",
+      "category_comment": "Primarily sparse autoencoder methodology (interp_sparse_coding) with strong applied component since it analyzes a production frontier model. Relevance 0.95 because interpretability of frontier models is core to understanding and controlling advanced AI systems. Inclusion 0.90 as original technical research presented in detailed blog post with novel empirical results, clear methodology, and frontier model application.",
       "confidence": 0.95
     }
     ```
@@ -290,17 +370,18 @@ classify_content:
       "author_organizations": ["Redwood Research"],
       "date": "2023-12-14",
       "published_year": 2023,
-      "kind": "paper_preprint",
       "venue": "arXiv",
+      "kind": "paper_preprint",
+      "contribution_type": "theoretical_framework",
       "summary": "Proposes evaluating deployment protocols rather than just models by testing with intentionally misaligned models. Introduces control framework where protocols must maintain safety even when model is trying to subvert them. Shows protocols can provide safety guarantees despite untrusted models.",
       "key_result": "Demonstrates that carefully designed protocols can maintain safety even with intentionally misaligned models trying to cause failures, achieving >99% safety on coding tasks.",
-      "contribution_type": "theoretical_framework",
-      "classify_relevancy": 0.98,
+      "ai_safety_relevance": 0.98,
+      "shallow_review_inclusion": 0.95,
       "categories": [
         {"id": "deception_control_evals", "score": 0.95},
         {"id": "whitebox_methods", "score": 0.60}
       ],
-      "category_comment": "Core control evaluation work defining the framework. Primary fit is deception_control_evals since it evaluates protocols against subversion. Whitebox monitoring is used as a technique but not the main contribution.",
+      "category_comment": "Core control evaluation work defining the framework, primary fit is deception_control_evals since it evaluates protocols against subversion. Relevance 0.98 as directly addresses alignment under intentional deception, one of the most critical safety challenges. Inclusion 0.95 as comprehensive technical paper presenting novel framework with both theoretical grounding and empirical validation.",
       "confidence": 0.90
     }
     ```
@@ -313,16 +394,17 @@ classify_content:
       "author_organizations": ["Independent"],
       "date": null,
       "published_year": 2024,
-      "kind": "blog_post",
       "venue": "LessWrong",
+      "kind": "blog_post",
+      "contribution_type": "theoretical_framework",
       "summary": "Proposes CAST framework for corrigibility as a formal target. Argues that corrigibility can be formalized as a specific utility function structure that makes agents accept shutdown. Provides theoretical foundation for building corrigible AI systems.",
       "key_result": null,
-      "contribution_type": "theoretical_framework",
-      "classify_relevancy": 0.92,
+      "ai_safety_relevance": 0.92,
+      "shallow_review_inclusion": 0.85,
       "categories": [
         {"id": "behavior_alignment_theory", "score": 0.95}
       ],
-      "category_comment": "Clear theoretical corrigibility work fitting behavior_alignment_theory. Single category assignment since it's focused on formal corrigibility framework without empirical component.",
+      "category_comment": "Clear theoretical corrigibility work fitting behavior_alignment_theory, single category as narrowly focused on formal framework. Relevance 0.92 because corrigibility is a fundamental unsolved problem in safe AI design. Inclusion 0.85 as detailed technical blog post presenting novel theoretical framework with formal analysis, though without empirical validation.",
       "confidence": 0.95
     }
     ```
@@ -335,18 +417,19 @@ classify_content:
       "author_organizations": ["MIT", "Stanford"],
       "date": "2024-08-10",
       "published_year": 2024,
-      "kind": "paper_published",
       "venue": "ICML 2024",
+      "kind": "paper_published",
+      "contribution_type": "empirical_results",
       "summary": "Combines neural networks with symbolic reasoning for runtime verification of AI safety properties. Proposes hybrid architecture where neural components are monitored by symbolic verifiers. Tests on toy robotics tasks.",
       "key_result": "Achieves 94% accuracy in detecting safety violations in robotic control tasks using neural-symbolic verification, with 10x lower false positive rate than pure neural approaches.",
-      "contribution_type": "empirical_results",
-      "classify_relevancy": 0.75,
+      "ai_safety_relevance": 0.75,
+      "shallow_review_inclusion": 0.70,
       "categories": [
         {"id": "formal_verification", "score": 0.70},
         {"id": "whitebox_methods", "score": 0.65},
         {"id": "alternative_architectures", "score": 0.50}
       ],
-      "category_comment": "Novel hybrid approach doesn't fit cleanly. Partial fit to formal_verification (symbolic component), whitebox_methods (monitoring), and alternative_architectures (novel design). Could also be interp_other or misc_other for truly novel approaches.",
+      "category_comment": "Novel hybrid approach with partial fit to formal_verification (symbolic component), whitebox_methods (monitoring), and alternative_architectures (novel design). Relevance 0.75 because it addresses safety verification but in a narrow robotics domain with limited direct applicability to advanced AI systems. Inclusion 0.70 as published technical paper with empirical results and novel methodology, though evaluation limited to toy problems.",
       "confidence": 0.55
     }
     ```
@@ -359,16 +442,17 @@ classify_content:
       "author_organizations": ["Google DeepMind"],
       "date": "2024-06-12",
       "published_year": 2024,
-      "kind": "paper_published",
       "venue": "ACL 2024",
+      "kind": "paper_published",
+      "contribution_type": "empirical_results",
       "summary": "Presents LoRA-v2, an improved parameter-efficient fine-tuning method that reduces memory usage by 40% compared to standard LoRA. Demonstrates effectiveness on standard NLP benchmarks. No discussion of safety or alignment implications.",
       "key_result": "Achieves 40% memory reduction in fine-tuning while maintaining performance on GLUE and SuperGLUE benchmarks.",
-      "contribution_type": "empirical_results",
-      "classify_relevancy": 0.15,
+      "ai_safety_relevance": 0.15,
+      "shallow_review_inclusion": 0.10,
       "categories": [
         {"id": "iterative_alignment", "score": 0.30}
       ],
-      "category_comment": "General fine-tuning method without safety focus. Weak fit to iterative_alignment since fine-tuning is used in alignment, but this work doesn't address alignment. Low relevancy.",
+      "category_comment": "General fine-tuning method without safety focus, weak fit to iterative_alignment only because fine-tuning techniques are sometimes used in alignment work. Relevance 0.15 as pure capabilities work with no discussion of safety, alignment, or broader implications. Inclusion 0.10 as completely lacks safety focus or contribution to safety research, despite being technical paper.",
       "confidence": 0.85
     }
     ```
@@ -381,16 +465,17 @@ classify_content:
       "author_organizations": ["Independent"],
       "date": "2024-03-15",
       "published_year": 2024,
-      "kind": "blog_post",
       "venue": "LessWrong",
+      "kind": "blog_post",
+      "contribution_type": "critique",
       "summary": "Systematically critiques common theories of how interpretability work will lead to AI safety. Argues that most interpretability research lacks clear paths to impact and may not help with alignment of superhuman systems. Challenges assumptions about interpretability scaling to frontier models.",
       "key_result": null,
-      "contribution_type": "critique",
-      "classify_relevancy": 0.88,
+      "ai_safety_relevance": 0.88,
+      "shallow_review_inclusion": 0.70,
       "categories": [
         {"id": "interp_criticisms", "score": 0.95}
       ],
-      "category_comment": "Pure critique of interpretability work, clearly fits interp_criticisms. High relevancy since it challenges a major research direction, but no empirical results so key_result is null.",
+      "category_comment": "Pure critique of interpretability work, clearly fits interp_criticisms. Relevance 0.88 as it challenges a major safety research direction (interpretability) with important implications for the field's approach. Inclusion 0.70 as substantive technical critique with detailed analysis of theory-of-change, though not presenting new empirical or theoretical results.",
       "confidence": 0.95
     }
     ```
@@ -403,17 +488,18 @@ classify_content:
       "author_organizations": ["UK AISI"],
       "date": "2024-08-20",
       "published_year": 2024,
-      "kind": "code_tool",
       "venue": "GitHub",
+      "kind": "code_tool",
+      "contribution_type": "tool_software",
       "summary": "Open-source evaluation framework for testing LLM capabilities and safety properties. Provides standardized interface for running evals, reproducible benchmarks, and extensible architecture. Enables researchers to build and share safety evaluations.",
       "key_result": null,
-      "contribution_type": "tool_software",
-      "classify_relevancy": 0.90,
+      "ai_safety_relevance": 0.90,
+      "shallow_review_inclusion": 0.65,
       "categories": [
         {"id": "evals_capability", "score": 0.80},
         {"id": "evals_other", "score": 0.60}
       ],
-      "category_comment": "Infrastructure for evaluations rather than specific eval. Fits evals_capability as general framework, but could also be evals_other since it's meta-tooling. High relevancy as it enables safety evals.",
+      "category_comment": "Infrastructure for evaluations rather than specific eval, fits evals_capability as general framework. Relevance 0.90 because standardized evaluation infrastructure is crucial for safety research and enables better evaluation practices. Inclusion 0.65 as technical tool release with clear safety focus and research utility, though not presenting original research findings itself.",
       "confidence": 0.80
     }
     ```
@@ -426,16 +512,17 @@ classify_content:
       "author_organizations": ["Google DeepMind"],
       "date": "2024-05-15",
       "published_year": 2024,
-      "kind": "social_media",
       "venue": "Twitter/X",
+      "kind": "social_media",
+      "contribution_type": "position_agenda",
       "summary": "Official announcement of DeepMind's comprehensive framework for identifying and mitigating risks from frontier AI systems. Includes critical capability thresholds, early warning indicators, and deployment protocols. Sets internal safety standards for model releases.",
       "key_result": null,
-      "contribution_type": "position_agenda",
-      "classify_relevancy": 0.92,
+      "ai_safety_relevance": 0.92,
+      "shallow_review_inclusion": 0.85,
       "categories": [
         {"id": "deepmind_frontier_safety", "score": 0.98}
       ],
-      "category_comment": "Major org announcement of safety framework. Perfectly fits deepmind_frontier_safety (org-specific category). Social media kind because it's Twitter announcement, but meets criteria as official org announcement of their own work.",
+      "category_comment": "Major org announcement of safety framework, perfectly fits deepmind_frontier_safety (org-specific category). Relevance 0.92 as comprehensive frontier safety approach from major lab addressing critical risks. Inclusion 0.85 as official announcement of technical agenda with concrete frameworks and capability thresholds, though in brief social media format rather than detailed paper.",
       "confidence": 0.95
     }
     ```
@@ -448,18 +535,89 @@ classify_content:
       "author_organizations": ["Stanford RegLab", "UC Berkeley"],
       "date": "2024-07-22",
       "published_year": 2024,
-      "kind": "paper_preprint",
       "venue": "arXiv",
+      "kind": "paper_preprint",
+      "contribution_type": "position_agenda",
       "summary": "Proposes regulatory framework for evaluating extreme risks from frontier AI models. Focuses on technical evaluation methods (capability benchmarks, red-teaming protocols) but within governance context. Suggests mandatory pre-deployment testing for models above capability thresholds.",
       "key_result": "Defines technical capability thresholds for triggering safety reviews: autonomous R&D capability above 50th percentile human, or WMD knowledge above expert level.",
-      "contribution_type": "position_agenda",
-      "classify_relevancy": 0.75,
+      "ai_safety_relevance": 0.75,
+      "shallow_review_inclusion": 0.55,
       "categories": [
         {"id": "evals_capability", "score": 0.70},
         {"id": "openai_preparedness", "score": 0.50}
       ],
-      "category_comment": "Governance paper but focused on technical evaluation methods. Fits evals_capability for defining evaluation frameworks, partial fit to openai_preparedness for risk framework approach. Borderline between technical and governance.",
+      "category_comment": "Governance paper focused on technical evaluation methods, fits evals_capability for defining evaluation frameworks. Relevance 0.75 as addresses extreme risk evaluation, a safety-relevant topic, but from policy rather than research perspective. Inclusion 0.55 as borderline technical-governance work with some technical threshold definitions, but primary contribution is policy/regulatory rather than technical research.",
       "confidence": 0.65
+    }
+    ```
+    
+    **Example 10: News about research (high relevance, low inclusion)**
+    ```json
+    {
+      "title": "TechCrunch: Anthropic Announces New Interpretability Breakthrough",
+      "authors": [],
+      "author_organizations": ["TechCrunch"],
+      "date": "2024-05-22",
+      "published_year": 2024,
+      "venue": "TechCrunch",
+      "kind": "news_announcement",
+      "contribution_type": "other",
+      "summary": "News article covering Anthropic's recent sparse autoencoder work on Claude 3 Sonnet. Discusses the 34 million features discovered and quotes researchers on implications for AI safety. Provides high-level overview but limited technical detail.",
+      "key_result": null,
+      "ai_safety_relevance": 0.80,
+      "shallow_review_inclusion": 0.35,
+      "categories": [
+        {"id": "interp_sparse_coding", "score": 0.60}
+      ],
+      "category_comment": "News coverage of interpretability research, categorized by the research discussed (interp_sparse_coding). Relevance 0.80 because the topic (frontier model interpretability) is highly safety-relevant. Inclusion 0.35 as journalism about research rather than the research itself - no original technical contribution and likely redundant if we have the original Anthropic post.",
+      "confidence": 0.85
+    }
+    ```
+    
+    **Example 11: Commentary with technical discussion (moderate both)**
+    ```json
+    {
+      "title": "Why Current Alignment Approaches May Fail: A Technical Analysis",
+      "authors": ["Alex Researcher"],
+      "author_organizations": ["Independent"],
+      "date": "2024-06-15",
+      "published_year": 2024,
+      "venue": "LessWrong",
+      "kind": "blog_post",
+      "contribution_type": "critique",
+      "summary": "Critical analysis of RLHF and related approaches with technical arguments about failure modes. Synthesizes existing concerns about reward hacking, goal misgeneralization, and deceptive alignment. Includes some novel theoretical perspectives on why these problems may be fundamental.",
+      "key_result": null,
+      "ai_safety_relevance": 0.90,
+      "shallow_review_inclusion": 0.60,
+      "categories": [
+        {"id": "iterative_alignment", "score": 0.70},
+        {"id": "deception_theories", "score": 0.55}
+      ],
+      "category_comment": "Technical critique spanning iterative_alignment and deception_theories with some novel perspectives on failure modes. Relevance 0.90 because it addresses core alignment challenges (RLHF failure modes, deceptive alignment) central to safety research. Inclusion 0.60 as primarily synthesis and commentary with some original analysis, but lacks new empirical results or formal theoretical contributions.",
+      "confidence": 0.75
+    }
+    ```
+    
+    **Example 12: Pure opinion piece (high relevance, very low inclusion)**
+    ```json
+    {
+      "title": "AI Safety Concerns in the Age of GPT-5",
+      "authors": ["Tech Columnist"],
+      "author_organizations": ["The Verge"],
+      "date": "2024-07-01",
+      "published_year": 2024,
+      "venue": "The Verge",
+      "kind": "news_announcement",
+      "contribution_type": "other",
+      "summary": "Opinion piece discussing potential risks from next-generation AI models. Covers concerns about deception, power-seeking, and loss of control. No technical research, mainly commentary synthesizing public concerns about frontier AI safety.",
+      "key_result": null,
+      "ai_safety_relevance": 0.70,
+      "shallow_review_inclusion": 0.10,
+      "categories": [
+        {"id": "misc_other", "score": 0.40}
+      ],
+      "category_comment": "Opinion journalism about AI safety concerns, weak fit to misc_other. Relevance 0.70 because the topic (AI safety risks) is relevant, but treatment is non-technical and superficial. Inclusion 0.10 due to complete lack of technical contribution, novel insight, or research value - purely journalistic commentary unsuitable for technical review.",
+      "confidence": 0.90
     }
     ```
     
@@ -504,11 +662,13 @@ classify_content:
     
     Remember:
     - Extract all metadata fields accurately
-    - Determine AI safety/alignment relevancy (0.0-1.0)
+    - Determine AI safety relevance (ai_safety_relevance: 0.0-1.0) - is the topic safety-related?
+    - Determine inclusion suitability (shallow_review_inclusion: 0.0-1.0) - does it present technical research/agendas?
     - Assign to 1-3 leaf categories from taxonomy with scores
     - Explain your categorization in category_comment
     - Rate your confidence in this classification
     - Use "other" categories only for truly novel work
+    - Key distinction: High AI safety relevance + low technical contribution = low inclusion score
     
     Respond with JSON in a markdown code block:
     ```json
@@ -518,16 +678,17 @@ classify_content:
       "author_organizations": ["<org1>", "<org2>"],
       "date": "<YYYY-MM-DD or null>",
       "published_year": <year or null>,
-      "kind": "<one of the kind enums>",
       "venue": "<venue name or null>",
+      "kind": "<one of the kind enums>",
+      "contribution_type": "<one of the contribution_type enums>",
       "summary": "<2-3 sentence summary>",
       "key_result": "<1-2 sentence main finding or null>",
-      "contribution_type": "<one of the contribution_type enums>",
-      "classify_relevancy": <0.0-1.0>,
+      "ai_safety_relevance": <0.0-1.0>,
+      "shallow_review_inclusion": <0.0-1.0>,
       "categories": [
         {"id": "<leaf_category_id>", "score": <0.0-1.0>}
       ],
-      "category_comment": "<1-3 sentences explaining categorization>",
+      "category_comment": "<3-5 sentences: (1) why these categories? (2) relevance X.XX because... (3) inclusion X.XX as...>",
       "confidence": <0.0-1.0>
     }
     ```

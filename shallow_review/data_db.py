@@ -11,6 +11,7 @@ Tables:
 import logging
 import sqlite3
 import threading
+from contextlib import contextmanager
 
 from .common import DATA_PATH
 
@@ -18,7 +19,11 @@ logger = logging.getLogger(__name__)
 
 # Global database connection (lazy singleton)
 _data_db: sqlite3.Connection | None = None
-_data_db_lock = threading.Lock()
+_data_db_init_lock = threading.Lock()
+
+# Global database operation lock
+# Use with data_db_locked() context manager for thread-safe operations
+_data_db_op_lock = threading.Lock()
 
 
 def _create_tables(data_db: sqlite3.Connection, db_path: str) -> None:
@@ -59,7 +64,8 @@ def _create_tables(data_db: sqlite3.Connection, db_path: str) -> None:
             collect_relevancy REAL,
             added_at TEXT NOT NULL,
             processed_at TEXT,
-            classify_relevancy REAL,
+            ai_safety_relevance REAL,
+            shallow_review_inclusion REAL,
             kind TEXT,
             data JSON,
             error TEXT,
@@ -69,7 +75,8 @@ def _create_tables(data_db: sqlite3.Connection, db_path: str) -> None:
         "CREATE INDEX IF NOT EXISTS idx_classify_source ON classify(source)",
         "CREATE INDEX IF NOT EXISTS idx_classify_source_url ON classify(source_url)",
         "CREATE INDEX IF NOT EXISTS idx_classify_added_at ON classify(added_at)",
-        "CREATE INDEX IF NOT EXISTS idx_classify_relevancy ON classify(classify_relevancy)",
+        "CREATE INDEX IF NOT EXISTS idx_classify_ai_safety_relevance ON classify(ai_safety_relevance)",
+        "CREATE INDEX IF NOT EXISTS idx_classify_shallow_review_inclusion ON classify(shallow_review_inclusion)",
         "CREATE INDEX IF NOT EXISTS idx_classify_kind ON classify(kind)",
     ]
 
@@ -83,21 +90,62 @@ def _create_tables(data_db: sqlite3.Connection, db_path: str) -> None:
 def get_data_db() -> sqlite3.Connection:
     """
     Get or create the unified data database connection (lazy singleton).
+    
+    DEPRECATED: Use data_db_locked() context manager instead for thread-safety.
 
     Creates all tables and indexes if they don't exist.
-    Connection should not be held for long periods.
+    Uses WAL mode for better concurrency.
 
     Returns:
         SQLite connection to data/data.db
     """
     global _data_db
 
-    with _data_db_lock:
+    with _data_db_init_lock:
         if _data_db is None:
             db_path = DATA_PATH / "data.db"
-            data_db = sqlite3.connect(str(db_path), check_same_thread=False)
+            data_db = sqlite3.connect(
+                str(db_path),
+                check_same_thread=False,
+                timeout=30.0,  # Wait up to 30 seconds for locks
+                isolation_level=None,  # Autocommit mode (no transactions by default)
+            )
             data_db.row_factory = sqlite3.Row
+            
+            # Enable WAL mode for better concurrency
+            # WAL allows concurrent reads and one writer
+            data_db.execute("PRAGMA journal_mode=WAL")
+            data_db.execute("PRAGMA synchronous=NORMAL")  # Faster with WAL
+            
             _create_tables(data_db, str(db_path))
             _data_db = data_db
         return _data_db
+
+
+@contextmanager
+def data_db_locked():
+    """
+    Context manager for thread-safe database operations.
+    
+    Acquires lock, yields database connection, releases lock on exit.
+    Use for all database operations in multi-threaded code.
+    
+    Example:
+        with data_db_locked() as db:
+            cursor = db.execute("SELECT * FROM scrape WHERE url = ?", (url,))
+            row = cursor.fetchone()
+            db.execute("INSERT INTO collect ...", (...))
+            
+    Note: Keep operations inside the context minimal. Don't hold lock
+    while doing expensive operations like scraping or LLM calls.
+    
+    Yields:
+        SQLite connection with lock held
+    """
+    # Ensure DB is initialized
+    db = get_data_db()
+    
+    # Acquire lock for thread-safe operations
+    with _data_db_op_lock:
+        yield db
 

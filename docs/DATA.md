@@ -138,7 +138,8 @@ CREATE TABLE classify (
     collect_relevancy REAL,
     added_at TEXT NOT NULL,
     processed_at TEXT,
-    classify_relevancy REAL,
+    ai_safety_relevance REAL,
+    shallow_review_inclusion REAL,
     kind TEXT,
     data JSON,
     error TEXT,
@@ -149,7 +150,8 @@ CREATE INDEX idx_classify_status ON classify(status);
 CREATE INDEX idx_classify_source ON classify(source);
 CREATE INDEX idx_classify_source_url ON classify(source_url);
 CREATE INDEX idx_classify_added_at ON classify(added_at);
-CREATE INDEX idx_classify_relevancy ON classify(classify_relevancy);
+CREATE INDEX idx_classify_ai_safety_relevance ON classify(ai_safety_relevance);
+CREATE INDEX idx_classify_shallow_review_inclusion ON classify(shallow_review_inclusion);
 CREATE INDEX idx_classify_kind ON classify(kind);
 ```
 
@@ -161,7 +163,8 @@ CREATE INDEX idx_classify_kind ON classify(kind);
 - `collect_relevancy`: Relevancy score from collect phase (if applicable)
 - `added_at`: ISO 8601 UTC timestamp when added
 - `processed_at`: ISO 8601 UTC timestamp when completed
-- `classify_relevancy`: AI safety/alignment relevancy score 0.0-1.0 (from LLM)
+- `ai_safety_relevance`: AI safety/alignment topic relevance score 0.0-1.0 (from LLM)
+- `shallow_review_inclusion`: Suitability for Shallow Review inclusion score 0.0-1.0 (from LLM)
 - `kind`: Content type - independent of relevancy (see ClassifyKind enum below)
 - `data`: JSON with classification results and preprocessing info (see below)
 - `error`: Error message if failed
@@ -188,7 +191,7 @@ CREATE INDEX idx_classify_kind ON classify(kind);
 - `tokens_full`: Token count of full HTML
 - `tokens_stripped`: Token count after preprocessing
 - `classify_duration`: Total time for classification process in seconds
-- `classify_relevancy` and `kind` stored as columns (not in data JSON)
+- `ai_safety_relevance`, `shallow_review_inclusion`, and `kind` stored as columns (not in data JSON)
 - `category`: Assigned category ID from taxonomy (stored as column in future versions)
 - Other fields are LLM-extracted
 
@@ -272,13 +275,17 @@ Types of collection sources:
 
 Content type classification (independent of AI safety/alignment relevancy).
 
-**Important:** `kind` describes the content type only. AI safety/alignment relevance is determined by the `classify_relevancy` score (0.0-1.0). Any kind can have any relevancy score.
+**Important:** `kind` describes the content type only. AI safety/alignment relevance is determined by two independent scores (0.0-1.0 each):
+- `ai_safety_relevance`: How relevant the topic is to AI safety/alignment
+- `shallow_review_inclusion`: How suitable for inclusion in Shallow Review (technical contribution)
+
+Any kind can have any combination of scores.
 
 Examples:
-- `paper_page` + `classify_relevancy=0.9` → relevant AI safety paper
-- `paper_page` + `classify_relevancy=0.1` → irrelevant paper (e.g., biology)
-- `blog_post` + `classify_relevancy=0.8` → relevant alignment blog post
-- `blog_post` + `classify_relevancy=0.0` → irrelevant blog post
+- `paper_page` + `ai_safety_relevance=0.9` + `shallow_review_inclusion=0.9` → relevant technical AI safety paper
+- `paper_page` + `ai_safety_relevance=0.1` + `shallow_review_inclusion=0.1` → irrelevant paper (e.g., biology)
+- `blog_post` + `ai_safety_relevance=0.8` + `shallow_review_inclusion=0.7` → relevant technical alignment post
+- `news_announcement` + `ai_safety_relevance=0.8` + `shallow_review_inclusion=0.3` → news about safety work (no original research)
 
 **Kind values:**
 

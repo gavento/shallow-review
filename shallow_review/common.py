@@ -70,9 +70,10 @@ class ClassifyStatus(str, Enum):
 class ClassifyKind(str, Enum):
     """Content type classification (independent of AI safety/alignment relevancy).
     
-    Note: All kinds can have any relevancy score. For example, a paper_page
-    can be irrelevant (relevancy=0.1) or highly relevant (relevancy=0.9).
-    Use classify_relevancy field to determine AI safety/alignment relevance.
+    Note: All kinds can have any relevancy and inclusion scores. For example,
+    a paper_page can have low AI safety relevance (ai_safety_relevance=0.1) or
+    high relevance (ai_safety_relevance=0.9), and similarly for inclusion suitability.
+    Use ai_safety_relevance and shallow_review_inclusion fields to determine scores.
     """
 
     # Research content

@@ -13,7 +13,7 @@ from .common import (
     ClassifyStatus,
     RunClassifyConfig,
 )
-from .data_db import get_data_db
+from .data_db import data_db_locked
 from .llm import get_completion
 from .scrape import compute_scrape, open_scraped
 from .stats import get_stats
@@ -39,12 +39,13 @@ class ClassificationResult(BaseModel):
     author_organizations: list[str]
     date: str | None = None  # ISO format YYYY-MM-DD
     published_year: int | None = None
-    kind: str  # One of the ClassifyKind enum values
     venue: str | None = None
+    kind: str  # One of the ClassifyKind enum values
+    contribution_type: str  # One of: empirical_results, theoretical_framework, etc.
     summary: str
     key_result: str | None = None
-    contribution_type: str  # One of: empirical_results, theoretical_framework, etc.
-    classify_relevancy: float = Field(ge=0.0, le=1.0)
+    ai_safety_relevance: float = Field(ge=0.0, le=1.0)
+    shallow_review_inclusion: float = Field(ge=0.0, le=1.0)
     categories: list[CategoryAssignment] = Field(min_length=1, max_length=3)
     category_comment: str
     confidence: float = Field(ge=0.0, le=1.0)
@@ -70,19 +71,18 @@ def add_classify_candidate(
     Returns:
         True if added (new), False if already exists
     """
-    db = get_data_db()
     timestamp = datetime.now(timezone.utc).isoformat()
 
     try:
-        db.execute(
-            """
-            INSERT INTO classify 
-            (url, status, source, source_url, collect_relevancy, added_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """,
-            (url, ClassifyStatus.NEW.value, source, source_url, collect_relevancy, timestamp),
-        )
-        db.commit()
+        with data_db_locked() as db:
+            db.execute(
+                """
+                INSERT INTO classify 
+                (url, status, source, source_url, collect_relevancy, added_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (url, ClassifyStatus.NEW.value, source, source_url, collect_relevancy, timestamp),
+            )
 
         # Update stats
         try:
@@ -134,32 +134,31 @@ def compute_classify(url: str, config: RunClassifyConfig, force_recompute: bool 
     import time
 
     classify_start = time.time()
-    db = get_data_db()
 
     # Check if already processed
-    cursor = db.execute("SELECT status FROM classify WHERE url = ?", (url,))
-    row = cursor.fetchone()
+    with data_db_locked() as db:
+        cursor = db.execute("SELECT status FROM classify WHERE url = ?", (url,))
+        row = cursor.fetchone()
 
-    if row and row["status"] != ClassifyStatus.NEW.value:
-        # Allow retrying classify_error with force_recompute
-        if force_recompute and row["status"] == ClassifyStatus.CLASSIFY_ERROR.value:
-            logger.info(f"Retrying classification for {url} (was classify_error)")
-            db.execute(
-                "UPDATE classify SET status = ? WHERE url = ?",
-                (ClassifyStatus.NEW.value, url),
-            )
-            db.commit()
-        elif row["status"] == ClassifyStatus.DONE.value:
-            logger.warning(f"URL {url} already classified successfully")
-            # Return cached result
-            cursor = db.execute("SELECT data FROM classify WHERE url = ?", (url,))
-            data_row = cursor.fetchone()
-            if data_row and data_row["data"]:
-                data = json.loads(data_row["data"])
-                return ClassificationResult(**data)
-            raise RuntimeError(f"URL {url} marked done but no data found")
-        else:
-            raise RuntimeError(f"URL {url} in status {row['status']}, use --retry-errors for classify_error")
+        if row and row["status"] != ClassifyStatus.NEW.value:
+            # Allow retrying classify_error with force_recompute
+            if force_recompute and row["status"] == ClassifyStatus.CLASSIFY_ERROR.value:
+                logger.info(f"Retrying classification for {url} (was classify_error)")
+                db.execute(
+                    "UPDATE classify SET status = ? WHERE url = ?",
+                    (ClassifyStatus.NEW.value, url),
+                )
+            elif row["status"] == ClassifyStatus.DONE.value:
+                logger.warning(f"URL {url} already classified successfully")
+                # Return cached result
+                cursor = db.execute("SELECT data FROM classify WHERE url = ?", (url,))
+                data_row = cursor.fetchone()
+                if data_row and data_row["data"]:
+                    data = json.loads(data_row["data"])
+                    return ClassificationResult(**data)
+                raise RuntimeError(f"URL {url} marked done but no data found")
+            else:
+                raise RuntimeError(f"URL {url} in status {row['status']}, use --retry-errors for classify_error")
 
     timestamp = datetime.now(timezone.utc).isoformat()
 
@@ -169,15 +168,15 @@ def compute_classify(url: str, config: RunClassifyConfig, force_recompute: bool 
     except Exception as e:
         error_msg = format_error(e, levels=2)
         logger.error(f"Failed to scrape {url}: {error_msg}")
-        db.execute(
-            """
-            UPDATE classify
-            SET status = ?, processed_at = ?, error = ?
-            WHERE url = ?
-            """,
-            (ClassifyStatus.SCRAPE_ERROR.value, timestamp, error_msg, url),
-        )
-        db.commit()
+        with data_db_locked() as db:
+            db.execute(
+                """
+                UPDATE classify
+                SET status = ?, processed_at = ?, error = ?
+                WHERE url = ?
+                """,
+                (ClassifyStatus.SCRAPE_ERROR.value, timestamp, error_msg, url),
+            )
 
         # Update stats
         try:
@@ -199,15 +198,15 @@ def compute_classify(url: str, config: RunClassifyConfig, force_recompute: bool 
     except Exception as e:
         error_msg = format_error(e, levels=2)
         logger.error(f"Failed to preprocess HTML for {url}: {error_msg}")
-        db.execute(
-            """
-            UPDATE classify
-            SET status = ?, processed_at = ?, error = ?
-            WHERE url = ?
-            """,
-            (ClassifyStatus.CLASSIFY_ERROR.value, timestamp, error_msg, url),
-        )
-        db.commit()
+        with data_db_locked() as db:
+            db.execute(
+                """
+                UPDATE classify
+                SET status = ?, processed_at = ?, error = ?
+                WHERE url = ?
+                """,
+                (ClassifyStatus.CLASSIFY_ERROR.value, timestamp, error_msg, url),
+            )
 
         # Update stats
         try:
@@ -262,11 +261,12 @@ def compute_classify(url: str, config: RunClassifyConfig, force_recompute: bool 
         raise RuntimeError(error_msg) from e
 
     # Step 5: Get collect_relevancy from database if available
-    cursor = db.execute(
-        "SELECT collect_relevancy FROM classify WHERE url = ?",
-        (url,)
-    )
-    row = cursor.fetchone()
+    with data_db_locked() as db:
+        cursor = db.execute(
+            "SELECT collect_relevancy FROM classify WHERE url = ?",
+            (url,)
+        )
+        row = cursor.fetchone()
     collect_relevancy = row["collect_relevancy"] if row else None
 
     # Step 6: Run LLM classification
@@ -300,7 +300,9 @@ def compute_classify(url: str, config: RunClassifyConfig, force_recompute: bool 
     except Exception as e:
         error_msg = format_error(e, levels=2)
         logger.error(f"Failed LLM classification for {url}: {error_msg}")
-        db.execute(
+        with data_db_locked() as db:
+
+            db.execute(
             """
             UPDATE classify
             SET status = ?, processed_at = ?, error = ?
@@ -313,7 +315,6 @@ def compute_classify(url: str, config: RunClassifyConfig, force_recompute: bool 
                 url,
             ),
         )
-        db.commit()
 
         # Update stats
         try:
@@ -336,15 +337,15 @@ def compute_classify(url: str, config: RunClassifyConfig, force_recompute: bool 
         if cat.id not in valid_leaf_ids:
             error_msg = f"Invalid category ID: {cat.id} (not a valid leaf category)"
             logger.error(error_msg)
-            db.execute(
-                """
-                UPDATE classify
-                SET status = ?, processed_at = ?, error = ?
-                WHERE url = ?
-                """,
-                (ClassifyStatus.CLASSIFY_ERROR.value, timestamp, error_msg, url),
-            )
-            db.commit()
+            with data_db_locked() as db:
+                db.execute(
+                    """
+                    UPDATE classify
+                    SET status = ?, processed_at = ?, error = ?
+                    WHERE url = ?
+                    """,
+                    (ClassifyStatus.CLASSIFY_ERROR.value, timestamp, error_msg, url),
+                )
             raise RuntimeError(error_msg)
 
     # Step 9: Update database with results
@@ -355,32 +356,37 @@ def compute_classify(url: str, config: RunClassifyConfig, force_recompute: bool 
     # Extract top category for indexed column
     top_category_id = result.categories[0].id if result.categories else None
 
-    db.execute(
-        """
-        UPDATE classify
-        SET status = ?, processed_at = ?, classify_relevancy = ?, kind = ?, data = ?
-        WHERE url = ?
-        """,
-        (
-            ClassifyStatus.DONE.value,
-            timestamp,
-            result.classify_relevancy,
-            result.kind,
-            data_json,
-            url,
-        ),
-    )
-    db.commit()
+    with data_db_locked() as db:
+        db.execute(
+            """
+            UPDATE classify
+            SET status = ?, processed_at = ?, ai_safety_relevance = ?, shallow_review_inclusion = ?, kind = ?, data = ?
+            WHERE url = ?
+            """,
+            (
+                ClassifyStatus.DONE.value,
+                timestamp,
+                result.ai_safety_relevance,
+                result.shallow_review_inclusion,
+                result.kind,
+                data_json,
+                url,
+            ),
+        )
 
     # Update stats
     try:
         stats = get_stats()
         with stats.lock:
             stats.classify_candidates.cached.add(url)
-            # Track relevancy distribution
-            if not hasattr(stats, "classify_relevancy_scores"):
-                stats.classify_relevancy_scores = []
-            stats.classify_relevancy_scores.append(result.classify_relevancy)
+            # Track AI safety relevance distribution
+            if not hasattr(stats, "ai_safety_relevance_scores"):
+                stats.ai_safety_relevance_scores = []
+            stats.ai_safety_relevance_scores.append(result.ai_safety_relevance)
+            # Track shallow review inclusion distribution
+            if not hasattr(stats, "shallow_review_inclusion_scores"):
+                stats.shallow_review_inclusion_scores = []
+            stats.shallow_review_inclusion_scores.append(result.shallow_review_inclusion)
             # Track confidence distribution
             if not hasattr(stats, "classify_confidence_scores"):
                 stats.classify_confidence_scores = []
@@ -392,7 +398,8 @@ def compute_classify(url: str, config: RunClassifyConfig, force_recompute: bool 
 
     logger.info(
         f"Successfully classified {url} "
-        f"(relevancy: {result.classify_relevancy:.2f}, "
+        f"(safety_rel: {result.ai_safety_relevance:.2f}, "
+        f"inclusion: {result.shallow_review_inclusion:.2f}, "
         f"top category: {top_category_id}, "
         f"confidence: {result.confidence:.2f})"
     )
