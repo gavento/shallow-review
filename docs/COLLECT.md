@@ -86,13 +86,28 @@ LLM extracts links with:
 ## HTML Preprocessing
 
 Before sending to LLM:
-1. Strip `<script>` and `<style>` tags
-2. Remove base64-encoded images
-3. Remove HTML comments
-4. Collapse excessive whitespace
-5. Track token counts (tokens_full, tokens_stripped stored in data JSON)
+1. **Remove completely**: `<script>`, `<style>`, `<noscript>`, `<svg>` tags and their content
+2. **Remove**: HTML comments (via BeautifulSoup)
+3. **Remove**: Base64-encoded images (data: URIs)
+4. **Unwrap** (keep content): `<div>`, `<span>` tags
+5. **Strip attributes**: Remove all except whitelisted ones (see below)
+6. **Collapse whitespace**: Excessive newlines and spaces
+7. **Track metrics**: Token counts (tokens_full, tokens_stripped stored in data JSON)
 
-**Rationale:** Reduces tokens by 50-90% while preserving semantic content and links.
+**Rationale:** Reduces tokens by 60-95% while preserving semantic content and links.
+
+**Tags removed completely:**
+- `<script>`, `<style>`: JavaScript and CSS (not needed)
+- `<link>`: Stylesheets, fonts, preconnects (not needed)
+- `<noscript>`, `<svg>`: Alternative content and graphics (not needed)
+
+**Tags unwrapped (content preserved):**
+- `<div>`, `<span>`: Layout containers (content inserted into parent)
+
+**Attributes kept:**
+- `href` on `<a>` tags (essential for link extraction)
+- `src` and `alt` on `<img>` tags (for image context)
+- **All other attributes removed**: data-*, id, class, style, onclick, aria-*, etc.
 
 ## Source Kind Classification
 

@@ -68,6 +68,7 @@ Stored as columns:
   - Example: `paper_page` can be relevant (0.9) or irrelevant (0.1)
   - All content gets both a kind and a relevancy score
   - For `social_media` kind: stricter criteria apply (see DATA.md) - only announcements and major events etc.
+- `category`: One leaf category ID from taxonomy (see taxonomy section below)
 
 LLM extracts detailed metadata (stored in data JSON):
 - `tokens_full`: Full HTML token count
@@ -84,12 +85,41 @@ LLM extracts detailed metadata (stored in data JSON):
 
 **Exact schema TBD** - prompts not yet implemented.
 
+## Taxonomy
+
+**Ground truth:** `data/taxonomy.yaml` (see DATA.md for details)
+
+Each classified item must be assigned to exactly ONE leaf category from the taxonomy. The taxonomy has 8 top-level categories with 87 assignable leaf categories:
+
+1. **Understand existing models** - Evals, interpretability, learning dynamics, model psychology
+2. **Control the thing** - Alignment, monitoring, control, deception detection
+3. **Alternative architectures** - Safer-by-design AI systems
+4. **Better data** - Data quality, filtering, attribution for safety
+5. **Make AI solve it** - Scalable oversight, debate, task decomposition
+6. **Theory** - Agent foundations, corrigibility, cooperation theory
+7. **Sociotechnical** - Approaches combining technical and social elements
+8. **Misc / for new agenda clustering** - Items not yet fitting other categories
+
+**Usage:**
+- Load: `from shallow_review.taxonomy import load_taxonomy; tax = load_taxonomy()`
+- Format for prompts: `format_taxonomy_for_prompt(tax)` → hierarchical markdown
+- Validate: `tax.validate_category_id(cat_id)` → bool (checks if valid leaf)
+- Get all leaves: `tax.get_all_leaf_ids()` → list[str]
+
+The taxonomy is formatted hierarchically in prompts, with non-leaf categories as headers and leaf categories as bulleted items with IDs.
+
 ## HTML Preprocessing
 
 Same as collect phase:
-- Strip scripts, styles, base64 images
-- Collapse whitespace
+- Remove completely: `<script>`, `<style>`, `<noscript>`, `<svg>` tags
+- Remove: HTML comments (via BeautifulSoup)
+- Remove: Base64-encoded images (data: URIs)
+- Unwrap (keep content): `<div>`, `<span>` tags
+- Strip attributes: Keep only href on links, src/alt on images
+- Collapse excessive whitespace
 - Track token counts (tokens_full, tokens_stripped stored in data JSON)
+
+See COLLECT.md for detailed preprocessing policy and rationale.
 
 ## Deduplication
 

@@ -3,7 +3,6 @@
 import gzip
 import logging
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 from typing import IO, Any, Literal
@@ -197,12 +196,25 @@ def preprocess_html(html: str, model: str = "gpt-4") -> tuple[str, dict[str, int
     """
     Preprocess HTML for LLM consumption by removing unnecessary elements.
 
-    Strips:
+    Removes completely:
     - <script> tags and content
     - <style> tags and content
+    - <link> tags and content
+    - <noscript> tags and content
+    - <svg> tags and content
+    - HTML comments (via BeautifulSoup)
     - Base64-encoded images (data: URIs in src/href attributes)
-    - HTML comments
-    - Excessive whitespace
+    
+    Unwraps (removes tag but keeps content):
+    - <div> tags
+    - <span> tags
+    
+    Strips attributes:
+    - Keeps only href on <a>, src/alt on <img>
+    - Removes all other attributes (data-*, id, class, style, etc.)
+    
+    Cleans whitespace:
+    - Collapses excessive newlines and spaces
 
     Args:
         html: Raw HTML content
@@ -215,7 +227,7 @@ def preprocess_html(html: str, model: str = "gpt-4") -> tuple[str, dict[str, int
         - tokens_saved: Tokens saved by cleaning
         - reduction_pct: Percentage reduction
     """
-    from bs4 import BeautifulSoup
+    from bs4 import BeautifulSoup, Comment
     import re
 
     # Count tokens before
@@ -232,20 +244,54 @@ def preprocess_html(html: str, model: str = "gpt-4") -> tuple[str, dict[str, int
     for style in soup.find_all("style"):
         style.decompose()
 
-    # Remove base64 images (data: URIs)
-    for tag in soup.find_all(attrs={"src": True}):
-        if tag["src"].startswith("data:"):
-            tag["src"] = "[base64-image-removed]"
+    # Remove link tags (stylesheets, fonts, etc.)
+    for link in soup.find_all("link"):
+        link.decompose()
 
-    for tag in soup.find_all(attrs={"href": True}):
-        if tag["href"].startswith("data:"):
+    # Remove noscript tags
+    for noscript in soup.find_all("noscript"):
+        noscript.decompose()
+
+    # Remove svg tags
+    for svg in soup.find_all("svg"):
+        svg.decompose()
+
+    # Remove HTML comments (via BeautifulSoup, not regex)
+    for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
+        comment.extract()
+
+    # Remove base64 images (data: URIs) and clean up attributes
+    # Define which attributes to keep per tag
+    attributes_to_keep = {
+        "a": ["href"],
+        "img": ["src", "alt"],
+    }
+
+    for tag in soup.find_all(True):  # Find all tags
+        # Handle base64 in src/href first
+        if tag.has_attr("src") and tag["src"].startswith("data:"):
+            tag["src"] = "[base64-image-removed]"
+        if tag.has_attr("href") and tag["href"].startswith("data:"):
             tag["href"] = "[base64-data-removed]"
+
+        # Remove all attributes except those we want to keep
+        tag_name = tag.name
+        keep_attrs = attributes_to_keep.get(tag_name, [])
+        
+        # Get list of attrs to remove (can't modify dict during iteration)
+        attrs_to_remove = [attr for attr in tag.attrs if attr not in keep_attrs]
+        
+        for attr in attrs_to_remove:
+            del tag[attr]
+
+    # Unwrap div and span tags (remove tag but keep contents)
+    for div in soup.find_all("div"):
+        div.unwrap()
+    for span in soup.find_all("span"):
+        span.unwrap()
 
     # Get cleaned HTML
     cleaned_html = str(soup)
-
-    # Remove HTML comments
-    cleaned_html = re.sub(r"<!--.*?-->", "", cleaned_html, flags=re.DOTALL)
 
     # Remove excessive whitespace
     cleaned_html = re.sub(r"\n\s*\n+", "\n\n", cleaned_html)

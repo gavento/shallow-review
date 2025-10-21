@@ -9,7 +9,6 @@ import typer
 
 from . import __version__
 from .common import RUNS_PATH, is_shutdown_requested, request_shutdown
-from .stats import stats_context
 from .utils import console, setup_logging
 
 logger = logging.getLogger(__name__)
@@ -177,7 +176,7 @@ def collect(
     limit: int = typer.Option(100, help="Maximum sources to process"),
     workers: int = typer.Option(4, help="Number of worker threads"),
     relevancy: float = typer.Option(0.3, help="Minimum relevancy threshold for links"),
-    model: str = typer.Option("helicone/claude-4.5-sonnet", help="LLM model to use"),
+    model: str = typer.Option("anthropic/claude-sonnet-4-5", help="LLM model to use"),
     max_tokens: int = typer.Option(100000, help="Max HTML tokens before error"),
     retry_errors: bool = typer.Option(False, "--retry-errors", help="Retry sources with extract_error status"),
 ) -> None:
@@ -240,32 +239,43 @@ def collect(
 
     # Process sources with stats tracking and progress bar
     with stats_context(commandline=f"collect --limit {limit}") as stats:
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            TaskProgressColumn(),
-            console=console,
-        ) as progress:
-            task = progress.add_task("[cyan]Collecting sources...", total=len(sources))
+        # Temporarily suppress INFO logging to avoid clashing with progress bar
+        root_logger = logging.getLogger()
+        old_level = root_logger.level
+        root_logger.setLevel(logging.WARNING)
+        
+        try:
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(),
+                TaskProgressColumn(),
+                console=console,
+            ) as progress:
+                task = progress.add_task("[cyan]Collecting sources...", total=len(sources))
 
-            for url in sources:
-                if is_shutdown_requested():
-                    console.print("\n[yellow]Shutdown requested, stopping...[/yellow]")
-                    break
+                for url in sources:
+                    if is_shutdown_requested():
+                        progress.console.print("\n[yellow]Shutdown requested, stopping...[/yellow]")
+                        break
 
-                progress.update(task, description=f"[cyan]Processing: {url[:60]}...")
+                    progress.update(task, description=f"[cyan]Processing: {url[:60]}...")
 
-                try:
-                    result = compute_collect(url, config, force_recompute=retry_errors)
-                    console.print(
-                        f"[green]✓[/green] {url[:70]}: "
-                        f"{len(result.links)} links (quality: {result.collection_quality_score:.2f})"
-                    )
-                except Exception as e:
-                    console.print(f"[red]✗[/red] {url[:70]}: {str(e)[:80]}")
+                    try:
+                        result = compute_collect(url, config, force_recompute=retry_errors)
+                        progress.console.print(
+                            f"[green]✓[/green] {url[:70]}: "
+                            f"{len(result.links)} links (quality: {result.collection_quality_score:.2f})"
+                        )
+                    except Exception as e:
+                        # Log full error details (still captured in log file)
+                        logger.error(f"Failed to process {url}: {str(e)}", exc_info=True)
+                        progress.console.print(f"[red]✗[/red] {url[:70]}: {str(e)[:80]}")
 
-                progress.advance(task)
+                    progress.advance(task)
+        finally:
+            # Restore logging level
+            root_logger.setLevel(old_level)
 
         console.print()
         stats.print_summary()

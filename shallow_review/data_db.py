@@ -31,7 +31,8 @@ def _create_tables(data_db: sqlite3.Connection, db_path: str) -> None:
             kind TEXT NOT NULL,
             timestamp TEXT NOT NULL,
             status_code INTEGER,
-            error TEXT
+            error TEXT,
+            data JSON
         )""",
         "CREATE INDEX IF NOT EXISTS idx_scrape_url_hash ON scrape(url_hash)",
         "CREATE INDEX IF NOT EXISTS idx_scrape_kind ON scrape(kind)",

@@ -22,3 +22,8 @@ dependencies = [
     "typer>=0.19.2",
     "zstandard>=0.25.0",
 ]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+]

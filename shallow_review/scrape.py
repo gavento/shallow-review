@@ -162,7 +162,13 @@ def compute_scrape(
 
     # Need to scrape
     logger.info(f"Scraping {url} (kind={kind})")
+    
+    import json
+    import time
+    from .utils import count_tokens, preprocess_html
 
+    scrape_start = time.time()
+    
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=headless)
@@ -191,11 +197,44 @@ def compute_scrape(
 
             browser.close()
 
+        scrape_duration = time.time() - scrape_start
+
+        # Calculate metrics
+        size_full = len(content.encode('utf-8'))
+        tokens_full = count_tokens(content)
+        
+        # Preprocess to get stripped HTML and token count
+        stripped_html = None
+        try:
+            stripped_html, _ = preprocess_html(content, "gpt-4")
+            tokens_stripped = count_tokens(stripped_html)
+        except Exception:
+            # If preprocessing fails, use full HTML metrics
+            tokens_stripped = tokens_full
+
         # Save to file and update DB atomically with transaction
         try:
-            # Write file first
+            # Write full HTML file first
             with open_scraped(url, "wt", encoding="utf-8") as f:
                 f.write(content)
+            
+            # Save stripped HTML for debugging (uncompressed)
+            if stripped_html:
+                stripped_path = SCRAPED_PATH / f"{url_hash}-stripped.html"
+                with open(stripped_path, "w", encoding="utf-8") as f:
+                    f.write(stripped_html)
+            
+            # Get compressed file size
+            size_compressed = scrape_path.stat().st_size if scrape_path.exists() else 0
+
+            # Build data JSON
+            data_json = json.dumps({
+                "size_full": size_full,
+                "size_compressed": size_compressed,
+                "tokens_full": tokens_full,
+                "tokens_stripped": tokens_stripped,
+                "scrape_duration": round(scrape_duration, 2),
+            })
 
             # Update database in transaction
             timestamp = datetime.now(timezone.utc).isoformat()
@@ -203,10 +242,10 @@ def compute_scrape(
             db.execute(
                 """
                 INSERT OR REPLACE INTO scrape 
-                (url, url_hash, kind, timestamp, status_code, error)
-                VALUES (?, ?, ?, ?, ?, NULL)
+                (url, url_hash, kind, timestamp, status_code, error, data)
+                VALUES (?, ?, ?, ?, ?, NULL, ?)
                 """,
-                (url, url_hash, kind, timestamp, status_code),
+                (url, url_hash, kind, timestamp, status_code, data_json),
             )
             db.commit()
         except Exception as e:

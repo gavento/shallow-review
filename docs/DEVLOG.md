@@ -91,3 +91,79 @@ This log documents major problems, solutions, lessons learned, and design decisi
 - Better for small-scale operations (no complex multi-DB coordination)
 - Resume-friendly (per-item commits)
 
+## 2025-10-21: Classification Taxonomy System
+
+**What was done:**
+- Created hierarchical taxonomy system for classification categories
+- Implemented `taxonomy.py` module with Pydantic models and utilities
+- Created `data/taxonomy.yaml` with 87 leaf categories across 8 top-level groups
+- Added taxonomy validation and prompt formatting functions
+- Updated documentation (DATA.md, CODE.md, CLASSIFY.md)
+
+**Taxonomy structure:**
+- 8 top-level categories: understand models, control, alternatives, data, AI solve, theory, sociotechnical, misc
+- 87 assignable leaf categories (only leaves can be assigned to items)
+- Hierarchical organization (3 levels: top-level → mid-level → leaf)
+- Each category has: id, name, description, optional children, optional examples
+
+**Key design decisions:**
+- YAML as ground truth (not code, not docs)
+- Recursive Pydantic models for validation and type safety
+- `is_leaf` inferred from presence of children (can be explicitly set)
+- Examples only allowed on leaf categories (validated)
+- All category IDs unique across entire taxonomy (validated)
+- IDs must be snake_case alphanumeric with underscores
+
+**Prompt format:**
+- Hierarchical markdown format (not flat list)
+- Non-leaf categories as headers (h3-h5) with descriptions
+- Leaf categories as bulleted items with IDs
+- More readable and compact (~5,800 tokens)
+- Provides context via headers, eliminates need for full paths
+
+**Validation rules enforced:**
+1. All IDs unique across taxonomy
+2. IDs must be snake_case (alphanumeric + underscores/hyphens)
+3. Only leaf categories can have examples
+4. At least one leaf category must exist
+5. No duplicate IDs allowed
+
+**Usage pattern:**
+```python
+from shallow_review.taxonomy import load_taxonomy, format_taxonomy_for_prompt
+
+# Load and validate
+tax = load_taxonomy()  # From data/taxonomy.yaml
+
+# Format for LLM prompt
+prompt = format_taxonomy_for_prompt(tax, include_examples=False)
+
+# Validate category ID
+is_valid = tax.validate_category_id("evals_autonomy")  # True (leaf)
+is_valid = tax.validate_category_id("evals")  # False (not leaf)
+
+# Get all assignable categories
+leaf_ids = tax.get_all_leaf_ids()  # 87 items
+```
+
+**Technical implementation:**
+- Pydantic v2 with recursive models
+- `validation_alias` for `is_leaf` field (YAML → model)
+- `model_post_init` hook for cross-field validation
+- Property shadowing for computed `is_leaf` value
+- Thread-safe loading via lazy singleton pattern (future)
+
+**Benefits:**
+- Single source of truth for categories
+- Type-safe validation at load time
+- Easy to modify taxonomy (just edit YAML)
+- Can version control taxonomy evolution
+- Programmatic access to category tree
+- Generate consistent prompts automatically
+
+**Future work:**
+- Add `category` column to classify table
+- Implement classification prompts using taxonomy
+- Add category-based filtering/analysis
+- Track taxonomy version with data
+

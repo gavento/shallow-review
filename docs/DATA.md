@@ -8,6 +8,7 @@
 data/
 ├── .llm_cache/          # Litellm disk cache (gitignored)
 ├── data.db              # Unified database (scrape, collect, classify tables)
+├── taxonomy.yaml        # Classification category taxonomy (ground truth)
 └── scraped/             # Scraped HTML content
     └── <hash>.html.zst  # Zstandard-compressed HTML files
 ```
@@ -27,7 +28,8 @@ CREATE TABLE scrape (
     kind TEXT NOT NULL,
     timestamp TEXT NOT NULL,
     status_code INTEGER,
-    error TEXT
+    error TEXT,
+    data JSON
 );
 
 CREATE INDEX idx_scrape_url_hash ON scrape(url_hash);
@@ -42,11 +44,29 @@ CREATE INDEX idx_scrape_timestamp ON scrape(timestamp);
 - `timestamp`: ISO 8601 UTC timestamp with timezone
 - `status_code`: HTTP status code (if successful)
 - `error`: Error message (if failed)
+- `data`: JSON with scrape metrics (see below)
+
+**data JSON structure** (when successful):
+```json
+{
+  "size_full": 1234567,
+  "size_compressed": 234567,
+  "tokens_full": 50000,
+  "tokens_stripped": 15000,
+  "scrape_duration": 3.45
+}
+```
 
 **Notes:**
+- `size_full`: Full HTML size in bytes
+- `size_compressed`: Compressed file size in bytes (.zst)
+- `tokens_full`: Token count of full HTML
+- `tokens_stripped`: Token count after preprocessing (scripts/styles removed)
+- `scrape_duration`: Time taken to scrape in seconds
 - Each URL scraped only once, cached indefinitely
 - Failed scrapes are cached to avoid repeated failures
 - File path: `data/scraped/{url_hash}.html.zst`
+- Debug file (stripped HTML): `data/scraped/{url_hash}-stripped.html` (uncompressed, for inspection)
 - Use `get_scrape_path(url)` or `open_scraped(url, mode)` to access files
 
 ### collect table
@@ -83,6 +103,7 @@ CREATE INDEX idx_collect_added_at ON collect(added_at);
 {
   "tokens_full": 50000,
   "tokens_stripped": 15000,
+  "collect_duration": 12.34,
   "title": "Page title",
   "kind": "conference|newsletter|blog_aggregator|...",
   "collection_quality_score": 0.85,
@@ -101,6 +122,7 @@ CREATE INDEX idx_collect_added_at ON collect(added_at);
 **Notes:**
 - `tokens_full`: Token count of full HTML
 - `tokens_stripped`: Token count after preprocessing (scripts/styles removed)
+- `collect_duration`: Total time for collection process in seconds
 - Other fields are LLM-extracted
 
 ### classify table
@@ -149,6 +171,7 @@ CREATE INDEX idx_classify_kind ON classify(kind);
 {
   "tokens_full": 50000,
   "tokens_stripped": 15000,
+  "classify_duration": 8.76,
   "title": "...",
   "authors": ["..."],
   "published_date": "...",
@@ -164,8 +187,53 @@ CREATE INDEX idx_classify_kind ON classify(kind);
 **Notes:**
 - `tokens_full`: Token count of full HTML
 - `tokens_stripped`: Token count after preprocessing
+- `classify_duration`: Total time for classification process in seconds
 - `classify_relevancy` and `kind` stored as columns (not in data JSON)
+- `category`: Assigned category ID from taxonomy (stored as column in future versions)
 - Other fields are LLM-extracted
+
+## Classification Taxonomy
+
+**Ground truth:** `data/taxonomy.yaml`
+
+The classification taxonomy defines a hierarchical category structure for classifying AI safety/alignment content. Each classified item must be assigned to exactly one **leaf category**.
+
+### Structure
+
+- **Hierarchical organization**: Categories can contain subcategories
+- **Leaf categories**: Only leaf nodes (categories without children) are assignable
+- **Category fields**:
+  - `id`: Machine-readable identifier (snake_case, unique across entire taxonomy)
+  - `name`: Human-readable name
+  - `description`: Detailed description of what belongs in the category
+  - `children`: List of subcategories (empty for leaf categories)
+  - `examples`: Optional list of example items from 2024 (ONLY allowed on leaf categories)
+  - `is_leaf`: Can be explicitly set in YAML, otherwise inferred from presence of children
+
+### Top-Level Categories
+
+1. **Understand existing models** - Evals, interpretability, learning dynamics, model psychology
+2. **Control the thing** - Alignment, monitoring, control, deception detection
+3. **Alternative architectures** - Safer-by-design AI systems
+4. **Better data** - Data quality, filtering, attribution for safety
+5. **Make AI solve it** - Scalable oversight, debate, task decomposition
+6. **Theory** - Agent foundations, corrigibility, cooperation theory
+7. **Sociotechnical** - Approaches combining technical and social elements
+8. **Misc / for new agenda clustering** - Items not yet fitting other categories
+
+### Usage
+
+- Load via `load_taxonomy()` from `taxonomy.py`
+- Format for LLM prompts via `format_taxonomy_for_prompt()`
+- Validate category IDs via `taxonomy.validate_category_id(cat_id)`
+- Total: **87 leaf categories** (as of 2025-10-21)
+
+### Validation Rules
+
+1. All category IDs must be unique across entire taxonomy
+2. Category IDs must be alphanumeric with underscores/hyphens (snake_case)
+3. Only leaf categories can have examples
+4. At least one leaf category must exist
 
 ## File Formats
 

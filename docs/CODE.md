@@ -33,6 +33,7 @@ All code in `shallow_review/` module. Executable `pipeline.py` at root imports a
 - **`llm.py`**: Litellm initialization, retry logic, JSON extraction, token tracking
 - **`utils.py`**: File I/O (`smart_open`), logging setup, console object, token counting
 - **`stats.py`**: Global thread-safe stats tracking
+- **`taxonomy.py`**: Classification taxonomy loader and utilities (loads `data/taxonomy.yaml`)
 - **`scrape.py`**: Web scraping with playwright
 - **`collect.py`**: Collection phase logic
 - **`classify.py`**: Classification phase logic
@@ -152,14 +153,28 @@ console.print("Normal text")
 
 # Progress bars for long operations
 from rich.progress import Progress
-with Progress() as progress:
-    task = progress.add_task("Processing...", total=len(items))
-    for item in items:
-        # ... work ...
-        progress.update(task, advance=1)
+import logging
+
+# Suppress INFO logging during progress to avoid clashing
+root_logger = logging.getLogger()
+old_level = root_logger.level
+root_logger.setLevel(logging.WARNING)
+
+try:
+    with Progress() as progress:
+        task = progress.add_task("Processing...", total=len(items))
+        for item in items:
+            # Use progress.console instead of global console
+            progress.console.print("[green]✓[/green] Item processed")
+            progress.update(task, advance=1)
+finally:
+    root_logger.setLevel(old_level)
 ```
 
-**⚠️ Never use print() - always use console.print() or logging**
+**⚠️ Important:**
+- Never use `print()` - always use `console.print()` or logging
+- Inside progress bar context, use `progress.console.print()` to avoid display conflicts
+- Temporarily suppress INFO logging during progress bars (set to WARNING or ERROR)
 
 ## Threading and Graceful Shutdown
 
@@ -300,6 +315,16 @@ except Exception as e:
 - Configured in `llm.py` via tenacity
 - Retries: rate limits, API errors, validation errors (with cache bypass)
 - No retry: budget exceeded, shutdown requested
+
+**Timeouts:**
+- Scraping: 60 seconds (playwright `timeout=60000`)
+- LLM calls: 120 seconds (litellm `timeout=120.0`)
+- Prevents indefinite hangs
+
+**Stats update failures:**
+- Stats updates wrapped in try/except to not fail main operations
+- Failures logged as warnings rather than silently swallowed
+- Pattern: `except RuntimeError as stat_err: logger.warning(f"Failed to update stats: {stat_err}")`
 
 ## Coding Principles
 

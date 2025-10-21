@@ -4,7 +4,6 @@ import json
 import logging
 import sqlite3
 from datetime import datetime, timezone
-from typing import Any
 
 import yaml
 from pydantic import BaseModel, Field
@@ -14,13 +13,12 @@ from .common import (
     CollectStatus,
     RunCollectConfig,
     SourceKind,
-    is_shutdown_requested,
 )
 from .data_db import get_data_db
 from .llm import get_completion
 from .scrape import compute_scrape, open_scraped
 from .stats import get_stats
-from .utils import count_tokens, format_error, preprocess_html
+from .utils import format_error, preprocess_html
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +41,8 @@ class CollectionResult(BaseModel):
     collection_quality_score: float = Field(ge=0.0, le=1.0)
     comments: str
     links: list[ExtractedLink] = Field(default_factory=list)
+    tokens_full: int | None = None  # Full HTML token count (before stripping)
+    tokens_stripped: int | None = None  # Stripped HTML token count (after stripping)
 
 
 def add_collect_source(url: str, source: str | None = None) -> bool:
@@ -116,6 +116,9 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
     Raises:
         RuntimeError: If scraping, preprocessing, or extraction fails
     """
+    import time
+    
+    collect_start = time.time()
     db = get_data_db()
 
     # Check if already processed
@@ -148,7 +151,7 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
 
     # Step 1: Scrape the page
     try:
-        scrape_path = compute_scrape(url, kind="collect", headless=True)
+        compute_scrape(url, kind="collect", headless=True)
     except Exception as e:
         error_msg = format_error(e, levels=2)
         logger.error(f"Failed to scrape {url}: {error_msg}")
@@ -167,8 +170,8 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
             stats = get_stats()
             with stats.lock:
                 stats.collect_sources.errors[url] = error_msg
-        except RuntimeError:
-            pass
+        except RuntimeError as stat_err:
+            logger.warning(f"Failed to update stats: {stat_err}")
 
         raise RuntimeError(f"Scrape error: {e}") from e
 
@@ -197,8 +200,8 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
             stats = get_stats()
             with stats.lock:
                 stats.collect_sources.errors[url] = error_msg
-        except RuntimeError:
-            pass
+        except RuntimeError as stat_err:
+            logger.warning(f"Failed to update stats: {stat_err}")
 
         raise RuntimeError(f"Preprocessing error: {e}") from e
 
@@ -213,14 +216,13 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
         db.execute(
             """
             UPDATE collect
-            SET status = ?, processed_at = ?, error = ?, preprocessing_stats = ?
+            SET status = ?, processed_at = ?, error = ?
             WHERE url = ?
             """,
             (
                 CollectStatus.EXTRACT_ERROR.value,
                 timestamp,
                 error_msg,
-                json.dumps(preprocessing_stats),
                 url,
             ),
         )
@@ -231,8 +233,8 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
             stats = get_stats()
             with stats.lock:
                 stats.collect_sources.errors[url] = error_msg
-        except RuntimeError:
-            pass
+        except RuntimeError as stat_err:
+            logger.warning(f"Failed to update stats: {stat_err}")
 
         raise RuntimeError(error_msg)
 
@@ -259,14 +261,13 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
         db.execute(
             """
             UPDATE collect
-            SET status = ?, processed_at = ?, error = ?, preprocessing_stats = ?
+            SET status = ?, processed_at = ?, error = ?
             WHERE url = ?
             """,
             (
                 CollectStatus.EXTRACT_ERROR.value,
                 timestamp,
                 error_msg,
-                json.dumps(preprocessing_stats),
                 url,
             ),
         )
@@ -277,12 +278,17 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
             stats = get_stats()
             with stats.lock:
                 stats.collect_sources.errors[url] = error_msg
-        except RuntimeError:
-            pass
+        except RuntimeError as stat_err:
+            logger.warning(f"Failed to update stats: {stat_err}")
 
         raise RuntimeError(f"LLM extraction error: {e}") from e
 
-    # Step 5: Add links directly to classify table
+    # Step 5: Add preprocessing stats and timing to result
+    collect_duration = time.time() - collect_start
+    result.tokens_full = preprocessing_stats["tokens_before"]
+    result.tokens_stripped = preprocessing_stats["tokens_after"]
+
+    # Step 6: Add links directly to classify table
     from .classify import add_classify_candidate
 
     for link in result.links:
@@ -296,20 +302,22 @@ def compute_collect(url: str, config: RunCollectConfig, force_recompute: bool = 
                 collect_relevancy=link.ai_safety_relevancy,
             )
 
-    # Step 6: Update source status to done
-    data_json = result.model_dump_json()
+    # Step 7: Update source status to done and add timing
+    # Add timing info to data
+    data_dict = result.model_dump()
+    data_dict["collect_duration"] = round(collect_duration, 2)
+    data_json = json.dumps(data_dict)
 
     db.execute(
         """
         UPDATE collect
-        SET status = ?, processed_at = ?, data = ?, preprocessing_stats = ?
+        SET status = ?, processed_at = ?, data = ?
         WHERE url = ?
         """,
         (
             CollectStatus.DONE.value,
             timestamp,
             data_json,
-            json.dumps(preprocessing_stats),
             url,
         ),
     )
