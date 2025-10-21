@@ -96,7 +96,7 @@ This log documents major problems, solutions, lessons learned, and design decisi
 **What was done:**
 - Created hierarchical taxonomy system for classification categories
 - Implemented `taxonomy.py` module with Pydantic models and utilities
-- Created `data/taxonomy.yaml` with 95 leaf categories across 8 top-level groups
+- Created `data/taxonomy.yaml` with 103 leaf categories across 8 top-level groups
 - Added taxonomy validation and prompt formatting functions
 - Updated documentation (DATA.md, CODE.md, CLASSIFY.md)
 - Added 4 megalab-specific categories: OpenAI Preparedness, DeepMind Frontier Safety, DeepMind Amplified Oversight, Anthropic Safeguards
@@ -104,15 +104,17 @@ This log documents major problems, solutions, lessons learned, and design decisi
 - Improved monitoring category descriptions for better disambiguation (control evals, mech anomaly, indirect, faithful CoT, whitebox, redteam)
 - Added examples to interpretability categories and clarified theory category scopes
 - Refined descriptions based on comparison with 2024 Shallow Review to ensure practical classificability
+- Added 8 "other" catch-all categories for truly novel work not fitting existing categories
 
 **Taxonomy structure:**
 - 8 top-level categories: understand models, control, alternatives, data, AI solve, theory, sociotechnical, misc
-- 95 assignable leaf categories (only leaves can be assigned to items)
+- 103 assignable leaf categories (only leaves can be assigned to items)
 - Hierarchical organization (3 levels: top-level → mid-level → leaf)
 - Each category has: id, name, description, optional children, optional examples
 - Includes org-specific programs: OpenAI Preparedness, DeepMind Frontier Safety Framework, DeepMind Amplified Oversight, Anthropic Safeguards
 - Better data category expanded with 5 subcategories: filtering, poisoning, attribution, synthetic data, data quality
 - Monitoring categories clarified with technique/org/problem distinctions
+- Added 8 "other" catch-all categories for novel work: evals_other, interp_other, psych_other, deception_other, data_other, corrigibility_other, ontology_other, misc_other
 
 **Key design decisions:**
 - YAML as ground truth (not code, not docs)
@@ -151,7 +153,7 @@ is_valid = tax.validate_category_id("evals_autonomy")  # True (leaf)
 is_valid = tax.validate_category_id("evals")  # False (not leaf)
 
 # Get all assignable categories
-leaf_ids = tax.get_all_leaf_ids()  # 95 items
+leaf_ids = tax.get_all_leaf_ids()  # 103 items
 ```
 
 **Technical implementation:**

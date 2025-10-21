@@ -94,6 +94,12 @@ taxonomy:
               OpenAI Preparedness team work. Evaluating catastrophic risks, frontier
               model capabilities, red-teaming, and system cards. Risk assessment
               framework for advanced AI systems.
+          
+          - id: evals_other
+            name: Other evals
+            description: >
+              Evaluation work not fitting other eval categories. ONLY use for novel eval
+              approaches or domains not covered above. Most evals fit existing categories.
       
       - id: surprising_phenomena
         name: Surprising phenomena
@@ -182,6 +188,13 @@ taxonomy:
             description: >
               EleutherAI interpretability research program and outputs. Examples: path dependence
               research, refusal as affine function.
+          
+          - id: interp_other
+            name: Other interpretability
+            description: >
+              Interpretability work not fitting other interp categories. ONLY use for novel
+              interpretability approaches or distinct research programs not covered above.
+              Most interp work fits existing categories.
       
       - id: understand_learning
         name: Understand learning
@@ -228,6 +241,12 @@ taxonomy:
               Research on model personalities, persona consistency, behavioral archetypes,
               character-like patterns. Includes hyper-superstition, LLM psychology, and
               systematic study of model behavioral patterns.
+          
+          - id: psych_other
+            name: Other model psychology
+            description: >
+              Model psychology work not about personas. ONLY use for novel behavioral or
+              psychological patterns not covered by personas category.
 
   - id: control_thing
     name: Control the thing
@@ -313,6 +332,13 @@ taxonomy:
               (doesn't examine activations). NOT CoT-based (doesn't analyze reasoning). Just
               input-output behavioral patterns. Examples: simple probes for deception, 
               sycophancy detection, behavioral lie classifiers.
+          
+          - id: deception_other
+            name: Other deception prevention
+            description: >
+              Deception prevention approaches not fitting above categories. ONLY use for
+              novel methods distinct from control evals, anomaly detection, indirect monitoring,
+              faithful CoT, or Cadenza's approach.
       
       - id: cot_monitoring
         name: Chain of thought monitoring
@@ -503,6 +529,13 @@ taxonomy:
         description: >
           RLHF data quality, preference data quality, instruction-following data
           curation. Post-training data quality for better alignment outcomes.
+      
+      - id: data_other
+        name: Other data interventions
+        description: >
+          Data-level safety interventions not fitting above categories. ONLY use for
+          novel data approaches distinct from filtering, poisoning defense, attribution,
+          synthetic data, or quality improvement.
 
   - id: ai_solve_alignment
     name: Make AI solve it
@@ -667,6 +700,13 @@ taxonomy:
             description: >
               Powerseeking theorems, CAST (Catastrophic Alignment Failure theorems),
               shutdown problem formalization. Theoretical foundations of alignment.
+          
+          - id: corrigibility_other
+            name: Other corrigibility
+            description: >
+              Corrigibility research not fitting behavior alignment theory. ONLY use for
+              novel corrigibility approaches distinct from powerseeking theorems, CAST,
+              or shutdown formalization.
       
       - id: ontology_identification
         name: Ontology Identification
@@ -682,6 +722,13 @@ taxonomy:
             description: >
               Wentworth's natural abstractions hypothesis, natural latents, convergent
               abstractions that humans and AIs might share. EA funded.
+          
+          - id: ontology_other
+            name: Other ontology work
+            description: >
+              Ontology identification work not fitting natural abstractions. ONLY use for
+              novel approaches to concept alignment, abstraction identification, or
+              ontological bridging distinct from natural abstractions hypothesis.
       
       - id: understand_cooperation
         name: Understand cooperation
@@ -805,4 +852,11 @@ taxonomy:
           agendas but don't fit above categories. 2024 had 20+ org sections
           (Apollo, CAIS, FAR, Anthropic, OpenAI, AISIs) distributed across
           agendas above.
+      
+      - id: misc_other
+        name: Other uncategorized work
+        description: >
+          Truly novel research agendas not fitting any category above. ONLY use for
+          genuinely distinct new approaches that represent unique research directions.
+          Most work fits existing categories - use this sparingly.
 
