@@ -18,7 +18,7 @@ from .llm import get_completion
 from .scrape import compute_scrape, open_scraped
 from .stats import get_stats
 from .taxonomy import load_taxonomy, format_taxonomy_for_prompt
-from .utils import format_error, preprocess_html
+from .utils import format_error, normalize_url, preprocess_html, url_hash, url_hash_short
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ def add_classify_candidate(
     Add a URL to classification queue.
 
     Args:
-        url: URL to classify
+        url: URL to classify (will be normalized)
         source: Source label ("collect" or user-supplied)
         source_url: URL of source page (if from collect)
         collect_relevancy: Relevancy score from collect phase (if applicable)
@@ -71,11 +71,12 @@ def add_classify_candidate(
     Returns:
         True if added (new), False if already exists
     """
-    import hashlib
+    # Normalize URL for consistent handling
+    url = normalize_url(url)
     
     timestamp = datetime.now(timezone.utc).isoformat()
-    url_hash = hashlib.sha256(url.encode("utf-8")).hexdigest()
-    url_hash_short = url_hash[:8]
+    hash_value = url_hash(url)
+    hash_short = url_hash_short(url)
 
     try:
         with data_db_locked() as db:
@@ -85,7 +86,7 @@ def add_classify_candidate(
                 (url, url_hash, url_hash_short, status, source, source_url, collect_relevancy, added_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (url, url_hash, url_hash_short, ClassifyStatus.NEW.value, source, source_url, collect_relevancy, timestamp),
+                (url, hash_value, hash_short, ClassifyStatus.NEW.value, source, source_url, collect_relevancy, timestamp),
             )
 
         # Update stats

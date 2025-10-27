@@ -18,6 +18,7 @@ from .data_db import data_db_locked
 from .llm import get_completion
 from .scrape import compute_scrape, open_scraped
 from .stats import get_stats
+from .utils import normalize_url, url_hash, url_hash_short
 from .utils import format_error, preprocess_html
 
 logger = logging.getLogger(__name__)
@@ -50,17 +51,18 @@ def add_collect_source(url: str, source: str | None = None) -> bool:
     Add a URL to collect from.
 
     Args:
-        url: URL of source page
+        url: URL of source page (will be normalized)
         source: Optional user-supplied source label
 
     Returns:
         True if added (new), False if already exists
     """
-    import hashlib
+    # Normalize URL for consistent handling
+    url = normalize_url(url)
     
     timestamp = datetime.now(timezone.utc).isoformat()
-    url_hash = hashlib.sha256(url.encode("utf-8")).hexdigest()
-    url_hash_short = url_hash[:8]
+    hash_value = url_hash(url)
+    hash_short = url_hash_short(url)
 
     try:
         with data_db_locked() as db:
@@ -69,7 +71,7 @@ def add_collect_source(url: str, source: str | None = None) -> bool:
                 INSERT INTO collect (url, url_hash, url_hash_short, status, source, added_at)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (url, url_hash, url_hash_short, CollectStatus.NEW.value, source, timestamp),
+                (url, hash_value, hash_short, CollectStatus.NEW.value, source, timestamp),
             )
 
         # Update stats

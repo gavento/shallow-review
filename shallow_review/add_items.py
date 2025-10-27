@@ -12,7 +12,7 @@ from .collect import add_collect_source
 from .common import PROMPTS_PATH
 from .llm import get_completion
 from .scrape import compute_scrape, open_scraped
-from .utils import format_error, preprocess_html
+from .utils import format_error, normalize_url, preprocess_html
 
 logger = logging.getLogger(__name__)
 
@@ -43,176 +43,32 @@ def is_valid_url(url: str) -> bool:
         return False
 
 
-# Common tracking parameters to remove
-TRACKING_PARAMS = {
-    # Google Analytics and UTM
-    "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
-    "utm_name", "utm_id", "utm_source_platform", "utm_creative_format",
-    "utm_marketing_tactic",
-    # Facebook
-    "fbclid", "fb_action_ids", "fb_action_types", "fb_source", "fb_ref",
-    # Google
-    "gclid", "gclsrc", "dclid",
-    # Twitter/X
-    "twclid", "s", "t",
-    # LinkedIn
-    "lipi", "licu",
-    # Mailchimp
-    "mc_cid", "mc_eid",
-    # Other common
-    "ref", "source", "campaign", "affiliate", "click_id", "referrer",
-    # Session/tracking
-    "session", "sessionid", "sid", "ssid", "_ga", "_gid",
-    # Misc
-    "share", "sharesource", "via", "from",
-}
-
-
-def normalize_google_docs_url(url: str) -> str:
+def check_url_exists(url: str) -> tuple[bool, str | None]:
     """
-    Normalize Google Docs URLs to view mode.
-    
-    Converts edit/comment URLs to view mode, preserving gid and tab params:
-    - .../edit?... → .../view?...
-    - .../comment?... → .../view?...
-    - Preserves gid (sheet ID) and tab params
+    Check if URL already exists in collect or classify tables.
     
     Args:
-        url: Original URL
+        url: URL to check (should be normalized before calling)
         
     Returns:
-        Normalized URL (view mode if Google Docs, otherwise unchanged)
+        Tuple of (exists, phase) where:
+        - exists: True if URL found in any table
+        - phase: "collect" or "classify" if found, None if not found
     """
-    # Match Google Docs URLs
-    # docs.google.com/document/d/{id}/edit or /comment
-    # docs.google.com/spreadsheets/d/{id}/edit or /comment
-    # docs.google.com/presentation/d/{id}/edit or /comment
-    
-    if "docs.google.com" not in url:
-        return url
-    
-    # Replace /edit or /comment with /view
-    url = re.sub(r'/(edit|comment)(\?|#|$)', r'/view\2', url)
-    
-    return url
+    from .data_db import data_db_locked
 
+    with data_db_locked() as db:
+        # Check collect table
+        cursor = db.execute("SELECT 1 FROM collect WHERE url = ?", (url,))
+        if cursor.fetchone():
+            return (True, "collect")
 
-def normalize_url(
-    url: str,
-    remove_tracking: bool = True,
-    remove_fragment: bool = True,
-    normalize_trailing_slash: bool = True,
-) -> str:
-    """
-    Normalize URLs for deduplication.
-    
-    Performs:
-    - Convert arXiv PDF → abstract page
-    - Convert Google Docs edit/comment → view (preserve gid, tab)
-    - Remove tracking parameters (utm_*, fbclid, etc.)
-    - Remove fragments (#anchor)
-    - Normalize trailing slashes
-    
-    Args:
-        url: Original URL
-        remove_tracking: Remove tracking query parameters
-        remove_fragment: Remove fragment (#anchor)
-        normalize_trailing_slash: Add trailing slash to directory-like URLs
-        
-    Returns:
-        Normalized URL
-    """
-    # First: arXiv normalization (specific handling)
-    url = normalize_arxiv_url(url)
-    
-    # Second: Google Docs normalization
-    url = normalize_google_docs_url(url)
-    
-    # Parse URL
-    parsed = urlparse(url)
-    
-    # Remove fragment if requested
-    fragment = "" if remove_fragment else parsed.fragment
-    
-    # Process query parameters
-    if remove_tracking and parsed.query:
-        # Parse query string
-        params = parse_qs(parsed.query, keep_blank_values=True)
-        
-        # Filter out tracking parameters
-        filtered_params = {
-            k: v for k, v in params.items()
-            if k.lower() not in TRACKING_PARAMS
-        }
-        
-        # Rebuild query string
-        if filtered_params:
-            # Flatten lists and sort for consistency
-            sorted_params = sorted(
-                (k, v[0] if isinstance(v, list) and len(v) == 1 else v)
-                for k, v in filtered_params.items()
-            )
-            query = urlencode(sorted_params, doseq=True)
-        else:
-            query = ""
-    else:
-        query = parsed.query
-    
-    # Normalize path
-    path = parsed.path
-    if normalize_trailing_slash and path and not path.endswith('/'):
-        # Add trailing slash if it looks like a directory (no file extension)
-        # Don't add to root or if it has an extension
-        if path != "/" and "." not in path.split("/")[-1]:
-            # Only for paths that look like directories
-            # Actually, this can cause issues - skip for now
-            pass
-    
-    # Rebuild URL
-    normalized = urlunparse((
-        parsed.scheme,
-        parsed.netloc,
-        path,
-        parsed.params,
-        query,
-        fragment,
-    ))
-    
-    if normalized != url:
-        logger.debug(f"Normalized URL: {url} → {normalized}")
-    
-    return normalized
+        # Check classify table
+        cursor = db.execute("SELECT 1 FROM classify WHERE url = ?", (url,))
+        if cursor.fetchone():
+            return (True, "classify")
 
-
-def normalize_arxiv_url(url: str) -> str:
-    """
-    Normalize arXiv URLs to abstract page format.
-    
-    Converts PDF URLs to HTML abstract pages:
-    - https://arxiv.org/pdf/2404.12345.pdf → https://arxiv.org/abs/2404.12345
-    - https://arxiv.org/pdf/2404.12345v2.pdf → https://arxiv.org/abs/2404.12345
-    - https://arxiv.org/pdf/2404.12345 → https://arxiv.org/abs/2404.12345 (no .pdf extension)
-    
-    Args:
-        url: Original URL
-        
-    Returns:
-        Normalized URL (abstract page if arXiv, otherwise unchanged)
-    """
-    # Match arXiv PDF URLs (with or without .pdf extension)
-    # Pattern: arxiv.org/pdf/YYMM.NNNNN[vN][.pdf]
-    arxiv_pdf_pattern = r"(https?://arxiv\.org)/pdf/(\d{4}\.\d{4,5})(v\d+)?(\.pdf)?"
-    match = re.match(arxiv_pdf_pattern, url)
-    
-    if match:
-        base_url = match.group(1)
-        paper_id = match.group(2)
-        # Convert to abstract page (ignore version and extension)
-        normalized = f"{base_url}/abs/{paper_id}"
-        logger.debug(f"Normalized arXiv URL: {url} → {normalized}")
-        return normalized
-    
-    return url
+    return (False, None)
 
 
 def detect_url_type(url: str, model: str = "anthropic/claude-haiku-4-5") -> URLTypeDetection:

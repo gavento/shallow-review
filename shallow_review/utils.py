@@ -1,11 +1,14 @@
 """Utility functions for file I/O, logging, and console output."""
 
 import gzip
+import hashlib
 import logging
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import IO, Any, Iterable, Literal
+from urllib.parse import urlparse, urlunparse
 
 import numpy as np
 import zstandard as zstd
@@ -24,6 +27,151 @@ try:
     _tiktoken_available = True
 except ImportError:
     _tiktoken_available = False
+
+
+# Tracking parameters to remove from URLs
+TRACKING_PARAMS = {
+    # Google Analytics and UTM
+    "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+    "utm_name", "utm_id", "utm_source_platform", "utm_creative_format",
+    "utm_marketing_tactic",
+    # Facebook
+    "fbclid", "fb_action_ids", "fb_action_types", "fb_source", "fb_ref",
+    # Google
+    "gclid", "gclsrc", "dclid",
+    # Twitter/X
+    "twclid", "s", "t",
+    # LinkedIn
+    "lipi", "licu",
+    # Mailchimp
+    "mc_cid", "mc_eid",
+    # Other common
+    "ref", "source", "campaign", "affiliate", "click_id", "referrer",
+    # Session/tracking
+    "session", "sessionid", "sid", "ssid", "_ga", "_gid",
+    # Misc
+    "share", "sharesource", "via", "from",
+}
+
+
+def normalize_url(url: str) -> str:
+    """
+    Normalize URL to canonical form for deduplication and consistent handling.
+    
+    Transformations applied:
+    - Convert http:// to https://
+    - Remove www. prefix
+    - ArXiv: normalize to abs page without version (pdf → abs, strip vN)
+    - Google Docs: convert edit/comment → view mode
+    - Remove tracking parameters (utm_*, fbclid, etc.)
+    - Remove URL fragments (#...)
+    - Remove trailing slashes (except root /)
+    
+    Args:
+        url: URL to normalize
+        
+    Returns:
+        Normalized URL string
+    """
+    from urllib.parse import parse_qs, urlencode
+    
+    # Strip whitespace
+    url = url.strip()
+    
+    # Parse URL
+    parsed = urlparse(url)
+    
+    # Force https for http/https URLs
+    scheme = "https" if parsed.scheme in ("http", "https") else parsed.scheme
+    
+    # Remove www. prefix from netloc
+    netloc = parsed.netloc
+    if netloc.startswith("www."):
+        netloc = netloc[4:]
+    
+    # ArXiv normalization: pdf/abs + version stripping
+    if "arxiv.org" in netloc:
+        # Match arXiv ID with optional version: /abs/XXXX.XXXXX or /pdf/XXXX.XXXXXvN.pdf
+        arxiv_pattern = r'/(?:abs|pdf)/(\d{4}\.\d{4,6})(?:v\d+)?(?:\.pdf)?'
+        match = re.search(arxiv_pattern, parsed.path)
+        
+        if match:
+            arxiv_id = match.group(1)
+            # Canonical form: /abs/ID (no version, no .pdf)
+            path = f"/abs/{arxiv_id}"
+            query = ""  # Remove query params for arXiv
+            fragment = ""
+        else:
+            # Not a standard arXiv paper URL, keep as-is but clean
+            path = parsed.path.rstrip("/") if parsed.path != "/" else parsed.path
+            query = parsed.query
+            fragment = ""
+    
+    # Google Docs normalization: edit/comment → view
+    elif "docs.google.com" in netloc:
+        # Replace /edit or /comment with /view
+        path = re.sub(r'/(edit|comment)(\?|#|$)', r'/view\2', parsed.path)
+        query = parsed.query
+        fragment = ""  # Remove fragment
+    
+    # Standard normalization for other URLs
+    else:
+        path = parsed.path.rstrip("/") if parsed.path != "/" else parsed.path
+        query = parsed.query
+        fragment = ""  # Remove fragment
+    
+    # Remove tracking parameters from query string
+    if query:
+        params = parse_qs(query, keep_blank_values=True)
+        
+        # Filter out tracking parameters
+        filtered_params = {
+            k: v for k, v in params.items()
+            if k.lower() not in TRACKING_PARAMS
+        }
+        
+        # Rebuild query string
+        if filtered_params:
+            # Flatten lists and sort for consistency
+            sorted_params = sorted(
+                (k, v[0] if isinstance(v, list) and len(v) == 1 else v)
+                for k, v in filtered_params.items()
+            )
+            query = urlencode(sorted_params, doseq=True)
+        else:
+            query = ""
+    
+    # Reconstruct URL
+    normalized = urlunparse((scheme, netloc, path, parsed.params, query, fragment))
+    
+    return normalized
+
+
+def url_hash(url: str) -> str:
+    """
+    Compute SHA256 hash of URL (after normalization).
+    
+    Args:
+        url: URL to hash (will be normalized first)
+        
+    Returns:
+        64-character hexadecimal hash string
+    """
+    normalized = normalize_url(url)
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
+def url_hash_short(url: str) -> str:
+    """
+    Compute short (8-character) hash of URL for human-readable IDs.
+    
+    Args:
+        url: URL to hash (will be normalized first)
+        
+    Returns:
+        8-character hexadecimal hash string
+    """
+    return url_hash(url)[:8]
 
 
 def smart_open(

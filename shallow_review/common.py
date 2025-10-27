@@ -71,32 +71,31 @@ class ClassifyKind(str, Enum):
     """Content type classification (independent of AI safety/alignment relevancy).
     
     Note: All kinds can have any relevancy and inclusion scores. For example,
-    a paper_page can have low AI safety relevance (ai_safety_relevance=0.1) or
-    high relevance (ai_safety_relevance=0.9), and similarly for inclusion suitability.
+    a paper can have high safety relevance (0.9) but low inclusion (0.1) if not technical,
+    or high relevance (0.9) and high inclusion (0.9) if presenting novel safety research.
     Use ai_safety_relevance and shallow_review_inclusion fields to determine scores.
     """
 
-    # Research content
-    PAPER_PAGE = "paper_page"  # Academic paper page (HTML)
-    PAPER_PDF = "paper_pdf"  # PDF paper
-    ARXIV = "arxiv"  # ArXiv paper page
-    # Online content
-    BLOG_POST = "blog_post"  # Blog post or article
-    LESSWRONG = "lesswrong"  # LessWrong or AI Alignment Forum post
-    NEWS_ARTICLE = "news_article"  # News article
-    SOCIAL_MEDIA = "social_media"  # Twitter, Reddit, etc.
-    # Media
-    VIDEO = "video"  # Video content (YouTube, etc.)
-    PODCAST = "podcast"  # Podcast episode
-    # Educational
-    COURSE = "course"  # Course or tutorial
-    SLIDES = "slides"  # Presentation slides
-    # Other types
-    COMMERCIAL = "commercial"  # Product/service pages
-    PERSONAL_PAGE = "personal_page"  # Personal homepage
-    NOT_FOUND = "404"  # Page not found
-    BLOCKED = "blocked"  # Blocked access (captcha, login, etc.)
-    OTHER = "other"  # Other types
+    # Research outputs
+    PAPER_PUBLISHED = "paper_published"  # Peer-reviewed paper in journal/conference
+    PAPER_PREPRINT = "paper_preprint"  # Preprint (arXiv, SSRN, etc.)
+    BLOG_POST = "blog_post"  # Blog post or article (general blogs, personal blogs)
+    LESSWRONG = "lesswrong"  # LessWrong or AI Alignment Forum post (special category)
+    VIDEO = "video"  # Video, talk recording, lecture
+    PODCAST = "podcast"  # Podcast episode or audio content
+    CODE_TOOL = "code_tool"  # Software, library, tool, implementation
+    DATASET_BENCHMARK = "dataset_benchmark"  # Dataset or benchmark release
+    AGENDA_MANIFESTO = "agenda_manifesto"  # Research agenda, roadmap, manifesto
+    NEWS_ANNOUNCEMENT = "news_announcement"  # News article or official announcement
+    SOCIAL_MEDIA = "social_media"  # Social media post (strict criteria: major announcements only)
+    COURSE_EDUCATIONAL = "course_educational"  # Course materials, tutorials, educational content
+    # Non-research content
+    COMMERCIAL = "commercial"  # Product/service pages, company pages
+    PERSONAL_PAGE = "personal_page"  # Personal homepages, bios
+    # Access issues
+    BLOCKED = "blocked"  # Blocked access (captcha, login wall, paywall - content exists but inaccessible)
+    ERROR_DETECTED = "error_detected"  # Content could not be accessed (429, 404, 5xx, format errors, etc.)
+    OTHER = "other"  # Other content type
 
 
 # Configuration objects

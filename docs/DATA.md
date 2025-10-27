@@ -299,38 +299,35 @@ Content type classification (independent of AI safety/alignment relevancy).
 Any kind can have any combination of scores.
 
 Examples:
-- `paper_page` + `ai_safety_relevance=0.9` + `shallow_review_inclusion=0.9` → relevant technical AI safety paper
-- `paper_page` + `ai_safety_relevance=0.1` + `shallow_review_inclusion=0.1` → irrelevant paper (e.g., biology)
+- `paper_published` + `ai_safety_relevance=0.9` + `shallow_review_inclusion=0.9` → relevant technical AI safety paper
+- `paper_published` + `ai_safety_relevance=0.1` + `shallow_review_inclusion=0.1` → irrelevant paper (e.g., biology)
 - `blog_post` + `ai_safety_relevance=0.8` + `shallow_review_inclusion=0.7` → relevant technical alignment post
 - `news_announcement` + `ai_safety_relevance=0.8` + `shallow_review_inclusion=0.3` → news about safety work (no original research)
 
 **Kind values:**
 
-Research content:
-- `paper_page` - Academic paper page (HTML)
-- `paper_pdf` - PDF paper
-- `arxiv` - ArXiv paper page
+Research outputs:
+- `paper_published` - Peer-reviewed paper in journal or conference proceedings
+- `paper_preprint` - Preprint (arXiv, SSRN, etc.)
+- `blog_post` - Blog post or article (general blogs, personal blogs)
+- `lesswrong` - LessWrong or AI Alignment Forum post (special category due to importance in AI safety community)
+- `video` - Video, talk recording, lecture
+- `podcast` - Podcast episode or audio content
+- `code_tool` - Software, library, tool, implementation
+- `dataset_benchmark` - Dataset or benchmark release
+- `agenda_manifesto` - Research agenda, roadmap, or manifesto
+- `news_announcement` - News article or official announcement
+- `social_media` - Social media post (strict criteria: major announcements only - see below)
+- `course_educational` - Course materials, tutorials, educational content
 
-Online content:
-- `blog_post` - Blog post or article
-- `lesswrong` - LessWrong or AI Alignment Forum post
-- `news_article` - News article
-- `social_media` - Twitter, Reddit, etc. posts (announcements only - see below)
+Non-research content:
+- `commercial` - Product/service pages, company pages
+- `personal_page` - Personal homepages, bios
 
-Media:
-- `video` - Video content (YouTube, etc.)
-- `podcast` - Podcast episode
-
-Educational:
-- `course` - Course or tutorial
-- `slides` - Presentation slides
-
-Other:
-- `commercial` - Product/service pages
-- `personal_page` - Personal homepage
-- `404` - Page not found
-- `blocked` - Blocked access (captcha, login, etc.)
-- `other` - Other types
+Access issues:
+- `blocked` - Blocked access (captcha, login wall, paywall - content exists but inaccessible)
+- `error_detected` - Content could not be accessed (429, 404, 5xx, format errors, parsing failures, etc.)
+- `other` - Other content type
 
 **Social media inclusion criteria:**
 

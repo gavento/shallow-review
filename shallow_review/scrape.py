@@ -1,6 +1,5 @@
 """Web scraping utilities with playwright and selenium."""
 
-import hashlib
 import logging
 import threading
 from datetime import datetime, timezone
@@ -12,7 +11,7 @@ from playwright.sync_api import Browser, sync_playwright
 from .common import SCRAPED_PATH
 from .data_db import data_db_locked
 from .stats import get_stats
-from .utils import smart_open
+from .utils import normalize_url, smart_open, url_hash, url_hash_short
 
 logger = logging.getLogger(__name__)
 
@@ -36,31 +35,18 @@ _playwright_lock = threading.Lock()
 _selenium_create_lock = threading.Lock()
 
 
-def _compute_url_hash(url: str) -> str:
-    """
-    Compute hash for URL.
-
-    Args:
-        url: URL to hash
-
-    Returns:
-        Hex digest of hash
-    """
-    return hashlib.sha256(url.encode("utf-8")).hexdigest()
-
-
 def get_scrape_path(url: str) -> Path:
     """
     Get the file path for a scraped URL.
 
     Args:
-        url: URL to get path for
+        url: URL to get path for (will be normalized)
 
     Returns:
         Path to .html.zst file
     """
-    url_hash = _compute_url_hash(url)
-    return SCRAPED_PATH / f"{url_hash}.html.zst"
+    hash_value = url_hash(url)
+    return SCRAPED_PATH / f"{hash_value}.html.zst"
 
 
 def open_scraped(
@@ -276,8 +262,12 @@ def compute_scrape(
     Raises:
         RuntimeError: If scraping fails
     """
+    # Normalize URL for consistent handling
+    url = normalize_url(url)
+    
     # Compute hash and get path
-    url_hash = _compute_url_hash(url)
+    hash_value = url_hash(url)
+    hash_short = url_hash_short(url)
     scrape_path = get_scrape_path(url)
 
     # Check database cache
@@ -359,7 +349,7 @@ def compute_scrape(
             
             # Save stripped HTML for debugging (uncompressed) - optional
             if SAVE_STRIPPED_HTML and stripped_html:
-                stripped_path = SCRAPED_PATH / f"{url_hash}-stripped.html"
+                stripped_path = SCRAPED_PATH / f"{hash_value}-stripped.html"
                 with open(stripped_path, "w", encoding="utf-8") as f:
                     f.write(stripped_html)
             
@@ -386,7 +376,7 @@ def compute_scrape(
                         (url, url_hash, url_hash_short, kind, timestamp, status_code, error, data)
                         VALUES (?, ?, ?, ?, ?, ?, NULL, ?)
                         """,
-                        (url, url_hash, url_hash[:8], kind, timestamp, status_code, data_json),
+                        (url, hash_value, hash_short, kind, timestamp, status_code, data_json),
                     )
                     db.commit()
                 except Exception:
@@ -422,7 +412,7 @@ def compute_scrape(
                 (url, url_hash, url_hash_short, kind, timestamp, status_code, error)
                 VALUES (?, ?, ?, ?, ?, NULL, ?)
                 """,
-                (url, url_hash, url_hash[:8], kind, timestamp, error_msg),
+                (url, hash_value, hash_short, kind, timestamp, error_msg),
             )
 
         # Update stats
