@@ -2,6 +2,37 @@
 
 This log documents major problems, solutions, lessons learned, and design decisions during development.
 
+## 2025-10-27: SR2024 Rubrics Integration
+
+**What was done:**
+- Extended `export-taxonomy` command to include SR2024-style rubrics for each category
+- Added 12 structured fields to create machine-readable agenda descriptions
+- Fields are initially empty placeholders for manual or LLM-assisted filling
+
+**Changes:**
+- Export now outputs rubrics on leaf categories only (between description and items):
+  - `One-sentence summary`: Brief agenda description
+  - `Theory of change`: How the agenda aims to make impact
+  - `See also`: Related work/approaches
+  - `Orthodox problems`: References to alignment problems it addresses
+  - `Target case`: Optimistic/pessimistic/worst-case target
+  - `Broad approach`: Engineering/behavioural/cognitive/maths-philosophy
+  - `Key people`: Key researchers and organizations
+  - `Estimated FTEs`: Full-time equivalent count
+  - `Outputs 2024-5`: Papers, tools, benchmarks
+  - `Critiques`: Critical perspectives
+  - `Funded by`: Funding sources
+  - `Funding 2023-4`: Specific funding amounts
+- Added "### Items" subheader before the classified papers list
+- Format uses plain text headers (not bold/colon format) for easier editing
+- No intermediate blank lines between rubric fields for compactness
+
+**Rationale:**
+- Enables building up agendas (categories) with papers as evidence
+- Machine-readable format allows semi-automated analysis and comparison
+- Follows established SR2024 structure for consistency
+- Categories represent agendas, items represent outputs/evidence
+
 ## 2025-10-22: URL Hash Standardization
 
 **What was done:**
