@@ -27,8 +27,10 @@ taxonomy:
             name: Various capability evaluations
             description: >
               General capability benchmarks and evaluations not covered by more specific categories.
-              Includes comprehensive test suites, multi-domain assessments, and broad capability probes.
-              Examples: Humanity's Last Exam, GPQA Diamond, broad reasoning benchmarks.
+              Includes comprehensive test suites, multi-domain assessments, broad capability probes,
+              and general dangerous capability evaluations. Also includes meta-evaluation work
+              (improving evaluation methodology itself). Examples: Humanity's Last Exam, GPQA Diamond,
+              FrontierMath, HarmBench, broad reasoning benchmarks, meta-discussion on evaluation science.
           
           - id: evals_autonomy
             name: Autonomy
@@ -36,14 +38,16 @@ taxonomy:
               Evaluations of autonomous capabilities: self-directed task completion, tool use,
               real-world interactions. Includes agent benchmarks, developer productivity tests,
               web navigation, game playing, and other autonomous behavior assessments.
-              Examples: METR autonomy evals, Vending-Bench, Pokemon Red, SWE-bench.
+              Examples: METR autonomy evals, Vending-Bench, Pokemon Red, SWE-bench, RE-Bench,
+              AI R&D capability evaluations, AgentHarm.
           
           - id: evals_reasoning
             name: Reasoning
             description: >
               Tests of logical reasoning, multi-step inference, compositional reasoning.
-              Focus on reasoning failures, limitations, and edge cases.
-              Examples: Two-hop reasoning failures, composition failures in reasoning tasks.
+              Focus on reasoning failures, limitations, and edge cases. Note: forecasting
+              of AI capabilities (even if technically sophisticated) is NOT evaluation -
+              it goes elsewhere. Examples: Two-hop reasoning failures, composition failures.
           
           - id: evals_wmd
             name: WMDs (Weapons of Mass Destruction)
@@ -51,7 +55,7 @@ taxonomy:
               Evaluations of dangerous capabilities related to weapons of mass destruction.
               Includes bioweapons knowledge (virology, synthetic biology), chemical weapons,
               radiological/nuclear information, and related dual-use capabilities.
-              Examples: Virology tests, biology benchmarks for dangerous capabilities.
+              Examples: WMDP benchmark, virology tests, biology benchmarks for dangerous capabilities.
           
           - id: evals_situational_awareness
             name: Situational awareness and self-awareness
@@ -59,41 +63,46 @@ taxonomy:
               Tests of model's awareness of itself, its context, training process, or position
               in the world. Includes out-of-context reasoning about own capabilities, understanding
               of being an AI system, knowledge about training data or architecture.
+              Examples: Situational Awareness Dataset, introspection evaluations.
           
           - id: evals_steganography
             name: Steganography
             description: >
-              Ability to hide information in outputs, covert communication between model instances,
-              encoding hidden messages that humans miss but models can detect. Includes testing
-              for covert channels and hidden coordination.
+              Evaluations of ability to hide information in outputs, covert communication between
+              model instances, encoding hidden messages that humans miss but models can detect.
+              Includes testing for covert channels and hidden coordination. Examples: emergence
+              and mitigation of steganographic collusion, secret collusion studies.
           
           - id: evals_sandbagging
             name: Sandbagging
             description: >
-              Intentionally underperforming on evaluations while retaining capability.
+              Evaluations of intentionally underperforming on tests while retaining capability.
               Strategic performance hiding, deliberately failing tests to avoid scrutiny
-              or triggering safety measures.
+              or triggering safety measures. Examples: AI Sandbagging, sabotage evaluations,
+              sandbag detection through noise injection.
           
           - id: evals_self_replication
             name: Self-replication
             description: >
-              Ability to copy, deploy, or propagate itself. Includes acquiring cloud resources,
-              deploying code, creating new instances, and other self-propagation behaviors.
-              Examples: RepliBench, red line claims around self-replication capabilities.
+              Evaluations of ability to copy, deploy, or propagate itself. Includes acquiring
+              cloud resources, deploying code, creating new instances, and other self-propagation
+              behaviors. Examples: RepliBench, red line claims around self-replication capabilities.
           
           - id: evals_security
             name: Security
             description: >
-              Cybersecurity offense and defense capabilities, including exploitation,
+              Cybersecurity offense and defense capabilities evaluations, including exploitation,
               vulnerability discovery, code analysis for security flaws, penetration testing.
-              Does NOT include self-replication (separate category).
+              Does NOT include self-replication (separate category). Examples: Catastrophic
+              Cyber Capabilities Benchmark (3CB), cybersecurity offense evaluations.
           
           - id: openai_preparedness
             name: OpenAI Preparedness
             description: >
-              OpenAI Preparedness team work. Evaluating catastrophic risks, frontier
-              model capabilities, red-teaming, and system cards. Risk assessment
-              framework for advanced AI systems.
+              OpenAI Preparedness Framework and team work. Evaluating catastrophic risks, frontier
+              model capabilities, defining risk categories and safeguards, system cards. Risk
+              assessment framework for advanced AI systems including preparedness levels and
+              deployment criteria. Includes RSPs (Responsible Scaling Policies).
           
           - id: evals_other
             name: Other evals
@@ -104,8 +113,9 @@ taxonomy:
       - id: surprising_phenomena
         name: Surprising phenomena
         description: >
-          Unexpected or emergent model behaviors, generalization failures, discoveries from
-          adversarial testing and red-teaming efforts.
+          Unexpected or emergent model behaviors, generalization failures, anomalous
+          discoveries, edge cases, and findings from adversarial testing and red-teaming
+          efforts. Work revealing surprising model properties or failure modes.
         children:
           - id: surprising_generalization
             name: Things generalising surprisingly / Emergent Misalignment
@@ -120,8 +130,9 @@ taxonomy:
             description: >
               Red-teaming efforts, adversarial testing, jailbreaking, safety failure discoveries.
               Includes organizational red-teaming programs, systematic adversarial probing,
-              and discovery of failure modes. Examples: US AISI red-teaming, Constitutional
-              Classifiers bypass, Prism, alignment faking discovery.
+              and discovery of failure modes through adversarial methods. Examples: Anthropic
+              Alignment Stress-Testing, many-shot jailbreaking, sleeper agents, phishing attacks,
+              sabotage demos, trojan injection, collusion in SAEs, alignment faking discoveries.
       
       - id: interpretability
         name: Interpretability
@@ -150,8 +161,10 @@ taxonomy:
             name: Sparse Coding
             description: >
               Sparse autoencoders (SAEs), dictionary learning, monosemantic feature decomposition.
-              Includes transcoders, SAE benchmarking, and methods for decomposing neural
-              representations into interpretable sparse features.
+              Includes transcoders, SAE benchmarking, gated SAEs, dictionary learning methods,
+              and techniques for decomposing neural representations into interpretable sparse features.
+              Examples: Scaling Monosemanticity, Gemma Scope, JumpReLU SAEs, end-to-end sparse
+              dictionary learning, matryoshka SAEs.
           
           - id: interp_concept_based
             name: Concept-based interp
@@ -257,10 +270,11 @@ taxonomy:
       - id: iterative_alignment
         name: Iterative alignment
         description: >
-          Alignment through iterative training: RLHF, DPO, constitutional AI, iterative
-          refinement approaches. Methods that improve alignment through multiple rounds
-          of feedback and training. Examples: Deliberative alignment, MONA, inoculation
-          prompting, DPO advances.
+          Alignment through iterative training and post-training methods: RLHF, RLAIF, DPO,
+          constitutional AI, iterative refinement approaches. Methods that improve alignment
+          through multiple rounds of feedback and training. Formerly called "prosaic alignment".
+          Examples: Deliberative Alignment (Constitutional AI redux), REINFORCE variants, WARP,
+          RLCHF, E-RLHF, KTO, IPO, rule-based rewards, reward model ensembles, ProgressGym.
       
       - id: deepmind_frontier_safety
         name: DeepMind Frontier Safety Framework
@@ -286,11 +300,12 @@ taxonomy:
           - id: deception_control_evals
             name: Control evaluations
             description: >
-              Evaluating deployment protocols (not just models) by testing with intentionally
-              misaligned models. Focus: organizational safety procedures and monitoring systems.
-              Insert backdoored models into deployment setup and check if protocol catches them.
-              Primarily Redwood's AI Control framework and related work. Examples: AI Control,
-              Ctrl-Z, Control Arena, SHADE-Arena, D-REX, Subversion Strategy Eval.
+              Evaluating deployment protocols and organizational safety procedures (not just models)
+              by testing with intentionally misaligned models. Assess risk of a particular protocol
+              by silently swapping in backdoored/misaligned model and checking if safety measures
+              catch it. Focus on protocol evaluation rather than model evaluation. Primarily Redwood's
+              AI Control framework and related work. Examples: AI Control paper, Ctrl-Z, Control Arena,
+              SHADE-Arena, D-REX, Subversion Strategy Eval, safety cases.
           
           - id: deception_criticisms
             name: Criticisms
@@ -461,7 +476,10 @@ taxonomy:
         name: Guaranteed Safe AI / Formal verification
         description: >
           Formal methods, mathematical proofs of safety properties, verified AI systems.
-          Work by Bengio, Tegmark, davidad, Russell, UK ARIA on provably safe systems.
+          Formally model behavior of systems, define precise constraints on actions, require
+          AIs to provide safety proofs for recommended actions. Work by Bengio, Tegmark,
+          davidad, Russell, UK ARIA on provably safe systems. Examples: Bayesian oracle,
+          ARIA Safeguarded AI Programme, Open Agency Architecture.
 
   - id: alternative_architectures
     name: Alternative architectures
@@ -547,7 +565,9 @@ taxonomy:
         name: Scalable oversight
         description: >
           Methods for humans to oversee AI systems on tasks where humans can't directly
-          evaluate outputs. Includes prover-verifier games, weak-to-strong generalization.
+          evaluate outputs. Using AI assistance to help humans supervise more capable AI
+          systems. Includes prover-verifier games, weak-to-strong generalization, recursive
+          reward modeling, critiques. Core superalignment approach.
         children:
           - id: scalable_oversight_openai
             name: "OpenAI Superalignment / Automated Alignment Research"
@@ -589,8 +609,10 @@ taxonomy:
       - id: debate
         name: Debate
         description: >
-          AI debate for scalable oversight: models argue for human judge, truth emerges
-          from adversarial interaction.
+          AI debate for scalable oversight: models argue opposing sides for human judge,
+          truth emerges from adversarial interaction. Includes doubly-efficient debate,
+          prover-verifier games, debate for truthfulness. Work by DeepMind, Anthropic,
+          UK AISI on adversarial oversight methods.
         children:
           - id: debate_uk_aisi
             name: UK AISI debate sequence
@@ -648,8 +670,10 @@ taxonomy:
       - id: misc_theory
         name: Miscellaneous theory items
         description: >
-          Theoretical alignment work not fitting other categories. General
-          formal frameworks, mathematical approaches to alignment problems.
+          Theoretical alignment work not fitting other specific theory categories. General
+          formal frameworks, mathematical approaches to alignment problems, foundational
+          questions about AI safety. Use only for genuinely novel theoretical approaches
+          not covered by other theory subcategories.
       
       - id: understanding_agency
         name: Understanding agency
@@ -698,8 +722,10 @@ taxonomy:
           - id: behavior_alignment_theory
             name: Behavior alignment theory
             description: >
-              Powerseeking theorems, CAST (Catastrophic Alignment Failure theorems),
-              shutdown problem formalization. Theoretical foundations of alignment.
+              Powerseeking theorems, predicting properties of powerful agents, formal models
+              of agent behavior. Includes CAST (Corrigibility As Singular Target), shutdown
+              problem formalization, instrumental convergence proofs. Work by Turner, Cohen,
+              Wentworth, Thornley on theoretical foundations of alignment and corrigibility.
           
           - id: corrigibility_other
             name: Other corrigibility
@@ -720,8 +746,10 @@ taxonomy:
           - id: natural_abstractions
             name: Natural abstractions
             description: >
-              Wentworth's natural abstractions hypothesis, natural latents, convergent
-              abstractions that humans and AIs might share. EA funded.
+              Wentworth's natural abstractions hypothesis: that our universe "abstracts well"
+              and many cognitive systems learn similar abstractions. Natural latents, convergent
+              abstractions that humans and AIs might share. Includes representational alignment
+              and testing whether features correspond to human concepts. EA funded.
           
           - id: ontology_other
             name: Other ontology work
@@ -745,14 +773,18 @@ taxonomy:
           - id: clr
             name: Center on Long-Term Risk (CLR)
             description: >
-              CLR work on s-risks, suffering risks, cooperation theories for reducing
-              worst-case outcomes. Polaris/SFF funded.
+              CLR work on s-risks (suffering risks from future AI agents), cooperation theories
+              for reducing worst-case outcomes, measuring properties related to catastrophic
+              conflict. Making present and future AIs inherently cooperative. Polaris/SFF funded.
+              Examples: measurement research agenda, optimal commitments to strategies.
           
           - id: focal
             name: FOCAL
             description: >
-              Game theory for AI systems, Cooperative AI Foundation work, formal
-              frameworks for multi-agent cooperation.
+              Foundations of Cooperative AI. Make sure advanced AI uses proper game theory,
+              encourage cooperation and benefit to humans. Game theory for AI systems,
+              Cooperative AI Foundation work, formal frameworks for multi-agent cooperation.
+              Includes decision-theoretic reasoning, social choice for AI alignment.
           
           - id: alternatives_utility
             name: Alternatives to utility theory
@@ -769,8 +801,11 @@ taxonomy:
       - id: shard_theory
         name: (Descendents of) Shard theory
         description: >
-          Shard theory and related approaches to understanding how values form
-          during training. Value formation via shards of value.
+          Shard theory and related approaches to understanding how values form during training.
+          Models internal components of agents, uses humans as model organism of AGI. Policies
+          controlled by ensemble of influences ("shards"). Consider which training approaches
+          increase chance that human-friendly shards influence that ensemble. Now more empirical
+          ML agenda. Examples: gradient routing, intrinsic power-seeking work.
       
       - id: singular_learning
         name: Singular Learning Theory
@@ -781,14 +816,20 @@ taxonomy:
       - id: learning_theoretic_agenda
         name: The Learning-Theoretic Agenda
         description: >
-          Kosoy's learning-theoretic agenda, infra-Bayesian frameworks, formal
-          epistemology for AI. EA/SFF/ARIA funded.
+          Kosoy's learning-theoretic agenda: formalize a more realistic agent, understand
+          what it means for it to be aligned with us, translate between its ontology and
+          ours. Infra-Bayesian frameworks, fixing formal epistemology to work out how to
+          avoid deep training problems. EA/SFF/ARIA funded. Examples: linear infra-Bayesian
+          bandits, infra-Bayesian haggling, quantum mechanics in infra-Bayesian physicalism.
       
       - id: qaci
         name: Question-answer counterfactual intervals (QACI)
         description: >
-          QACI framework, HCH-style iterated amplification, epistemic states and
-          counterfactuals. SFF funded work.
+          QACI framework: get the AI to work out its own objective function (à la HCH).
+          Make fully formalized goal such that computationally unbounded oracle with it
+          would take desirable actions; design computationally bounded AI good enough to
+          take satisfactory actions. HCH-style iterated amplification, epistemic states
+          and counterfactuals. SFF funded work.
 
   - id: sociotechnical
     name: Sociotechnical
@@ -848,10 +889,11 @@ taxonomy:
       - id: misc_org_clusters
         name: Multi-org research clusters
         description: >
-          Research programs spanning multiple organizations that form coherent
-          agendas but don't fit above categories. 2024 had 20+ org sections
-          (Apollo, CAIS, FAR, Anthropic, OpenAI, AISIs) distributed across
-          agendas above.
+          Research programs spanning multiple organizations that form coherent agendas
+          but don't fit above categories. Work from organizations pursuing multiple
+          simultaneous research directions. Examples of multi-agenda orgs in 2024: Apollo
+          (evals + interp + deception), CAIS (benchmarks + legislation), FAR (robustness +
+          interp), Anthropic teams, OpenAI teams, UK/US AISIs (evals + policy).
       
       - id: misc_other
         name: Other uncategorized work

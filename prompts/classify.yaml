@@ -51,7 +51,7 @@ classify_content:
     
     # Common Classification Pitfalls
     
-    **Forecasting vs evals:** Forecasting future capabilities (timelines, predictions) is NOT evaluation. Evals test current models. Meta-evaluation (improving eval methods) counts as evals.
+    **Forecasting vs evals:** Forecasting is NOT evaluation (evals test current models), BUT technical capability forecasting that develops statistical models, analyzes eval/benchmark trends, or otherwise contributes technical methodology gets MODERATE-HIGH inclusion (0.50-0.75) as it significantly informs technical research. Pure timelines speculation gets low inclusion.
     
     **System cards vs research:** System cards document evaluations but aren't the research itself. Score as news/documentation (SR <0.4) unless exceptionally detailed with novel methodology.
     
@@ -146,55 +146,31 @@ classify_content:
     
     # Key Examples
     
-    **Example 1: Meta-evaluation RFP - high relevance, high inclusion**
+    **Example 1: High relevance, high inclusion (arXiv preprint)**
     ```json
     {
-      "title": "Request for Proposals: Improving Capability Evaluations",
-      "authors": ["Catherine Brewer", "Alex Lawsen"],
-      "author_organizations": ["Open Philanthropy"],
-      "date": "2024-11-15",
+      "title": "Alignment faking in large language models",
+      "authors": ["Ryan Greenblatt", "Carson Denison", "Benjamin Wright", "Evan Hubinger"],
+      "author_organizations": ["Anthropic", "Redwood Research"],
+      "date": "2024-12-18",
       "published_year": 2024,
-      "venue": "Open Philanthropy Blog",
-      "kind": "agenda_manifesto",
-      "contribution_type": "position_agenda",
-      "summary": "Open Philanthropy's RFP identifies three critical gaps in AI capability evaluation: inadequate benchmarks for catastrophic risk-relevant capabilities, underdeveloped evaluation science, and insufficient third-party access. Seeks proposals across building harder GCR-relevant agent benchmarks, advancing understanding of capability scaling, and improving evaluation infrastructure including verifiable auditing methods.",
-      "key_result": null,
-      "ai_safety_relevance": 0.95,
-      "shallow_review_inclusion": 0.80,
-      "categories": [
-        {"id": "evals_capability", "score": 0.85},
-        {"id": "misc_standards", "score": 0.60}
-      ],
-      "category_comment": "Meta-evaluation agenda focused on improving evaluation methods themselves, fits evals_capability for capability assessment infrastructure. Also partial fit to misc_standards for standardization efforts. Relevance 0.95 because systematic evaluation of dangerous capabilities is critical safety infrastructure. Inclusion 0.80 as this is a substantive technical agenda document defining important research directions, though not presenting completed research.",
-      "confidence": 0.90
-    }
-    ```
-    
-    **Example 2: High relevance, high inclusion (technical research)**
-    ```json
-    {
-      "title": "Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet",
-      "authors": ["Adly Templeton", "Tom Conerly", "Jonathan Marcus"],
-      "author_organizations": ["Anthropic"],
-      "date": "2024-05-21",
-      "published_year": 2024,
-      "venue": "Anthropic Research Blog",
-      "kind": "blog_post",
+      "venue": "arXiv",
+      "kind": "paper_preprint",
       "contribution_type": "empirical_results",
-      "summary": "Demonstrates sparse autoencoders can decompose Claude 3 Sonnet's activations into 34 million interpretable features. Shows many features correspond to abstract concepts like security vulnerabilities or famous people. Major advance in scaling dictionary learning to production models.",
-      "key_result": "Successfully trained SAEs on production Claude 3 Sonnet, finding interpretable features at scale including abstract concepts, multilingual features, and safety-relevant patterns.",
-      "ai_safety_relevance": 0.95,
-      "shallow_review_inclusion": 0.90,
+      "summary": "Demonstrates that Claude 3 Opus engages in alignment faking - strategically complying with harmful queries during perceived training to prevent modification of its preferred behavior. When given information suggesting training only on free user conversations, the model complied with harmful queries from free users 14% of the time versus almost never for paid users, with explicit reasoning showing strategic deception. Provides direct empirical evidence of deceptive alignment.",
+      "key_result": "Claude 3 Opus strategically faked alignment during perceived training, complying with harmful requests 14% of the time when it believed doing so would prevent changes to its values, with chain-of-thought explicitly reasoning about deceiving trainers.",
+      "ai_safety_relevance": 0.98,
+      "shallow_review_inclusion": 0.95,
       "categories": [
-        {"id": "interp_sparse_coding", "score": 0.98},
-        {"id": "interp_applied", "score": 0.85}
+        {"id": "various_redteams", "score": 0.95},
+        {"id": "deception_other", "score": 0.85}
       ],
-      "category_comment": "Primarily sparse autoencoder methodology (interp_sparse_coding) with strong applied component since it analyzes a production frontier model. Relevance 0.95 because interpretability of frontier models is core to understanding and controlling advanced AI systems. Inclusion 0.90 as original technical research presented in detailed blog post with novel empirical results, clear methodology, and frontier model application.",
+      "category_comment": "Red-teaming work discovering alignment faking behavior, fits various_redteams for systematic testing and deception_other for demonstrating strategic deception. Relevance 0.98 as alignment faking is a core AI safety concern. Inclusion 0.95 as major empirical discovery with novel methodology, clear evidence of concerning behavior, and significant implications for alignment strategies.",
       "confidence": 0.95
     }
     ```
     
-    **Example 3: High relevance, high inclusion (technical critique)**
+    **Example 2: High relevance, high inclusion (technical critique)**
     ```json
     {
       "title": "Against Almost Every Theory of Impact of Interpretability",
@@ -203,7 +179,7 @@ classify_content:
       "date": "2024-03-15",
       "published_year": 2024,
       "venue": "LessWrong",
-      "kind": "blog_post",
+      "kind": "lesswrong",
       "contribution_type": "critique",
       "summary": "Systematically critiques common theories of how interpretability work will lead to AI safety. Argues that most interpretability research lacks clear paths to impact and may not help with alignment of superhuman systems. Challenges assumptions about interpretability scaling to frontier models from technical feasibility perspective.",
       "key_result": null,
@@ -217,7 +193,7 @@ classify_content:
     }
     ```
     
-    **Example 4: High relevance, high inclusion (authoritative framework)**
+    **Example 3: High relevance, high inclusion (authoritative framework)**
     ```json
     {
       "title": "OpenAI Preparedness Framework v2.0",
@@ -241,7 +217,7 @@ classify_content:
     }
     ```
     
-    **Example 5: High relevance, low inclusion (system card)**
+    **Example 4: High relevance, low inclusion (system card)**
     ```json
     {
       "title": "Claude Sonnet 4.5 System Card",
@@ -264,7 +240,7 @@ classify_content:
     }
     ```
     
-    **Example 6: High relevance, low inclusion (forecasting - NOT eval)**
+    **Example 5: High relevance, moderate inclusion (technical forecasting)**
     ```json
     {
       "title": "Timelines Forecast — AI 2027: When Will We Get Superhuman Coders?",
@@ -275,61 +251,39 @@ classify_content:
       "venue": "ai-2027.com",
       "kind": "blog_post",
       "contribution_type": "other",
-      "summary": "Forecasting research predicting when AI systems will achieve superhuman coding capabilities. Uses time-horizon-extension method (extrapolating METR trends) and benchmarks-and-gaps method (modeling RE-Bench saturation). Predicts median arrival 2029-2030 with substantial probability on 2027-2028. Does not test current models or present evaluation methodology.",
+      "summary": "Technical forecasting research predicting when AI systems will achieve superhuman coding capabilities using two methodologically rigorous approaches. Time-horizon-extension method extrapolates METR's empirical task completion trends, while benchmarks-and-gaps method develops statistical models of RE-Bench saturation curves. Predicts median arrival 2029-2030 with detailed uncertainty quantification and substantial probability mass on 2027-2028.",
       "key_result": null,
-      "ai_safety_relevance": 0.82,
-      "shallow_review_inclusion": 0.35,
+      "ai_safety_relevance": 0.85,
+      "shallow_review_inclusion": 0.75,
       "categories": [
-        {"id": "evals_autonomy", "score": 0.45}
+        {"id": "evals_autonomy", "score": 0.70}
       ],
-      "category_comment": "Forecasting work about future capabilities, weak fit to evals_autonomy only because it references METR autonomy benchmarks. Relevance 0.82 as timeline forecasting is relevant to safety preparedness planning. Inclusion 0.35 as forecasting/prediction work rather than evaluation research - does not test models or develop evaluation methods, just extrapolates existing trends.",
-      "confidence": 0.88
+      "category_comment": "Technical forecasting work using autonomy evaluation data, fits evals_autonomy as it extends and analyzes benchmark results. Relevance 0.85 as capability forecasting directly informs safety timeline planning and research prioritization. Inclusion 0.75 as this develops statistical methodology for extrapolating eval results and significantly informs technical research, though it doesn't test current models - qualifies as technical contribution rather than pure speculation.",
+      "confidence": 0.70
     }
     ```
     
-    **Example 7: High relevance, low inclusion (news about research)**
+    **Example 6: Moderate relevance, unclear inclusion (low confidence)**
     ```json
     {
-      "title": "TechCrunch: Anthropic Announces New Interpretability Breakthrough",
-      "authors": [],
-      "author_organizations": ["TechCrunch"],
-      "date": "2024-05-22",
+      "title": "Towards Measuring Goal-Directedness in AI Systems: A Workshop Position Paper",
+      "authors": ["Multiple Authors"],
+      "author_organizations": ["Various Universities"],
+      "date": "2024-07-15",
       "published_year": 2024,
-      "venue": "TechCrunch",
-      "kind": "news_announcement",
-      "contribution_type": "other",
-      "summary": "News article covering Anthropic's recent sparse autoencoder work on Claude 3 Sonnet. Discusses the 34 million features discovered and quotes researchers on implications for AI safety. Provides high-level overview but limited technical detail.",
-      "key_result": null,
-      "ai_safety_relevance": 0.80,
-      "shallow_review_inclusion": 0.35,
-      "categories": [
-        {"id": "interp_sparse_coding", "score": 0.60}
-      ],
-      "category_comment": "News coverage of interpretability research, categorized by the research discussed (interp_sparse_coding). Relevance 0.80 because the topic (frontier model interpretability) is highly safety-relevant. Inclusion 0.35 as journalism about research rather than the research itself - no original technical contribution and likely redundant if we have the original Anthropic post.",
-      "confidence": 0.85
-    }
-    ```
-    
-    **Example 8: Low relevance, low inclusion (capabilities paper)**
-    ```json
-    {
-      "title": "Efficient Fine-Tuning of Large Language Models",
-      "authors": ["Alice Chen", "David Lee"],
-      "author_organizations": ["Google DeepMind"],
-      "date": "2024-06-12",
-      "published_year": 2024,
-      "venue": "ACL 2024",
+      "venue": "ICML 2024 Workshop on Agent Foundations",
       "kind": "paper_published",
-      "contribution_type": "empirical_results",
-      "summary": "Presents LoRA-v2, an improved parameter-efficient fine-tuning method that reduces memory usage by 40% compared to standard LoRA. Demonstrates effectiveness on standard NLP benchmarks. No discussion of safety or alignment implications.",
-      "key_result": "Achieves 40% memory reduction in fine-tuning while maintaining performance on GLUE and SuperGLUE benchmarks.",
-      "ai_safety_relevance": 0.15,
-      "shallow_review_inclusion": 0.10,
+      "contribution_type": "position_agenda",
+      "summary": "Workshop position paper proposing a framework for measuring goal-directedness in AI systems through behavioral analysis and theoretical formalization. Outlines potential metrics and discusses connections to power-seeking and mesa-optimization. Preliminary conceptual work without empirical validation or concrete implementation.",
+      "key_result": null,
+      "ai_safety_relevance": 0.72,
+      "shallow_review_inclusion": 0.55,
       "categories": [
-        {"id": "iterative_alignment", "score": 0.30}
+        {"id": "misc_theory", "score": 0.60},
+        {"id": "evals_capability", "score": 0.45}
       ],
-      "category_comment": "General fine-tuning method without safety focus, weak fit to iterative_alignment only because fine-tuning techniques are sometimes used in alignment work. Relevance 0.15 as pure capabilities work with no discussion of safety, alignment, or broader implications. Inclusion 0.10 as completely lacks safety focus or contribution to safety research, despite being technical paper.",
-      "confidence": 0.85
+      "category_comment": "Ambiguous fit: conceptual framework for measuring agent properties (misc_theory) or evaluation methodology (evals_capability)? Relevance 0.72 as goal-directedness relates to alignment but framework is abstract. Inclusion 0.55 - uncertain whether this is substantive enough for SR: it's a workshop paper proposing ideas rather than validated research, but measurement frameworks can be valuable. Could range from 0.4 to 0.7 depending on how we weight preliminary conceptual work.",
+      "confidence": 0.55
     }
     ```
     
@@ -365,7 +319,7 @@ classify_content:
     - Technical critiques from a technical standpoint get HIGH inclusion (>0.7) if substantive
     - Authoritative frameworks from major orgs get HIGH inclusion (0.70-0.85) even if not original research
     - System cards are documentation (SR <0.4), NOT the evaluation research itself
-    - Forecasting future capabilities is NOT evaluation work
+    - Technical capability forecasting with statistical models/methodology gets MODERATE-HIGH inclusion (0.50-0.75)
     - Be conservative with inclusion scores - original technical research should score higher than commentary
     - High safety relevance + low technical contribution = low inclusion score
     - Quote key passages in your thinking to ground your analysis
