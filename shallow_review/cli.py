@@ -770,9 +770,16 @@ def export_taxonomy(
         
         # If leaf category, output rubrics and items
         if cat.is_leaf:
-            # Output SR2024-style rubrics (initially empty, for filling in later)
-            output_lines.append("**One-sentence summary:**")
+            # Get SR2024 data if available
+            sr = cat.sr2024 if hasattr(cat, 'sr2024') and cat.sr2024 else {}
+            
+            # Output SR2024-style rubrics (prefilled from SR2024 where available)
+            if sr.get('summary'):
+                output_lines.append(f"**One-sentence summary:** *(SR2024: {sr['summary']})*")
+            else:
+                output_lines.append("**One-sentence summary:**")
             output_lines.append("")
+            
             output_lines.append("**Theory of change:**")
             output_lines.append("")
             output_lines.append("**See also:**")
@@ -783,16 +790,34 @@ def export_taxonomy(
             output_lines.append("")
             output_lines.append("**Broad approach:**")
             output_lines.append("")
-            output_lines.append("**Key people:**")
+            
+            if sr.get('names'):
+                output_lines.append(f"**Key people:** *(SR2024: {sr['names']})*")
+            else:
+                output_lines.append("**Key people:**")
             output_lines.append("")
-            output_lines.append("**Estimated FTEs:**")
+            
+            if sr.get('ftes'):
+                output_lines.append(f"**Estimated FTEs:** *(SR2024: {sr['ftes']})*")
+            else:
+                output_lines.append("**Estimated FTEs:**")
             output_lines.append("")
-            output_lines.append("**Outputs in 2025:**")
+            
+            if sr.get('outputs'):
+                output_lines.append(f"**Outputs in 2025:** *(SR2024 outputs: {sr['outputs']})*")
+            else:
+                output_lines.append("**Outputs in 2025:**")
             output_lines.append("")
+            
             output_lines.append("**Critiques:**")
             output_lines.append("")
-            output_lines.append("**Funded by:**")
+            
+            if sr.get('funded_by'):
+                output_lines.append(f"**Funded by:** *(SR2024: {sr['funded_by']})*")
+            else:
+                output_lines.append("**Funded by:**")
             output_lines.append("")
+            
             output_lines.append("**Funding in 2025:**")
             output_lines.append("")
         

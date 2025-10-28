@@ -168,6 +168,12 @@ taxonomy:
               and techniques for decomposing neural representations into interpretable sparse features.
               Examples: Scaling Monosemanticity, Gemma Scope, JumpReLU SAEs, end-to-end sparse
               dictionary learning, matryoshka SAEs.
+            sr2024:
+              summary: "decompose the polysemantic activations of the residual stream into a sparse linear combination of monosemantic \"features\" which correspond to interpretable concepts"
+              names: "Senthooran Rajamanoharan, Arthur Conmy, Leo Gao, Neel Nanda, Connor Kissane, Lee Sharkey, Samuel Marks, David Bau, Eric Michaud, Aaron Mueller, Decode"
+              ftes: "10-50"
+              outputs: "Scaling Monosemanticity, Extracting Concepts from GPT-4, Gemma Scope, JumpReLU, Dictionary learning with gated SAEs, Scaling and evaluating sparse autoencoders, Automatically Interpreting LLM Features, Interpreting Attention Layers, SAEs (usually) Transfer Between Base and Chat Models, End-to-End Sparse Dictionary Learning, Transcoders Find Interpretable LLM Feature Circuits, A is for Absorption, Sparse Feature Circuits, Function Vectors, Improving Steering Vectors by Targeting SAE Features, Matryoshka SAEs, Goodfire"
+              funded_by: "everyone, roughly. Frontier labs, LTFF, OpenPhil, etc."
           
           - id: interp_concept_based
             name: Concept-based interp
@@ -192,18 +198,36 @@ taxonomy:
               Causal abstraction framework, interchange interventions, high-level causal models
               of neural networks. Includes ReFT (Representation Finetuning), pyvene, locally
               consistent abstractions. Focus on causal structure of representations.
+            sr2024:
+              summary: "develop the foundations of interpretable AI through the lens of causality and abstraction"
+              names: "Atticus Geiger"
+              ftes: "1-10"
+              outputs: "Disentangling Factual Knowledge in GPT-2 Small, Causal Abstraction, ReFT, pyvene, defending subspace interchange"
+              funded_by: "Open Philanthropy"
           
           - id: interp_leap
             name: Leap
             description: >
               Leap interpretability project and related work. Model-agnostic API approaches,
               standardized interfaces for interpretability. Examples: PIZZA framework.
+            sr2024:
+              summary: "research startup selling an interpretability API (model-agnostic feature viz of vision models). Aiming for data-independent and global interpretability methods"
+              names: "Jessica Rumbelow, Robbie McCorkell"
+              ftes: "1-10"
+              outputs: "Why did ChatGPT say that? (PIZZA)"
+              funded_by: "Speedinvest, Ride Home, Open Philanthropy, EA Funds"
           
           - id: interp_eleuther
             name: EleutherAI interp
             description: >
               EleutherAI interpretability research program and outputs. Examples: path dependence
               research, refusal as affine function.
+            sr2024:
+              summary: "tools to investigate questions like path dependence of training"
+              names: "Nora Belrose, Brennan Dury, David Johnston, Alex Mallen, Lucia Quirke, Adam Scherlis"
+              ftes: "6"
+              outputs: "Neural Networks Learn Statistics of Increasing Complexity, Automatically Interpreting Millions of Features in Large Language Models, Refusal in LLMs is an Affine Function"
+              funded_by: "CoreWeave, Hugging Face, Open Philanthropy, Mozilla, Omidyar Network, Stability AI, Lambda Labs"
           
           - id: interp_other
             name: Other interpretability
@@ -224,6 +248,12 @@ taxonomy:
               Developmental interpretability - understanding how features and circuits form
               during training. Timaeus project focus on tracking formation of capabilities
               and representations across training time.
+            sr2024:
+              summary: "Build tools for detecting, locating, and interpreting key moments (saddle-to-saddle dynamics, groks) that govern training and in-context learning in models"
+              names: "Jesse Hoogland, George Wang, Daniel Murfet, Stan van Wingerden, Alexander Gietelink Oldenziel"
+              ftes: "10+?"
+              outputs: "Stagewise Development in Neural Networks, Differentiation and Specialization of Attention Heads via the Refined Local Learning Coefficient, Higher-order degeneracy and error-correction, Feature Targeted LLC Estimation Distinguishes SAE Features from Random Directions"
+              funded_by: "Manifund, Survival and Flourishing Fund, EA Funds"
           
           - id: learning_vaintrob_critique
             name: Vaintrob ~critique
@@ -236,6 +266,12 @@ taxonomy:
             description: >
               Computational mechanics approach to understanding learning. Simplex project
               applying computational mechanics framework to neural network training dynamics.
+            sr2024:
+              summary: "Computational mechanics for interpretability; what structures must a system track in order to predict the future?"
+              names: "Paul Riechers, Adam Shai"
+              ftes: "1-10"
+              outputs: "Transformers represent belief state geometry in their residual stream, Open Problems in Comp Mech"
+              funded_by: "Survival and Flourishing Fund"
           
           - id: learning_saxe
             name: Saxe lab
@@ -243,6 +279,12 @@ taxonomy:
               Saxe lab work on learning theory, toy models of neural networks, training dynamics,
               analytical understanding of learning. Examples: toy models of learning dynamics,
               induction heads formation.
+            sr2024:
+              summary: "toy models (e.g. of induction heads) to understand learning in interesting limiting examples; only part of their work is safety related"
+              names: "Andrew Saxe, Basile Confavreux, Erin Grant, Stefano Sarao Mannelli, Tyler Boyd-Meredith, Victor Pedrosa"
+              ftes: "10-50"
+              outputs: "Tilting the Odds at the Lottery, What needs to go right for an induction head?, Why Do Animals Need Shaping?, When Representations Align, Understanding Unimodal Bias in Multimodal Deep Linear Networks, Meta-Learning Strategies through Value Maximization in Neural Networks"
+              funded_by: "Sir Henry Dale Fellowship, Wellcome-Beit Prize, CIFAR, Schmidt Science Polymath Program"
       
       - id: model_psychology
         name: Model psychology
@@ -278,6 +320,12 @@ taxonomy:
           through multiple rounds of feedback and training. Formerly called "prosaic alignment".
           Examples: Deliberative Alignment (Constitutional AI redux), REINFORCE variants, WARP,
           RLCHF, E-RLHF, KTO, IPO, rule-based rewards, reward model ensembles, ProgressGym.
+        sr2024:
+          summary: "nudging base models by optimising their output. (RLHF, Constitutional, DPO, SFT, HHH, RLAIF.)"
+          names: "post-training teams at most labs. Beren Millidge."
+          ftes: "1000+"
+          outputs: "Deliberative Alignment (Constitutional AI, redux), REINFORCE, WARP, Catastrophic Goodhart, RLCHF, E-RLHF, NLHF, IPO, KTO, Why Don't We Just... Shoggoth+Face+Paraphraser?, Towards a Unified View of Preference Learning for Large Language Models: A Survey, Rule-Based Rewards, Reward Model Ensembles, Guardrails, ProgressGym, What are human values, and how do we align AI to them?"
+          funded_by: "most of the industry"
       
       - id: deepmind_frontier_safety
         name: DeepMind Frontier Safety Framework
@@ -309,6 +357,12 @@ taxonomy:
               catch it. Focus on protocol evaluation rather than model evaluation. Primarily Redwood's
               AI Control framework and related work. Examples: AI Control paper, Ctrl-Z, Control Arena,
               SHADE-Arena, D-REX, Subversion Strategy Eval, safety cases.
+            sr2024:
+              summary: "don't evaluate the model, evaluate the humans / organisation / deployment method instead: assess the risk of a particular protocol for deploying your model in a particular scenario, by silently swapping in an intentionally misaligned model"
+              names: "Redwood, Buck Shlegeris, Ryan Greenblatt, Kshitij Sachan, Alex Mallen"
+              ftes: "9"
+              outputs: "AI Control, Subversion Strategy Eval, sequence, toy models, notes"
+              funded_by: "Open Philanthropy, Survival and Flourishing Fund"
           
           - id: deception_criticisms
             name: Criticisms
@@ -325,6 +379,12 @@ taxonomy:
               full interpretability. Different from whitebox probes (which test for specific
               things) - this detects unexpected patterns. Examples: password-locked elicitation,
               law of iterated expectations, ARC heuristic estimators.
+            sr2024:
+              summary: "understand what an LLM's normal (~benign) functioning looks like and detect divergence from this, even if we don't understand the exact nature of that divergence"
+              names: "Nora Belrose, Erik Jenner"
+              ftes: "1-10"
+              outputs: "Password-locked model capability elicitation, Towards a Law of Iterated Expectations for Heuristic Estimators, Eleuther research update, Concrete empirical research projects, Mack and Turner"
+              funded_by: "ARC, Eleuther funders"
           
           - id: deception_cadenza
             name: Cadenza
@@ -332,6 +392,12 @@ taxonomy:
               Cadenza Labs project - white-box dishonesty detection using internal activations.
               Organization-specific category for Cadenza's approach and methods. Examples:
               Cluster-norm for unsupervised probing, dishonesty detection without labels.
+            sr2024:
+              summary: "now focusing on developing robust white-box dishonesty-detection methods for LLM's and model evals"
+              names: "Kieron Kretschmar, Walter Laurito, Sharan Maiya, Grégoire Dhimoïla"
+              ftes: "3"
+              outputs: "Cluster-Norm for Unsupervised Probing of Knowledge"
+              funded_by: "self-funded / volunteers"
           
           - id: deception_faithful_cot
             name: Faithful CoT via separation
@@ -341,6 +407,12 @@ taxonomy:
               Design models where internal reasoning must flow through auditable channel.
               Examples: Shoggoth/face/paraphraser architecture (Kokotajlo), unoptimized
               reasoning traces, separation of concerns.
+            sr2024:
+              summary: "shoggoth/face + paraphraser. Avoid giving the model incentives to hide its deceptive cognition or steganography"
+              names: "Daniel Kokotajlo, AI Futures Project"
+              ftes: "1"
+              outputs: "Why don't we just…"
+              funded_by: "SFF"
           
           - id: deception_indirect
             name: Indirect deception monitoring
@@ -350,6 +422,12 @@ taxonomy:
               (doesn't examine activations). NOT CoT-based (doesn't analyze reasoning). Just
               input-output behavioral patterns. Examples: simple probes for deception, 
               sycophancy detection, behavioral lie classifiers.
+            sr2024:
+              summary: "build tools to find whether a model will misbehave in high stakes circumstances by looking at it in testable circumstances. This bucket catches work on lie classifiers, sycophancy, Scaling Trends For Deception"
+              names: "Anthropic, Monte MacDiarmid, Meg Tong, Mrinank Sharma, Owain Evans, Colognese"
+              ftes: "1-10"
+              outputs: "Simple probes can catch sleeper agents, Sandbag Detection through Noise Injection, Hidden in Plain Text: Emergence & Mitigation of Steganographic Collusion in LLMs"
+              funded_by: "Anthropic funders"
           
           - id: deception_other
             name: Other deception prevention
@@ -420,6 +498,12 @@ taxonomy:
             description: >
               Adversarial state manipulation, automated red-teaming of internal
               representations, training against latent adversaries.
+            sr2024:
+              summary: "uncover dangerous properties like scheming in a target model by having another model manipulate its state adversarially"
+              names: "Stephen Casper, Dylan Hadfield-Menell"
+              ftes: "1-10"
+              outputs: "LAT Improves Robustness to Persistent Harmful Behaviors in LLMs, LAT Defends Against Unforeseen Failure Modes"
+              funded_by: "?"
       
       - id: surgical_edits
         name: Surgical model edits
@@ -432,6 +516,12 @@ taxonomy:
             description: >
               Steering vectors, representation engineering, directly modifying activations
               to control behavior. Includes BiDPO and other activation-based control methods.
+            sr2024:
+              summary: "a sort of interpretable finetuning. Let's see if we can programmatically modify activations to steer outputs towards what we want, in a way that generalises across models and topics"
+              names: "Jan Wehner, Alex Turner, Nina Panickssery, Marc Carauleanu, Collin Burns, Andrew Mack, Pedro Freire, Joseph Miller, Andy Zou, Andy Arditi, Ole Jorgensen"
+              ftes: "10+?"
+              outputs: "Circuit Breakers, An Introduction to Representation Engineering - an activation-based paradigm for controlling LLMs, Steering Llama-2 with contrastive activation additions, Simple probes can catch sleeper agents, Refusal in LLMs is mediated by a single direction, Mechanistically Eliciting Latent Behaviors in Language Models, Uncovering Latent Human Wellbeing in Language Model Embeddings, Goodfire, LatentQA, SelfIE, Mack and Turner, Obfuscated Activations Bypass LLM Latent-Space Defenses"
+              funded_by: "various, including EA funds"
           
           - id: utility_engineering
             name: Utility engineering
@@ -456,6 +546,12 @@ taxonomy:
             description: >
               Approaches to reduce optimization intensity or ensure satisficing behavior.
               MONA and related methods for preventing excessive optimization.
+            sr2024:
+              summary: "avoid Goodharting by getting AI to satisfice rather than maximise"
+              names: "Jobst Heitzig, Simon Fischer, Jessica Taylor"
+              ftes: "?"
+              outputs: "How to safely use an optimizer, Aspiration-based designs sequence, Non-maximizing policies that fulfill multi-criterion aspirations in expectation"
+              funded_by: "?"
           
           - id: rl_safety
             name: RL safety
@@ -474,6 +570,12 @@ taxonomy:
             description: >
               Assistance games framework, learning rewards from human behavior, provably
               beneficial AI, correlated proxies. CIRL and related approaches.
+            sr2024:
+              summary: "reorient the general thrust of AI research towards provably beneficial systems"
+              names: "Joar Skalse, Anca Dragan, Stuart Russell, David Krueger"
+              ftes: "10+"
+              outputs: "The Perils of Optimizing Learned Reward Functions, Correlated Proxies: A New Definition and Improved Mitigation for Reward Hacking, Changing and Influenceable Reward Functions, RL, but don't do anything I wouldn't do, Interpreting Preference Models w/ Sparse Autoencoders"
+              funded_by: "EA funds, Open Philanthropy. Survival and Flourishing Fund, Manifund"
       
       - id: formal_verification
         name: Guaranteed Safe AI / Formal verification
@@ -483,6 +585,12 @@ taxonomy:
           AIs to provide safety proofs for recommended actions. Work by Bengio, Tegmark,
           davidad, Russell, UK ARIA on provably safe systems. Examples: Bayesian oracle,
           ARIA Safeguarded AI Programme, Open Agency Architecture.
+        sr2024:
+          summary: "formally model the behavior of cyber-physical systems, define precise constraints on what actions can occur, and require AIs to provide safety proofs for their recommended actions (correctness and uniqueness)"
+          names: "Yoshua Bengio, Max Tegmark, Steve Omohundro, David \"davidad\" Dalrymple, Joar Skalse, Stuart Russell, Ohad Kammar, Alessandro Abate, Fabio Zanassi"
+          ftes: "10-50"
+          outputs: "Bayesian oracle, Towards Guaranteed Safe AI, ARIA Safeguarded AI Programme Thesis"
+          funded_by: "UK government, OpenPhil, Survival and Flourishing Fund, Mila / CIFAR"
 
   - id: alternative_architectures
     name: Alternative architectures
@@ -502,6 +610,12 @@ taxonomy:
         description: >
           Conjecture's cognitive programs approach, tactics, bounded tool AI.
           Alternative paradigm based on compositional cognitive architectures.
+        sr2024:
+          summary: "make tools to write, execute and deploy cognitive programs; compose these into large, powerful systems that do what we want; make a training procedure that lets us understand what the model does and does not know at each step"
+          names: "Connor Leahy, Gabriel Alfour, Adam Shimi"
+          ftes: "1-10"
+          outputs: "The Tactics programming language/framework, cognitive emulations work, A Roadmap for Cognitive Software and A Humanist Future of AI"
+          funded_by: "Plural Platform, Metaplanet, Others, Firestreak Ventures, EA Funds in 2022"
       
       - id: social_instinct
         name: Social-instinct AGI
@@ -509,6 +623,12 @@ taxonomy:
           Byrnes' social-instinct approach, brain-like AGI inspired by social circuits,
           symbol grounding via social learning. Astera Institute work on biologically-inspired
           safe AGI architectures.
+        sr2024:
+          summary: "Social and moral instincts are (partly) implemented in particular hardwired brain circuitry; let's figure out what those circuits are and how they work; this will involve symbol grounding"
+          names: "Steve Byrnes"
+          ftes: "1"
+          outputs: "My AGI safety research—2024 review, '25 plans, Neuroscience of human social instincts: a sketch, Intuitive Self Models"
+          funded_by: "Astera Institute"
 
   - id: better_data
     name: Better data
@@ -577,30 +697,60 @@ taxonomy:
             description: >
               OpenAI's superalignment program and automated alignment research.
               Prover-verifier games, using AI to help with alignment research.
+            sr2024:
+              summary: "be ready to align a human-level automated alignment researcher"
+              names: "Jan Leike, Elriggs, Jacques Thibodeau"
+              ftes: "10-50"
+              outputs: "Prover-verifier games"
+              funded_by: "lab funders"
           
           - id: weak_to_strong
             name: Weak-to-strong generalization
             description: >
               Weak models supervising strong models, easy-to-hard generalization.
               Can weak supervisors elicit strong capabilities safely?
+            sr2024:
+              summary: "use weaker models to supervise and provide a feedback signal to stronger models"
+              names: "Jan Leike, Collin Burns, Nora Belrose, Zachary Kenton, Noah Siegel, János Kramár, Noah Goodman, Rohin Shah"
+              ftes: "10-50"
+              outputs: "Easy-to-Hard Generalization, Balancing Label Quantity and Quality for Scalable Elicitation, The Unreasonable Effectiveness of Easy Training Data, On scalable oversight with weak LLMs judging strong LLMs, Your Weak LLM is Secretly a Strong Teacher for Alignment"
+              funded_by: "lab funders, Eleuther funders"
           
           - id: supervising_improvement
             name: Supervising AIs improving AIs
             description: >
               Overseeing AI systems as they improve other AI systems. Behavioral
               drift concerns, doubly-efficient debate, recursive improvement safety.
+            sr2024:
+              summary: "scalable tracking of behavioural drift, benchmarks for self-modification"
+              names: "Roman Engeler, Akbir Khan, Ethan Perez"
+              ftes: "1-10"
+              outputs: "Weak LLMs judging strong LLMs, Scalable AI Safety via Doubly-Efficient Debate, Debating with More Persuasive LLMs Leads to More Truthful Answers, Prover-Verifier Games Improve Legibility of LLM Output, LLM Critics Help Catch LLM Bugs"
+              funded_by: "lab funders"
           
           - id: cyborgism
             name: Cyborgism
             description: >
               Human-AI collaboration, augmentation, and cognitive partnership.
               Janus's simulator framing, Pantheon Interface, human-plus-LLM systems.
+            sr2024:
+              summary: "Train human-plus-LLM alignment researchers: with humans in the loop and without outsourcing to autonomous agents"
+              names: "Janus, Nicholas Kees Dupuis"
+              ftes: "?"
+              outputs: "Pantheon Interface"
+              funded_by: "?"
           
           - id: transluce
             name: Transluce
             description: >
               Transluce's monitor interface, neuron description tools, and interpretability
               for oversight. Schmidt Sciences funded work.
+            sr2024:
+              summary: "Make open AI tools to explain AIs, including agents. E.g. feature descriptions for neuron activation patterns; an interface for steering these features; behavior elicitation agent that searches for user-specified behaviors from frontier models"
+              names: "Jacob Steinhardt, Sarah Schwettmann"
+              ftes: "6"
+              outputs: "Eliciting Language Model Behaviors with Investigator Agents, Monitor: An AI-Driven Observability Interface, Scaling Automatic Neuron Description"
+              funded_by: "Schmidt Sciences, Halcyon Futures, John Schulman, Wojciech Zaremba"
           
           - id: deepmind_amplified_oversight
             name: DeepMind Amplified Oversight
@@ -627,12 +777,24 @@ taxonomy:
             description: >
               Deepmind's work on debate, including doubly efficient debate and
               related scalable alignment methods.
+            sr2024:
+              summary: "make highly capable agents do what humans want, even when it is difficult for humans to know what that is"
+              names: "Rohin Shah, Jonah Brown-Cohen, Georgios Piliouras"
+              ftes: "?"
+              outputs: "Progress update - Doubly Efficient Debate, Inference-only Experiments"
+              funded_by: "Google"
           
           - id: debate_anthropic
             name: "Anthropic: Bowman/Perez"
             description: >
               Anthropic work on debate and truthfulness oversight by Bowman, Perez,
               and collaborators.
+            sr2024:
+              summary: "scalable oversight of truthfulness: is it possible to develop training methods that incentivize truthfulness even when humans are unable to directly judge the correctness of a model's output?"
+              names: "Sam Bowman, Ethan Perez, He He, Mengye Ren"
+              ftes: "?"
+              outputs: "Debating with more persuasive LLMs Leads to More Truthful Answers, Sleeper Agents"
+              funded_by: "mostly Anthropic's investors"
       
       - id: task_decomp
         name: Task decomposition
@@ -669,6 +831,12 @@ taxonomy:
         description: >
           ARC Theory work on formalizing heuristic arguments about AI risk.
           Tail risk formalization, heuristic estimators. FLI/SFF funded.
+        sr2024:
+          summary: "mech interp plus formal verification. Formalize mechanistic explanations of neural network behavior, so to predict when novel input may lead to anomalous behavior"
+          names: "Jacob Hilton, Mark Xu, Eric Neyman, Dávid Matolcsi, Victor Lecomte, George Robinson"
+          ftes: "1-10"
+          outputs: "Estimating tail risk, Towards a Law of Iterated Expectations for Heuristic Estimators, Probabilities of rare outputs, Bird's eye overview, Formal verification"
+          funded_by: "FLI, SFF"
       
       - id: misc_theory
         name: Miscellaneous theory items
@@ -691,30 +859,60 @@ taxonomy:
             description: >
               Causal world models, goal-directedness formalization, causal structure
               of agency. Deepmind work on causal incentives framework.
+            sr2024:
+              summary: "use causal models to understand agents. Originally this was to design environments where they lack the incentive to defect, hence the name"
+              names: "Tom Everitt, Matt McDermott, Francis Rhys Ward, Jonathan Richens, Ryan Carey"
+              ftes: "1-10"
+              outputs: "Robust agents learn causal world models, Measuring Goal-Directedness"
+              funded_by: "EA funds, Manifund, Deepmind"
           
           - id: hierarchical_agency
             name: Hierarchical agency
             description: >
               Subagents and superagents, free-energy equilibria, compositional
               agency, nested optimization. SFF funded.
+            sr2024:
+              summary: "Develop formal models of subagents and superagents, use the model to specify desirable properties of whole-part relations (e.g. how to prevent human-friendly parts getting wiped out)"
+              names: "Jan Kulveit, Roman Leventov, Scott Viteri, Michael Levin, Ivan Vendrov, Richard Ngo"
+              ftes: "1-10"
+              outputs: "Hierarchical Agency: A Missing Piece in AI Alignment, How do parts form a whole?, Free-energy equilibria, Two conceptions of active inference, generalised active inference"
+              funded_by: "SFF"
           
           - id: dovetail
             name: Dovetail research
             description: >
               Formalizing "structure" and "agency", foundational concepts for
               understanding agents. LTFF funded.
+            sr2024:
+              summary: "Formalize key ideas (\"structure\", \"agency\", etc) mathematically"
+              names: "Alex Altair, Alfred Harwood, Daniel C, Dalcy K, José Pedro Faustino"
+              ftes: "2"
+              outputs: "mostly exposition but it's early days. Formalization"
+              funded_by: "LTFF"
           
           - id: boundaries_membranes
             name: Boundaries / membranes
             description: >
               Causal separation, agent boundaries, where one agent ends and another
               begins. Chris Lakin's work on boundaries.
+            sr2024:
+              summary: "Formalise one piece of morality: the causal separation between agents and their environment"
+              names: "Chris Lakin, Andrew Critch, davidad, Evan Miyazono, Manuel Baltieri"
+              ftes: "0.5"
+              outputs: "Chris posts"
+              funded_by: "?"
           
           - id: understanding_optimization
             name: Understanding optimisation
             description: >
               Optimization power, gradient hacking, mesa-optimization, what optimization
               is and how to measure it. CLR/EA funded work.
+            sr2024:
+              summary: "what is \"optimisation power\" (formally), how do we build tools that track it, and how relevant is any of this anyway"
+              names: "Alex Flint, Guillaume Corlouer, Nicolas Macé"
+              ftes: "1-10"
+              outputs: "Degeneracies are sticky for SGD"
+              funded_by: "CLR, EA funds"
       
       - id: corrigibility
         name: Corrigibility
@@ -729,6 +927,12 @@ taxonomy:
               of agent behavior. Includes CAST (Corrigibility As Singular Target), shutdown
               problem formalization, instrumental convergence proofs. Work by Turner, Cohen,
               Wentworth, Thornley on theoretical foundations of alignment and corrigibility.
+            sr2024:
+              summary: "predict properties of AGI (e.g. powerseeking) with formal models. Corrigibility as the opposite of powerseeking"
+              names: "Michael K. Cohen, Max Harms/Raelifin, John Wentworth, David Lorell, Elliott Thornley"
+              ftes: "1-10"
+              outputs: "CAST: Corrigibility As Singular Target, A Shutdown Problem Proposal, The Shutdown Problem: Incomplete Preferences as a Solution"
+              funded_by: "?"
           
           - id: corrigibility_other
             name: Other corrigibility
@@ -753,6 +957,12 @@ taxonomy:
               and many cognitive systems learn similar abstractions. Natural latents, convergent
               abstractions that humans and AIs might share. Includes representational alignment
               and testing whether features correspond to human concepts. EA funded.
+            sr2024:
+              summary: "check the hypothesis that our universe \"abstracts well\" and that many cognitive systems learn to use similar abstractions. Check if features correspond to small causal diagrams corresponding to linguistic constructions"
+              names: "John Wentworth, Paul Colognese, David Lorrell, Sam Eisenstat"
+              ftes: "1-10"
+              outputs: "Natural Latents: The Concepts, Natural Latents Are Not Robust To Tiny Mixtures, Towards a Less Bullshit Model of Semantics"
+              funded_by: "EA Funds"
           
           - id: ontology_other
             name: Other ontology work
@@ -772,6 +982,12 @@ taxonomy:
             description: >
               Aligning AI with diverse human values, collective intelligence, representing
               multiple stakeholders. Choi, Lazar work.
+            sr2024:
+              summary: "align AI to broader values / use AI to understand and improve coordination among humans"
+              names: "Yejin Choi, Seth Lazar, Nouha Dziri, Deger Turan, Ivan Vendrov, Jacob Lagerros"
+              ftes: "10-50"
+              outputs: "roadmap, workshop"
+              funded_by: "Foresight, Midjourney?"
           
           - id: clr
             name: Center on Long-Term Risk (CLR)
@@ -780,6 +996,12 @@ taxonomy:
               for reducing worst-case outcomes, measuring properties related to catastrophic
               conflict. Making present and future AIs inherently cooperative. Polaris/SFF funded.
               Examples: measurement research agenda, optimal commitments to strategies.
+            sr2024:
+              summary: "future agents creating s-risks is the worst of all possible problems, we should avoid that"
+              names: "Jesse Clifton, Caspar Oesterheld, Anthony DiGiovanni, Maxime Riché, Mia Taylor"
+              ftes: "10-50"
+              outputs: "Measurement Research Agenda, Computing Optimal Commitments to Strategies and Outcome-conditional Utility Transfers"
+              funded_by: "Polaris Ventures, Survival and Flourishing Fund, Community Foundation Ireland"
           
           - id: focal
             name: FOCAL
@@ -788,6 +1010,12 @@ taxonomy:
               encourage cooperation and benefit to humans. Game theory for AI systems,
               Cooperative AI Foundation work, formal frameworks for multi-agent cooperation.
               Includes decision-theoretic reasoning, social choice for AI alignment.
+            sr2024:
+              summary: "make sure advanced AI uses what we regard as proper game theory"
+              names: "Vincent Conitzer, Caspar Oesterheld, Vojta Kovarik"
+              ftes: "1-10"
+              outputs: "Foundations of Cooperative AI, A dataset of questions on decision-theoretic reasoning in Newcomb-like problems, Why should we ever automate moral decision making?, Social Choice Should Guide AI Alignment in Dealing with Diverse Human Feedback"
+              funded_by: "Cooperative AI Foundation, Polaris Ventures"
           
           - id: alternatives_utility
             name: Alternatives to utility theory
@@ -809,6 +1037,12 @@ taxonomy:
           controlled by ensemble of influences ("shards"). Consider which training approaches
           increase chance that human-friendly shards influence that ensemble. Now more empirical
           ML agenda. Examples: gradient routing, intrinsic power-seeking work.
+        sr2024:
+          summary: "model the internal components of agents, use humans as a model organism of AGI (humans seem made up of shards and so might AI). Now more of an empirical ML agenda"
+          names: "Alex Turner, Quintin Pope, Alex Cloud, Jacob Goldman-Wetzler, Evzen Wybitul, Joseph Miller"
+          ftes: "1-10"
+          outputs: "Intrinsic Power-Seeking: AI Might Seek Power for Power's Sake, Shard Theory - is it true for humans?, Gradient routing"
+          funded_by: "Open Philanthropy (via funding of MATS), EA funds, Manifund"
       
       - id: singular_learning
         name: Singular Learning Theory
@@ -824,6 +1058,12 @@ taxonomy:
           ours. Infra-Bayesian frameworks, fixing formal epistemology to work out how to
           avoid deep training problems. EA/SFF/ARIA funded. Examples: linear infra-Bayesian
           bandits, infra-Bayesian haggling, quantum mechanics in infra-Bayesian physicalism.
+        sr2024:
+          summary: "try to formalise a more realistic agent, understand what it means for it to be aligned with us, translate between its ontology and ours, and produce desiderata for a training setup that points at coherent AGIs similar to our model of an aligned agent"
+          names: "Vanessa Kosoy, Diffractor"
+          ftes: "3"
+          outputs: "Linear infra-Bayesian Bandits, Time complexity for deterministic string machines, Infra-Bayesian Haggling, Quantum Mechanics in Infra-Bayesian Physicalism. Intro lectures"
+          funded_by: "EA Funds, Survival and Flourishing Fund, ARIA"
       
       - id: qaci
         name: Question-answer counterfactual intervals (QACI)
@@ -833,6 +1073,12 @@ taxonomy:
           would take desirable actions; design computationally bounded AI good enough to
           take satisfactory actions. HCH-style iterated amplification, epistemic states
           and counterfactuals. SFF funded work.
+        sr2024:
+          summary: "Get the thing to work out its own objective function (a la HCH)"
+          names: "Tamsin Leake, Julia Persson"
+          ftes: "1-10"
+          outputs: "Epistemic states as a potential benign prior"
+          funded_by: "Survival and Flourishing Fund"
 
   - id: sociotechnical
     name: Sociotechnical

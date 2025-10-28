@@ -26,6 +26,7 @@ class Category(BaseModel):
     children: list["Category"] = Field(default_factory=list, description="Subcategories")
     examples: list[str] = Field(default_factory=list, description="Example items from 2024")
     is_leaf_explicit: bool | None = Field(default=None, validation_alias="is_leaf", description="Explicitly set leaf status")
+    sr2024: dict[str, str] | None = Field(default=None, description="Context from Shallow Review 2024")
     
     @property
     def is_leaf(self) -> bool:

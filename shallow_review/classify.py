@@ -299,7 +299,7 @@ def compute_classify(url: str, config: RunClassifyConfig, force_recompute: bool 
             user_prompt_template=prompts["classify_content"]["user"],
             system_cache_ttl="1h",  # Cache system prompt (with taxonomy) for 1 hour
             thinking_budget=2048,
-            max_tokens=10000,
+            max_tokens=10001,
         )
 
     except Exception as e:
