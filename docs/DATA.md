@@ -193,14 +193,23 @@ CREATE INDEX idx_classify_url_hash_short ON classify(url_hash_short);
   "tokens_stripped": 15000,
   "classify_duration": 8.76,
   "title": "...",
-  "authors": ["..."],
-  "published_date": "...",
-  "topics": ["alignment", "interpretability"],
-  "summary": "2-3 sentence summary",
-  "key_points": ["..."],
-  "venue": "...",
-  "arxiv_id": "...",
-  "organization": "..."
+  "authors": ["Author 1", "Author 2"],
+  "author_organizations": ["Anthropic", "OpenAI"],
+  "date": "2025-01-15",
+  "published_year": 2025,
+  "venue": "NeurIPS 2025",
+  "kind": "paper_published",
+  "contribution_type": "empirical_results",
+  "summary": "2-3 sentence summary of the work",
+  "key_result": "Main finding or contribution",
+  "ai_safety_relevance": 0.85,
+  "shallow_review_inclusion": 0.90,
+  "categories": [
+    {"id": "interpretability_mech", "score": 0.95},
+    {"id": "evals_safety", "score": 0.75}
+  ],
+  "category_comment": "Explanation of category assignments",
+  "confidence": 0.88
 }
 ```
 
@@ -208,8 +217,16 @@ CREATE INDEX idx_classify_url_hash_short ON classify(url_hash_short);
 - `tokens_full`: Token count of full HTML
 - `tokens_stripped`: Token count after preprocessing
 - `classify_duration`: Total time for classification process in seconds
-- `ai_safety_relevance`, `shallow_review_inclusion`, and `kind` stored as columns (not in data JSON)
-- `category`: Assigned category ID from taxonomy (stored as column in future versions)
+- `title`, `authors`, `author_organizations`, `summary`, `key_result`: Basic metadata
+- `date`: Publication date in ISO format YYYY-MM-DD (nullable)
+- `published_year`: Publication year as integer (nullable)
+- `venue`: Publication venue (nullable)
+- `kind`: Content type (one of ClassifyKind enum values, also stored as column)
+- `contribution_type`: Type of contribution (e.g., "empirical_results", "theoretical_framework")
+- `ai_safety_relevance`, `shallow_review_inclusion`: Scores 0.0-1.0 (also stored as columns)
+- `categories`: List of 1-3 category assignments with taxonomy leaf IDs and fit scores
+- `category_comment`: Explanation for category assignments
+- `confidence`: Overall classification confidence 0.0-1.0
 - Other fields are LLM-extracted
 
 ## Classification Taxonomy
