@@ -780,15 +780,34 @@ def export_taxonomy(
                 output_lines.append("**One-sentence summary:**")
             output_lines.append("")
             
-            output_lines.append("**Theory of change:**")
+            if sr.get('theory_of_change'):
+                output_lines.append(f"**Theory of change:** *(SR2024: {sr['theory_of_change']})*")
+            else:
+                output_lines.append("**Theory of change:**")
             output_lines.append("")
-            output_lines.append("**See also:**")
+            
+            if sr.get('see_also'):
+                output_lines.append(f"**See also:** *(SR2024: {sr['see_also']})*")
+            else:
+                output_lines.append("**See also:**")
             output_lines.append("")
-            output_lines.append("**Orthodox problems:**")
+            
+            if sr.get('orthodox_problems'):
+                output_lines.append(f"**Orthodox problems:** *(SR2024: {sr['orthodox_problems']})*")
+            else:
+                output_lines.append("**Orthodox problems:**")
             output_lines.append("")
-            output_lines.append("**Target case:**")
+            
+            if sr.get('target_case'):
+                output_lines.append(f"**Target case:** *(SR2024: {sr['target_case']})*")
+            else:
+                output_lines.append("**Target case:**")
             output_lines.append("")
-            output_lines.append("**Broad approach:**")
+            
+            if sr.get('broad_approach'):
+                output_lines.append(f"**Broad approach:** *(SR2024: {sr['broad_approach']})*")
+            else:
+                output_lines.append("**Broad approach:**")
             output_lines.append("")
             
             if sr.get('names'):
@@ -809,7 +828,10 @@ def export_taxonomy(
                 output_lines.append("**Outputs in 2025:**")
             output_lines.append("")
             
-            output_lines.append("**Critiques:**")
+            if sr.get('critiques'):
+                output_lines.append(f"**Critiques:** *(SR2024: {sr['critiques']})*")
+            else:
+                output_lines.append("**Critiques:**")
             output_lines.append("")
             
             if sr.get('funded_by'):
@@ -818,7 +840,10 @@ def export_taxonomy(
                 output_lines.append("**Funded by:**")
             output_lines.append("")
             
-            output_lines.append("**Funding in 2025:**")
+            if sr.get('funding_2023_4'):
+                output_lines.append(f"**Funding in 2025:** *(SR2024 funding 2023-4: {sr['funding_2023_4']})*")
+            else:
+                output_lines.append("**Funding in 2025:**")
             output_lines.append("")
         
         # If leaf category with items, output them

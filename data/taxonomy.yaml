@@ -170,10 +170,17 @@ taxonomy:
               dictionary learning, matryoshka SAEs.
             sr2024:
               summary: "decompose the polysemantic activations of the residual stream into a sparse linear combination of monosemantic \"features\" which correspond to interpretable concepts"
+              theory_of_change: "get a principled decomposition of an LLM's activation into atomic components → identify deception and other misbehaviors"
+              see_also: "Bau Lab, the Local Interaction Basis"
+              orthodox_problems: "1. Value is fragile and hard to specify, 7. Superintelligence can fool human supervisors"
+              target_case: "pessimistic"
+              broad_approach: "cognitive"
               names: "Senthooran Rajamanoharan, Arthur Conmy, Leo Gao, Neel Nanda, Connor Kissane, Lee Sharkey, Samuel Marks, David Bau, Eric Michaud, Aaron Mueller, Decode"
               ftes: "10-50"
               outputs: "Scaling Monosemanticity, Extracting Concepts from GPT-4, Gemma Scope, JumpReLU, Dictionary learning with gated SAEs, Scaling and evaluating sparse autoencoders, Automatically Interpreting LLM Features, Interpreting Attention Layers, SAEs (usually) Transfer Between Base and Chat Models, End-to-End Sparse Dictionary Learning, Transcoders Find Interpretable LLM Feature Circuits, A is for Absorption, Sparse Feature Circuits, Function Vectors, Improving Steering Vectors by Targeting SAE Features, Matryoshka SAEs, Goodfire"
+              critiques: "SAEs are highly dataset dependent, The 'strong' feature hypothesis could be wrong, EIS XIV: Is mechanistic interpretability about to be practically useful?, steganography, Analyzing (In)Abilities of SAEs via Formal Languages"
               funded_by: "everyone, roughly. Frontier labs, LTFF, OpenPhil, etc."
+              funding_2023_4: "N/A. Millions?"
           
           - id: interp_concept_based
             name: Concept-based interp
@@ -200,10 +207,17 @@ taxonomy:
               consistent abstractions. Focus on causal structure of representations.
             sr2024:
               summary: "develop the foundations of interpretable AI through the lens of causality and abstraction"
+              theory_of_change: "figure out what it means for a mechanistic explanation of neural network behavior to be correct → find a mechanistic explanation of neural network behavior"
+              see_also: "causal scrubbing, locally consistent abstractions"
+              orthodox_problems: "1. Value is fragile and hard to specify, 7. Superintelligence can fool human supervisors"
+              target_case: "pessimistic"
+              broad_approach: "cognitive"
               names: "Atticus Geiger"
               ftes: "1-10"
               outputs: "Disentangling Factual Knowledge in GPT-2 Small, Causal Abstraction, ReFT, pyvene, defending subspace interchange"
+              critiques: "not found"
               funded_by: "Open Philanthropy"
+              funding_2023_4: "$737,000"
           
           - id: interp_leap
             name: Leap
@@ -212,10 +226,16 @@ taxonomy:
               standardized interfaces for interpretability. Examples: PIZZA framework.
             sr2024:
               summary: "research startup selling an interpretability API (model-agnostic feature viz of vision models). Aiming for data-independent and global interpretability methods"
+              theory_of_change: "make safety tools people want to use, stress-test methods in real life, develop a strong alternative to bottom-up circuit analysis"
+              orthodox_problems: "1. Value is fragile and hard to specify"
+              target_case: "pessimistic"
+              broad_approach: "cognitive"
               names: "Jessica Rumbelow, Robbie McCorkell"
               ftes: "1-10"
               outputs: "Why did ChatGPT say that? (PIZZA)"
+              critiques: "not found"
               funded_by: "Speedinvest, Ride Home, Open Philanthropy, EA Funds"
+              funding_2023_4: "$425,000"
           
           - id: interp_eleuther
             name: EleutherAI interp
@@ -224,10 +244,16 @@ taxonomy:
               research, refusal as affine function.
             sr2024:
               summary: "tools to investigate questions like path dependence of training"
+              theory_of_change: "make amazing tools to push forward the frontier of interpretability"
+              orthodox_problems: "1. Value is fragile and hard to specify"
+              target_case: "optimistic-case"
+              broad_approach: "cognitive"
               names: "Nora Belrose, Brennan Dury, David Johnston, Alex Mallen, Lucia Quirke, Adam Scherlis"
               ftes: "6"
               outputs: "Neural Networks Learn Statistics of Increasing Complexity, Automatically Interpreting Millions of Features in Large Language Models, Refusal in LLMs is an Affine Function"
+              critiques: "not found"
               funded_by: "CoreWeave, Hugging Face, Open Philanthropy, Mozilla, Omidyar Network, Stability AI, Lambda Labs"
+              funding_2023_4: "$2,642,273"
           
           - id: interp_other
             name: Other interpretability
@@ -250,10 +276,17 @@ taxonomy:
               and representations across training time.
             sr2024:
               summary: "Build tools for detecting, locating, and interpreting key moments (saddle-to-saddle dynamics, groks) that govern training and in-context learning in models"
+              theory_of_change: "structures forming in neural networks can leave traces we can interpret to figure out where and how that structure is implemented. This could automate interpretability. It may be hopeless to intervene at the end of the learning process, so we want to catch and prevent deceptiveness and other dangerous capabilities and values as early as possible"
+              see_also: "singular learning theory, computational mechanics, complexity"
+              orthodox_problems: "4. Goals misgeneralize out of distribution"
+              target_case: "pessimistic"
+              broad_approach: "cognitive"
               names: "Jesse Hoogland, George Wang, Daniel Murfet, Stan van Wingerden, Alexander Gietelink Oldenziel"
               ftes: "10+?"
               outputs: "Stagewise Development in Neural Networks, Differentiation and Specialization of Attention Heads via the Refined Local Learning Coefficient, Higher-order degeneracy and error-correction, Feature Targeted LLC Estimation Distinguishes SAE Features from Random Directions"
+              critiques: "Timaeus, Erdil, Skalse"
               funded_by: "Manifund, Survival and Flourishing Fund, EA Funds"
+              funding_2023_4: "$700,050"
           
           - id: learning_vaintrob_critique
             name: Vaintrob ~critique
@@ -268,10 +301,17 @@ taxonomy:
               applying computational mechanics framework to neural network training dynamics.
             sr2024:
               summary: "Computational mechanics for interpretability; what structures must a system track in order to predict the future?"
+              theory_of_change: "apply the theory to SOTA AI, improve structure measures and unsupervised methods for discovering structure, ultimately operationalize safety-relevant phenomena"
+              see_also: "Belief State Geometry"
+              orthodox_problems: "9. Humans cannot be first-class parties to a superintelligent value handshake"
+              target_case: "pessimistic"
+              broad_approach: "cognitive, maths/philosophy"
               names: "Paul Riechers, Adam Shai"
               ftes: "1-10"
               outputs: "Transformers represent belief state geometry in their residual stream, Open Problems in Comp Mech"
+              critiques: "not found"
               funded_by: "Survival and Flourishing Fund"
+              funding_2023_4: "$74,000"
           
           - id: learning_saxe
             name: Saxe lab
@@ -281,10 +321,16 @@ taxonomy:
               induction heads formation.
             sr2024:
               summary: "toy models (e.g. of induction heads) to understand learning in interesting limiting examples; only part of their work is safety related"
+              theory_of_change: "study interpretability and learning in DL (for bio insights, unrelated to AI) → someone else uses this work to do something safety related"
+              orthodox_problems: "We don't know how to determine an AGI's goals or values"
+              target_case: "optimistic?"
+              broad_approach: "cognitive"
               names: "Andrew Saxe, Basile Confavreux, Erin Grant, Stefano Sarao Mannelli, Tyler Boyd-Meredith, Victor Pedrosa"
               ftes: "10-50"
               outputs: "Tilting the Odds at the Lottery, What needs to go right for an induction head?, Why Do Animals Need Shaping?, When Representations Align, Understanding Unimodal Bias in Multimodal Deep Linear Networks, Meta-Learning Strategies through Value Maximization in Neural Networks"
+              critiques: "none found"
               funded_by: "Sir Henry Dale Fellowship, Wellcome-Beit Prize, CIFAR, Schmidt Science Polymath Program"
+              funding_2023_4: ">£25,000"
       
       - id: model_psychology
         name: Model psychology
@@ -322,10 +368,17 @@ taxonomy:
           RLCHF, E-RLHF, KTO, IPO, rule-based rewards, reward model ensembles, ProgressGym.
         sr2024:
           summary: "nudging base models by optimising their output. (RLHF, Constitutional, DPO, SFT, HHH, RLAIF.)"
+          theory_of_change: "things are generally smooth, relevant capabilities are harder than alignment, assume no mesaoptimisers, that zero-shot deception is hard, assume a fundamentally humanish ontology is learned, assume no simulated agents, assume that noise in the data means that human preferences are not ruled out, assume that alignment is a superficial feature. Assume that task reliability is enough (that tuning for what we want will also get us avoidance of what we don't want). Maybe assume that thoughts are translucent"
+          see_also: "prosaic alignment, incrementalism, alignment-by-default"
+          orthodox_problems: "this agenda implicitly questions this framing"
+          target_case: "optimistic-case"
+          broad_approach: "engineering"
           names: "post-training teams at most labs. Beren Millidge."
           ftes: "1000+"
           outputs: "Deliberative Alignment (Constitutional AI, redux), REINFORCE, WARP, Catastrophic Goodhart, RLCHF, E-RLHF, NLHF, IPO, KTO, Why Don't We Just... Shoggoth+Face+Paraphraser?, Towards a Unified View of Preference Learning for Large Language Models: A Survey, Rule-Based Rewards, Reward Model Ensembles, Guardrails, ProgressGym, What are human values, and how do we align AI to them?"
+          critiques: "hoo boy, Open Problems with RLHF, neo-Arrow, Challenges of Partial Observability in RLHF, Jozdien kinda, RLHF is the worst possible thing, Fundamental Limitations of Alignment in Large Language Models"
           funded_by: "most of the industry"
+          funding_2023_4: "N/A"
       
       - id: deepmind_frontier_safety
         name: DeepMind Frontier Safety Framework
@@ -359,10 +412,17 @@ taxonomy:
               SHADE-Arena, D-REX, Subversion Strategy Eval, safety cases.
             sr2024:
               summary: "don't evaluate the model, evaluate the humans / organisation / deployment method instead: assess the risk of a particular protocol for deploying your model in a particular scenario, by silently swapping in an intentionally misaligned model"
+              theory_of_change: "prevent high-stakes failures by automating risk assessment of eval and deployment plans"
+              see_also: "safety cases"
+              orthodox_problems: "12. A boxed AGI might exfiltrate itself by steganography, spearphishing"
+              target_case: "worst-case"
+              broad_approach: "engineering / behavioural"
               names: "Redwood, Buck Shlegeris, Ryan Greenblatt, Kshitij Sachan, Alex Mallen"
               ftes: "9"
               outputs: "AI Control, Subversion Strategy Eval, sequence, toy models, notes"
+              critiques: "of org in general, Jozdien"
               funded_by: "Open Philanthropy, Survival and Flourishing Fund"
+              funding_2023_4: "$6,398,000"
           
           - id: deception_criticisms
             name: Criticisms
@@ -381,10 +441,16 @@ taxonomy:
               law of iterated expectations, ARC heuristic estimators.
             sr2024:
               summary: "understand what an LLM's normal (~benign) functioning looks like and detect divergence from this, even if we don't understand the exact nature of that divergence"
+              theory_of_change: "build models of normal functioning → find and flag behaviors that look unusual → match the unusual behaviors to problematic outcomes or shut it down outright"
+              orthodox_problems: "7. Superintelligence can fool human supervisors or 8. Superintelligence can hack software supervisors"
+              target_case: "pessimistic"
+              broad_approach: "cognitive"
               names: "Nora Belrose, Erik Jenner"
               ftes: "1-10"
               outputs: "Password-locked model capability elicitation, Towards a Law of Iterated Expectations for Heuristic Estimators, Eleuther research update, Concrete empirical research projects, Mack and Turner"
+              critiques: "critique of past agenda, contra counting arguments?"
               funded_by: "ARC, Eleuther funders"
+              funding_2023_4: "some fraction of Eleuther's $2,642,273"
           
           - id: deception_cadenza
             name: Cadenza
@@ -394,10 +460,15 @@ taxonomy:
               Cluster-norm for unsupervised probing, dishonesty detection without labels.
             sr2024:
               summary: "now focusing on developing robust white-box dishonesty-detection methods for LLM's and model evals"
+              theory_of_change: "Build and benchmark strong white-box methods to assess trustworthiness and increase transparency of models, and encourage open releases / evals from labs by demonstrating the benefits and necessity of such methods"
+              orthodox_problems: "7. Superintelligence can fool human supervisors or 8. Superintelligence can hack software supervisors"
+              target_case: "pessimistic / worst-case"
+              broad_approach: "cognitive"
               names: "Kieron Kretschmar, Walter Laurito, Sharan Maiya, Grégoire Dhimoïla"
               ftes: "3"
               outputs: "Cluster-Norm for Unsupervised Probing of Knowledge"
               funded_by: "self-funded / volunteers"
+              funding_2023_4: "none"
           
           - id: deception_faithful_cot
             name: Faithful CoT via separation
@@ -409,10 +480,16 @@ taxonomy:
               reasoning traces, separation of concerns.
             sr2024:
               summary: "shoggoth/face + paraphraser. Avoid giving the model incentives to hide its deceptive cognition or steganography"
+              theory_of_change: "keep the CoT unoptimised and informative so that it can be used for control. Make it so we can see (most) misalignment in the hidden CoT"
+              orthodox_problems: "7. Superintelligence can fool human supervisors"
+              target_case: "pessimistic"
+              broad_approach: "engineering"
               names: "Daniel Kokotajlo, AI Futures Project"
               ftes: "1"
               outputs: "Why don't we just…"
+              critiques: "Demski"
               funded_by: "SFF"
+              funding_2023_4: "$505,000 for the AI Futures Project"
           
           - id: deception_indirect
             name: Indirect deception monitoring
@@ -424,10 +501,16 @@ taxonomy:
               sycophancy detection, behavioral lie classifiers.
             sr2024:
               summary: "build tools to find whether a model will misbehave in high stakes circumstances by looking at it in testable circumstances. This bucket catches work on lie classifiers, sycophancy, Scaling Trends For Deception"
+              theory_of_change: "maybe we can catch a misaligned model by observing dozens of superficially unrelated parts, or tricking it into self-reporting, or by building the equivalent of brain scans"
+              orthodox_problems: "7. Superintelligence can fool human supervisors"
+              target_case: "pessimistic"
+              broad_approach: "engineering"
               names: "Anthropic, Monte MacDiarmid, Meg Tong, Mrinank Sharma, Owain Evans, Colognese"
               ftes: "1-10"
               outputs: "Simple probes can catch sleeper agents, Sandbag Detection through Noise Injection, Hidden in Plain Text: Emergence & Mitigation of Steganographic Collusion in LLMs"
+              critiques: "1%, contra counting arguments"
               funded_by: "Anthropic funders"
+              funding_2023_4: "N/A"
           
           - id: deception_other
             name: Other deception prevention
