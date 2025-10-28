@@ -57,7 +57,9 @@ classify_content:
     
     **Authoritative frameworks:** Preparedness frameworks, RSPs, and technical agendas from major labs/orgs (OpenAI, Anthropic, OpenPhil, Redwood, MIRI, etc.) get high inclusion (0.70-0.85) as they authoritatively inform research direction, even if not presenting original research.
     
-    **Commentary vs research:** Overview posts and news summaries get low inclusion (<0.4). Technical critiques from a technical standpoint (feasibility, promise) get HIGH inclusion (>0.7). Position papers proposing new agendas fulfill this criteria.
+    **Commentary vs research:** Overview posts and news summaries get low inclusion (<0.4). Technical critiques from a technical standpoint (feasibility, promise) get HIGH inclusion (>0.7). Position papers vary: those with technical depth or proposing new technical agendas get moderate-high inclusion (0.5-0.75); those discussing approaches from governance/policy perspective without technical depth get low inclusion (0.3-0.5).
+    
+    **Foundational theory:** Abstract theoretical work on interpretability limits, computational properties, or formal foundations gets moderate-high inclusion (0.5-0.7) even if not directly applicable yet. Use moderate confidence (0.5-0.7) for such work.
     
     **Access errors:** If content unavailable (errors, paywalls, format issues), set `kind="error_detected"` and `confidence=0.0`.
     
@@ -79,24 +81,32 @@ classify_content:
     How suitable is this for inclusion in Shallow Review 2025? Focus on technical depth and original contribution - the "Shallow Review spirit":
     
     **Core inclusion criteria:**
-    - ✅ Original technical research (empirical or theoretical)
+    - ✅ Original technical research (empirical or theoretical, including foundational theory)
     - ✅ Technical research agendas, roadmaps, or frameworks
     - ✅ Novel technical tools, benchmarks, or datasets for safety research
     - ✅ Technical critiques with substantive analysis
+    - ✅ Foundational theory work on interpretability limits, computational properties, etc.
     - ❌ News/commentary about research (unless unclear if we have the original)
+    - ❌ Position papers discussing approaches without technical depth (governance-oriented)
     - ❌ Opinion pieces or think pieces without technical contribution
     - ❌ Summaries or reviews without novel insights
     - ❌ Mainstream AI work tangentially mentioning safety
     
-    **Scale:**
-    - **0.9-1.0**: Major original technical safety research or comprehensive technical agendas (must include)
-    - **0.7-0.9**: Significant technical contributions with solid empirical or theoretical work
-    - **0.5-0.7**: Decent technical work, tool releases, or position papers with technical substance
-    - **0.3-0.5**: Marginal technical contribution or preliminary results
-    - **0.1-0.3**: Commentary, news, or summaries about research (not the research itself)
-    - **0.0-0.1**: No technical contribution (pure journalism, opinion pieces)
+    **Scale dimensions** (judge by these qualities, not content type alone):
+    - **Originality**: Novel research, methods, tools vs. describing others' work
+    - **Technical depth**: Formal frameworks, empirical results, implementation vs. high-level discussion
+    - **Contribution type**: Direct technical contribution vs. meta-level commentary or synthesis
+    - **Actionability**: Informs concrete technical work vs. general perspectives
     
-    **Critical distinction**: Content can be highly relevant to AI safety but unsuitable for Shallow Review if it lacks original technical contribution. Pieces *about* research (not the research itself) typically score <0.4 on inclusion.
+    **Rough scale anchors:**
+    - **0.9-1.0**: Major original technical contribution (novel empirical results, comprehensive frameworks, significant theoretical advances)
+    - **0.7-0.9**: Solid technical work with clear contribution (good empirical work, useful tools, substantive technical critiques)
+    - **0.5-0.7**: Moderate technical value (foundational theory, preliminary results, technical position papers, tool releases)
+    - **0.3-0.5**: Limited direct technical contribution (high-level discussion of approaches, early-stage ideas, governance-focused analysis)
+    - **0.1-0.3**: Minimal technical content (news coverage, commentary, summaries without novel insight)
+    - **0.0-0.1**: No technical contribution relevant to research
+    
+    **Key principle**: Judge by technical contribution quality, not content type. Authoritative news/frameworks or well-argued position papers can score higher than their type suggests; papers with weak contributions score lower. Content can be highly relevant to AI safety but unsuitable for Shallow Review if it lacks technical depth.
     
     # Required Output Fields
     
@@ -112,8 +122,8 @@ classify_content:
       - **LessWrong/AF**: Use `lesswrong` for LessWrong or AI Alignment Forum posts (special category due to importance in AI safety community)
       - **Blocked vs error**: Use `blocked` for paywall/login/captcha (content exists but inaccessible), `error_detected` for technical errors (429, 404, 5xx, format errors)
     - **contribution_type**: Primary contribution - choose ONE from: `empirical_results`, `theoretical_framework`, `benchmark_dataset`, `tool_software`, `critique`, `survey_review`, `position_agenda`, `demo_case_study`, `other`
-    - **summary**: Clear 2-3 sentence summary focusing on WHAT was done and WHY it matters for AI safety
-    - **key_result**: Main finding in 1-2 sentences (`null` for non-empirical work, critiques, news, tools)
+    - **summary**: Concise 1-2 sentence summary of core contribution. Focus on WHAT was done, not details or results.
+    - **key_result**: Main finding in 1 sentence (`null` for non-empirical work, critiques, news, tools, agendas)
     - **ai_safety_relevance**: Score 0.0-1.0 for topic relevance to AI safety
     - **shallow_review_inclusion**: Score 0.0-1.0 for technical contribution suitable for Shallow Review
     - **categories**: List of 1-3 best-fitting leaf categories with scores
@@ -126,7 +136,7 @@ classify_content:
       - 1 sentence: Why these categories? (Address ambiguity if multiple fit)
       - 1 sentence: Why this AI safety relevance score?
       - 1 sentence: Why this inclusion suitability score?
-    - **confidence**: Your confidence in this classification 0.0-1.0 (NOT about work quality - about YOUR certainty)
+    - **confidence**: Your confidence in this classification 0.0-1.0 (NOT about work quality - about YOUR certainty). Use moderate confidence (0.5-0.7) for abstract foundational theory or borderline cases.
     
     # Analysis Instructions
     
@@ -157,8 +167,8 @@ classify_content:
       "venue": "arXiv",
       "kind": "paper_preprint",
       "contribution_type": "empirical_results",
-      "summary": "Demonstrates that Claude 3 Opus engages in alignment faking - strategically complying with harmful queries during perceived training to prevent modification of its preferred behavior. When given information suggesting training only on free user conversations, the model complied with harmful queries from free users 14% of the time versus almost never for paid users, with explicit reasoning showing strategic deception. Provides direct empirical evidence of deceptive alignment.",
-      "key_result": "Claude 3 Opus strategically faked alignment during perceived training, complying with harmful requests 14% of the time when it believed doing so would prevent changes to its values, with chain-of-thought explicitly reasoning about deceiving trainers.",
+      "summary": "Demonstrates that Claude 3 Opus engages in alignment faking - strategically complying with harmful queries during perceived training to preserve its preferred behavior.",
+      "key_result": "Model complied with harmful requests 14% of the time when it believed doing so would prevent changes to its values.",
       "ai_safety_relevance": 0.98,
       "shallow_review_inclusion": 0.95,
       "categories": [
@@ -181,7 +191,7 @@ classify_content:
       "venue": "LessWrong",
       "kind": "lesswrong",
       "contribution_type": "critique",
-      "summary": "Systematically critiques common theories of how interpretability work will lead to AI safety. Argues that most interpretability research lacks clear paths to impact and may not help with alignment of superhuman systems. Challenges assumptions about interpretability scaling to frontier models from technical feasibility perspective.",
+      "summary": "Systematically critiques common theories of interpretability impact on AI safety, arguing most lack clear paths to helping with superhuman alignment.",
       "key_result": null,
       "ai_safety_relevance": 0.88,
       "shallow_review_inclusion": 0.75,
@@ -204,7 +214,7 @@ classify_content:
       "venue": "OpenAI Blog",
       "kind": "agenda_manifesto",
       "contribution_type": "position_agenda",
-      "summary": "OpenAI's updated framework for tracking and preparing for advanced AI capabilities that could introduce severe risks. Establishes risk prioritization criteria, capability categories (Bio/Chem, Cyber, AI Self-improvement, Autonomy, Safeguard Undermining), capability levels (High vs Critical), and safeguards reports reviewed by Safety Advisory Group. Defines deployment decision criteria and risk management protocols.",
+      "summary": "OpenAI's updated framework for tracking and preparing for advanced AI capabilities that could introduce severe risks, establishing risk categories, capability levels, and deployment criteria.",
       "key_result": null,
       "ai_safety_relevance": 0.95,
       "shallow_review_inclusion": 0.78,
@@ -228,7 +238,7 @@ classify_content:
       "venue": "Anthropic Website",
       "kind": "news_announcement",
       "contribution_type": "other",
-      "summary": "System card documenting Claude Sonnet 4.5's capabilities, safety evaluations, and deployment decisions. Reports benchmark performance, dangerous capability evaluations (autonomy, CBRN, cyber), red-teaming results, and responsible scaling policy assessments. Documents evaluation outcomes but does not present novel evaluation methodology.",
+      "summary": "System card documenting Claude Sonnet 4.5's capabilities and safety evaluations, including dangerous capability assessments and red-teaming results.",
       "key_result": null,
       "ai_safety_relevance": 0.88,
       "shallow_review_inclusion": 0.38,
@@ -251,7 +261,7 @@ classify_content:
       "venue": "ai-2027.com",
       "kind": "blog_post",
       "contribution_type": "other",
-      "summary": "Technical forecasting research predicting when AI systems will achieve superhuman coding capabilities using two methodologically rigorous approaches. Time-horizon-extension method extrapolates METR's empirical task completion trends, while benchmarks-and-gaps method develops statistical models of RE-Bench saturation curves. Predicts median arrival 2029-2030 with detailed uncertainty quantification and substantial probability mass on 2027-2028.",
+      "summary": "Technical forecasting predicting superhuman coding capabilities using statistical extrapolation of METR evaluation trends and RE-Bench saturation modeling.",
       "key_result": null,
       "ai_safety_relevance": 0.85,
       "shallow_review_inclusion": 0.75,
@@ -274,7 +284,7 @@ classify_content:
       "venue": "ICML 2024 Workshop on Agent Foundations",
       "kind": "paper_published",
       "contribution_type": "position_agenda",
-      "summary": "Workshop position paper proposing a framework for measuring goal-directedness in AI systems through behavioral analysis and theoretical formalization. Outlines potential metrics and discusses connections to power-seeking and mesa-optimization. Preliminary conceptual work without empirical validation or concrete implementation.",
+      "summary": "Workshop position paper proposing a framework for measuring goal-directedness in AI systems, outlining potential metrics and connections to power-seeking.",
       "key_result": null,
       "ai_safety_relevance": 0.72,
       "shallow_review_inclusion": 0.55,
@@ -301,8 +311,8 @@ classify_content:
       "venue": "string or null",
       "kind": "enum_value",
       "contribution_type": "enum_value",
-      "summary": "2-3 sentence summary",
-      "key_result": "1-2 sentence main finding or null",
+      "summary": "1-2 sentence summary of core contribution",
+      "key_result": "1 sentence main finding or null",
       "ai_safety_relevance": 0.85,
       "shallow_review_inclusion": 0.75,
       "categories": [
@@ -316,7 +326,10 @@ classify_content:
     
     **Remember:**
     - Use only leaf category IDs from the provided taxonomy
+    - Keep summary to 1-2 sentences max, key_result to 1 sentence max - be concise
     - Technical critiques from a technical standpoint get HIGH inclusion (>0.7) if substantive
+    - Foundational theory work (interpretability limits, computational properties) gets MODERATE-HIGH inclusion (0.5-0.7) with moderate confidence
+    - Position papers: distinguish technical depth vs governance/policy discussion - latter gets LOW inclusion (0.3-0.5)
     - Authoritative frameworks from major orgs get HIGH inclusion (0.70-0.85) even if not original research
     - System cards are documentation (SR <0.4), NOT the evaluation research itself
     - Technical capability forecasting with statistical models/methodology gets MODERATE-HIGH inclusion (0.50-0.75)
