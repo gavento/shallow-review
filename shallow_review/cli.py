@@ -763,91 +763,81 @@ def export_taxonomy(
         
         # Output section header with ID
         header_prefix = "#" * (level + 1)
-        output_lines.append(f"{header_prefix} {cat.name} [cat:{cat.id}]")
-        output_lines.append("")
-        
+        size = ["1.6em", "1.5em", "1.4em", "1.3em", "1.2em", "1.1em"][level]
+        output_lines.append(f"{header_prefix} <span style=\"font-size:{size}\">{cat.name}</span> <span style=\"color:#bbb\">[cat:{cat.id}]</span>\n")
+
         # Output description
-        output_lines.append(f"**Taxonomy description (internal):** *{cat.description.strip()}*")
-        output_lines.append("")
+        # output_lines.append(f"**Taxonomy description (internal):** *{cat.description.strip()}*")
+        # output_lines.append("")
         
         # If leaf category, output rubrics and items
         if cat.is_leaf:
+            output_lines.append("**<span style=\"color:#777\">Who edits (internal):</span>** **<span style=\"color:#da5\">take me</span>**  ")
+
             # Get SR2024 data if available
             sr = cat.sr2024 if hasattr(cat, 'sr2024') and cat.sr2024 else {}
             
             # Output SR2024-style rubrics (prefilled from SR2024 where available)
             if sr.get('summary'):
-                output_lines.append(f"**One-sentence summary:** *(SR2024: {sr['summary']})*")
+                output_lines.append(f"**One-sentence summary:** *(SR2024: {sr['summary']})*  ")
             else:
-                output_lines.append("**One-sentence summary:**")
-            output_lines.append("")
+                output_lines.append("**One-sentence summary:**  ")
             
             if sr.get('theory_of_change'):
-                output_lines.append(f"**Theory of change:** *(SR2024: {sr['theory_of_change']})*")
+                output_lines.append(f"**Theory of change:** *(SR2024: {sr['theory_of_change']})*  ")
             else:
-                output_lines.append("**Theory of change:**")
-            output_lines.append("")
+                output_lines.append("**Theory of change:**  ")
             
             if sr.get('see_also'):
-                output_lines.append(f"**See also:** *(SR2024: {sr['see_also']})*")
+                output_lines.append(f"**See also:** *(SR2024: {sr['see_also']})*  ")
             else:
-                output_lines.append("**See also:**")
-            output_lines.append("")
+                output_lines.append("**See also:**  ")
             
             if sr.get('orthodox_problems'):
-                output_lines.append(f"**Orthodox problems:** *(SR2024: {sr['orthodox_problems']})*")
+                output_lines.append(f"**Orthodox problems:** *(SR2024: {sr['orthodox_problems']})*  ")
             else:
-                output_lines.append("**Orthodox problems:**")
-            output_lines.append("")
+                output_lines.append("**Orthodox problems:**  ")
             
             if sr.get('target_case'):
-                output_lines.append(f"**Target case:** *(SR2024: {sr['target_case']})*")
+                output_lines.append(f"**Target case:** *(SR2024: {sr['target_case']})*  ")
             else:
-                output_lines.append("**Target case:**")
-            output_lines.append("")
+                output_lines.append("**Target case:**  ")
             
             if sr.get('broad_approach'):
-                output_lines.append(f"**Broad approach:** *(SR2024: {sr['broad_approach']})*")
+                output_lines.append(f"**Broad approach:** *(SR2024: {sr['broad_approach']})*  ")
             else:
-                output_lines.append("**Broad approach:**")
-            output_lines.append("")
+                output_lines.append("**Broad approach:**  ")
             
             if sr.get('names'):
-                output_lines.append(f"**Key people:** *(SR2024: {sr['names']})*")
+                output_lines.append(f"**Key people:** *(SR2024: {sr['names']})*  ")
             else:
-                output_lines.append("**Key people:**")
-            output_lines.append("")
+                output_lines.append("**Key people:**  ")
             
             if sr.get('ftes'):
-                output_lines.append(f"**Estimated FTEs:** *(SR2024: {sr['ftes']})*")
+                output_lines.append(f"**Estimated FTEs:** *(SR2024: {sr['ftes']})*  ")
             else:
-                output_lines.append("**Estimated FTEs:**")
-            output_lines.append("")
-            
-            if sr.get('outputs'):
-                output_lines.append(f"**Outputs in 2025:** *(SR2024 outputs: {sr['outputs']})*")
-            else:
-                output_lines.append("**Outputs in 2025:**")
-            output_lines.append("")
+                output_lines.append("**Estimated FTEs:**  ")
             
             if sr.get('critiques'):
-                output_lines.append(f"**Critiques:** *(SR2024: {sr['critiques']})*")
+                output_lines.append(f"**Critiques:** *(SR2024: {sr['critiques']})*  ")
             else:
-                output_lines.append("**Critiques:**")
-            output_lines.append("")
+                output_lines.append("**Critiques:**  ")
             
             if sr.get('funded_by'):
-                output_lines.append(f"**Funded by:** *(SR2024: {sr['funded_by']})*")
+                output_lines.append(f"**Funded by:** *(SR2024: {sr['funded_by']})*  ")
             else:
-                output_lines.append("**Funded by:**")
-            output_lines.append("")
+                output_lines.append("**Funded by:**  ")
             
             if sr.get('funding_2023_4'):
-                output_lines.append(f"**Funding in 2025:** *(SR2024 funding 2023-4: {sr['funding_2023_4']})*")
+                output_lines.append(f"**Funding in 2025:** *(SR2024 funding 2023-4: {sr['funding_2023_4']})*  ")
             else:
-                output_lines.append("**Funding in 2025:**")
-            output_lines.append("")
+                output_lines.append("**Funding in 2025:**  ")
         
+            if sr.get('outputs'):
+                output_lines.append(f"**Outputs in 2025:**  \n*(SR2024 outputs: {sr['outputs']})*  ")
+            else:
+                output_lines.append("**Outputs in 2025:**  ")
+
         # If leaf category with items, output them
         if cat.is_leaf and items_in_this_cat:
             for item in items_in_this_cat:
@@ -887,10 +877,12 @@ def export_taxonomy(
                 # New scores: sr, conf, cats
                 # conf_str = f", conf={item['confidence']:.2f}" if item['confidence'] is not None else ""
                 # cats_str = f", cats={item['top_category_score']:.2f}" if item['top_category_score'] is not None else ""
-                stats_part = f"[{item['kind']}, **sr={item['shallow_review_inclusion']:.2f}**, item:{url_hash_short}]"
+                stats_part = f"<span style=\"color:#777\">[{item['kind']}, sr={item['shallow_review_inclusion']:.2f}, id:{url_hash_short}]</span>"
                 
                 # Summary
                 summary = item["summary"].replace("\n", " ").strip()
+                if summary:
+                    summary = f"<span style=\"color:#777\">Summary: {summary}</span>"
                 
                 # Key points
                 key_points_str = ""
@@ -898,6 +890,8 @@ def export_taxonomy(
                     # Join first 3 key points
                     kp_list = item["key_points"][:3]
                     key_points_str = " • ".join(kp.replace("\n", " ").strip() for kp in kp_list)
+                if key_points_str:
+                    key_points_str = f"<span style=\"color:#777\">Key points: {key_points_str}</span>"
                 
                 # Assemble line: - **Title**, *Authors*, Date, Venue [stats] Summary • Key points
                 parts = [title_part]
@@ -918,7 +912,8 @@ def export_taxonomy(
             
             # Add blank line after list
             output_lines.append("")
-        
+
+        output_lines.append("\n---\n")
         # Recurse to children (for non-leaf categories)
         if not cat.is_leaf:
             for child in cat.children:
