@@ -1,6 +1,6 @@
 # AI Safety Classification Taxonomy
 # Ground truth for classification categories
-# Last updated: 2025-10-21
+# Last updated: 2025-11-07
 #
 # Structure:
 # - Each category has: id, name, description
@@ -10,13 +10,304 @@
 # - examples field is optional and ONLY allowed on leaf categories
 
 taxonomy:
-  - id: understand_models
-    name: Understand existing models
+  - id: big_labs
+    name: Labs (giant companies)
     description: >
-      Research focused on understanding, evaluating, and interpreting current AI systems.
-      Includes capability evaluations, interpretability, understanding training dynamics,
-      and behavioral patterns.
+      Research and safety work by major AI companies and frontier labs.
+      Organization-specific categories for OpenAI, DeepMind, Anthropic, xAI, and Meta.
     children:
+      - id: openai
+        name: OpenAI Safety
+        description: >
+          OpenAI's safety, alignment, and preparedness work. Includes Alignment team,
+          Safety Systems (Interpretability, Safety Oversight, Pretraining Safety,
+          Robustness, Safety Research, Trustworthy AI, Misalignment Research team),
+          Preparedness team, and related research. Preparedness Framework and system
+          cards. Work that would have been categorized as OpenAI Preparedness.
+      
+      - id: deepmind
+        name: DeepMind Responsibility & Safety
+        description: >
+          DeepMind/Google's safety and alignment research. Includes ASAT (AGI Alignment
+          and Frontier Safety teams), Gemini Safety, AGI Safety Council, Responsibility
+          and Safety Council. Frontier Safety Framework work. Causal Incentives Working
+          Group. Work that would have been categorized as DeepMind Frontier Safety Framework.
+      
+      - id: anthropic
+        name: Anthropic Safety
+        description: >
+          Anthropic's safety and alignment research across multiple teams: Scalable
+          Alignment, Alignment Evals, Interpretability, Model Psychiatry, Character,
+          Alignment Stress-Testing, Frontier Red Team, Safeguards, Trust and Safety,
+          Model Welfare. RSP framework work.
+      
+      - id: xai
+        name: xAI
+        description: >
+          xAI's Applied Safety and Model Evaluation teams. Risk Management Framework work.
+          Appears primarily misuse-focused.
+      
+      - id: meta
+        name: Meta
+        description: >
+          Meta's safety work integrated into capabilities research. FAIR Alignment,
+          Brain and AI teams.
+
+  - id: control_thing
+    name: Control the thing
+    description: >
+      Black-box alignment: understand and control current model behavior.
+      Methods to control, monitor, and safely constrain AI systems during operation.
+      Includes alignment techniques, monitoring, control evaluations, runtime safety
+      measures, evals, and data interventions.
+    children:
+      - id: iterative_alignment
+        name: Iterative alignment
+        description: >
+          Alignment through iterative training and post-training methods: RLHF, RLAIF, DPO,
+          constitutional AI, iterative refinement approaches. Methods that improve alignment
+          through multiple rounds of feedback and training. Formerly called "prosaic alignment".
+          Examples: Deliberative Alignment (Constitutional AI redux), REINFORCE variants, WARP,
+          RLCHF, E-RLHF, KTO, IPO, rule-based rewards, reward model ensembles, ProgressGym.
+        sr2024:
+          summary: "nudging base models by optimising their output. (RLHF, Constitutional, DPO, SFT, HHH, RLAIF.)"
+          theory_of_change: "things are generally smooth, relevant capabilities are harder than alignment, assume no mesaoptimisers, that zero-shot deception is hard, assume a fundamentally humanish ontology is learned, assume no simulated agents, assume that noise in the data means that human preferences are not ruled out, assume that alignment is a superficial feature. Assume that task reliability is enough (that tuning for what we want will also get us avoidance of what we don't want). Maybe assume that thoughts are translucent"
+          see_also: "prosaic alignment, incrementalism, alignment-by-default"
+          orthodox_problems: "this agenda implicitly questions this framing"
+          target_case: "optimistic-case"
+          broad_approach: "engineering"
+          names: "post-training teams at most labs. Beren Millidge."
+          ftes: "1000+"
+          outputs: "Deliberative Alignment (Constitutional AI, redux), REINFORCE, WARP, Catastrophic Goodhart, RLCHF, E-RLHF, NLHF, IPO, KTO, Why Don't We Just... Shoggoth+Face+Paraphraser?, Towards a Unified View of Preference Learning for Large Language Models: A Survey, Rule-Based Rewards, Reward Model Ensembles, Guardrails, ProgressGym, What are human values, and how do we align AI to them?"
+          critiques: "hoo boy, Open Problems with RLHF, neo-Arrow, Challenges of Partial Observability in RLHF, Jozdien kinda, RLHF is the worst possible thing, Fundamental Limitations of Alignment in Large Language Models"
+          funded_by: "most of the industry"
+          funding_2023_4: "N/A"
+      
+      - id: surgical_edits
+        name: Surgical model edits
+        description: >
+          Targeted interventions to modify model behavior without full retraining.
+          Includes activation steering, unlearning, and precise capability modification.
+        children:
+          - id: activation_engineering
+            name: Activation engineering
+            description: >
+              Steering vectors, representation engineering, directly modifying activations
+              to control behavior. Includes BiDPO and other activation-based control methods.
+            sr2024:
+              summary: "a sort of interpretable finetuning. Let's see if we can programmatically modify activations to steer outputs towards what we want, in a way that generalises across models and topics"
+              theory_of_change: "test interpretability theories; find new insights from interpretable causal interventions on representations. Or: build more stuff to stack on top of finetuning. Slightly encourage the model to be nice, add one more layer of defence to our bundle of partial alignment methods"
+              see_also: "representation engineering, SAEs"
+              orthodox_problems: "1. Value is fragile and hard to specify, 4. Goals misgeneralize out of distribution, 5. Instrumental convergence, 7. Superintelligence can fool human supervisors, 9. Humans cannot be first-class parties to a superintelligent value handshake"
+              target_case: "pessimistic"
+              broad_approach: "engineering/cognitive"
+              names: "Jan Wehner, Alex Turner, Nina Panickssery, Marc Carauleanu, Collin Burns, Andrew Mack, Pedro Freire, Joseph Miller, Andy Zou, Andy Arditi, Ole Jorgensen"
+              ftes: "10+?"
+              outputs: "Circuit Breakers, An Introduction to Representation Engineering - an activation-based paradigm for controlling LLMs, Steering Llama-2 with contrastive activation additions, Simple probes can catch sleeper agents, Refusal in LLMs is mediated by a single direction, Mechanistically Eliciting Latent Behaviors in Language Models, Uncovering Latent Human Wellbeing in Language Model Embeddings, Goodfire, LatentQA, SelfIE, Mack and Turner, Obfuscated Activations Bypass LLM Latent-Space Defenses"
+              critiques: "of ROME, open question thread for theory of impact, A Sober Look at Steering Vectors for LLMs"
+              funded_by: "various, including EA funds"
+              funding_2023_4: "N/A"
+          
+          - id: utility_engineering
+            name: Utility engineering
+            description: >
+              Directly modifying model utilities or objectives through targeted interventions.
+          
+          - id: unlearning
+            name: Unlearning
+            description: >
+              Removing specific capabilities or knowledge from trained models.
+              Targeted forgetting of dangerous or undesired behaviors.
+      
+      - id: control
+        name: Control
+        description: >
+          Control evaluations: evaluating deployment protocols and organizational safety
+          procedures (not just models) by testing with intentionally misaligned models.
+          Assess risk of a particular protocol by silently swapping in backdoored/misaligned
+          model and checking if safety measures catch it. Focus on protocol evaluation
+          rather than model evaluation. Redwood's AI Control framework and related work.
+          Examples: AI Control paper, Ctrl-Z, Control Arena, SHADE-Arena, D-REX,
+          Subversion Strategy Eval, safety cases.
+        sr2024:
+          summary: "don't evaluate the model, evaluate the humans / organisation / deployment method instead: assess the risk of a particular protocol for deploying your model in a particular scenario, by silently swapping in an intentionally misaligned model"
+          theory_of_change: "prevent high-stakes failures by automating risk assessment of eval and deployment plans"
+          see_also: "safety cases"
+          orthodox_problems: "12. A boxed AGI might exfiltrate itself by steganography, spearphishing"
+          target_case: "worst-case"
+          broad_approach: "engineering / behavioural"
+          names: "Redwood, Buck Shlegeris, Ryan Greenblatt, Kshitij Sachan, Alex Mallen"
+          ftes: "9"
+          outputs: "AI Control, Subversion Strategy Eval, sequence, toy models, notes"
+          critiques: "of org in general, Jozdien"
+          funded_by: "Open Philanthropy, Survival and Flourishing Fund"
+          funding_2023_4: "$6,398,000"
+      
+      - id: anthropic_safeguards
+        name: Anthropic Safeguards
+        description: >
+          Anthropic Safeguards team research. Runtime safety measures, defensive
+          systems, and safeguards against misuse. Focus on practical deployment safety
+          beyond core alignment. Inference-time auxiliary defenses.
+      
+      - id: prevent_deception
+        name: Prevent deception and scheming
+        description: >
+          Detecting and preventing deceptive behaviors, scheming, hidden objectives,
+          and misaligned internal goals. Methods for identifying when models are being
+          dishonest or pursuing covert objectives.
+        children:
+          - id: deception_criticisms
+            name: Criticisms
+            description: >
+              Skeptical perspectives on deception detection, control methods, or monitoring
+              approaches. Arguments about fundamental limitations or practical difficulties.
+          
+          - id: deception_mech_anomaly
+            name: Mechanistic anomaly detection
+            description: >
+              Detect deception through internal activation anomalies, even without knowing
+              what specific deception is happening. Build baseline of "normal" internal
+              functioning, flag divergences. Uses mechanistic understanding but NOT requiring
+              full interpretability. Different from whitebox probes (which test for specific
+              things) - this detects unexpected patterns. Examples: password-locked elicitation,
+              law of iterated expectations, ARC heuristic estimators.
+            sr2024:
+              summary: "understand what an LLM's normal (~benign) functioning looks like and detect divergence from this, even if we don't understand the exact nature of that divergence"
+              theory_of_change: "build models of normal functioning → find and flag behaviors that look unusual → match the unusual behaviors to problematic outcomes or shut it down outright"
+              orthodox_problems: "7. Superintelligence can fool human supervisors or 8. Superintelligence can hack software supervisors"
+              target_case: "pessimistic"
+              broad_approach: "cognitive"
+              names: "Nora Belrose, Erik Jenner"
+              ftes: "1-10"
+              outputs: "Password-locked model capability elicitation, Towards a Law of Iterated Expectations for Heuristic Estimators, Eleuther research update, Concrete empirical research projects, Mack and Turner"
+              critiques: "critique of past agenda, contra counting arguments?"
+              funded_by: "ARC, Eleuther funders"
+              funding_2023_4: "some fraction of Eleuther's $2,642,273"
+          
+          - id: deception_cadenza
+            name: Cadenza
+            description: >
+              Cadenza Labs project - white-box dishonesty detection using internal activations.
+              Organization-specific category for Cadenza's approach and methods. Examples:
+              Cluster-norm for unsupervised probing, dishonesty detection without labels.
+            sr2024:
+              summary: "now focusing on developing robust white-box dishonesty-detection methods for LLM's and model evals"
+              theory_of_change: "Build and benchmark strong white-box methods to assess trustworthiness and increase transparency of models, and encourage open releases / evals from labs by demonstrating the benefits and necessity of such methods"
+              orthodox_problems: "7. Superintelligence can fool human supervisors or 8. Superintelligence can hack software supervisors"
+              target_case: "pessimistic / worst-case"
+              broad_approach: "cognitive"
+              names: "Kieron Kretschmar, Walter Laurito, Sharan Maiya, Grégoire Dhimoïla"
+              ftes: "3"
+              outputs: "Cluster-Norm for Unsupervised Probing of Knowledge"
+              funded_by: "self-funded / volunteers"
+              funding_2023_4: "none"
+          
+          - id: deception_faithful_cot
+            name: Faithful CoT via separation
+            description: >
+              Architectural solutions to keep chain-of-thought faithful and observable. 
+              Separate reasoning from presentation so models can't hide deceptive thoughts.
+              Design models where internal reasoning must flow through auditable channel.
+              Examples: Shoggoth/face/paraphraser architecture (Kokotajlo), unoptimized
+              reasoning traces, separation of concerns.
+            sr2024:
+              summary: "shoggoth/face + paraphraser. Avoid giving the model incentives to hide its deceptive cognition or steganography"
+              theory_of_change: "keep the CoT unoptimised and informative so that it can be used for control. Make it so we can see (most) misalignment in the hidden CoT"
+              orthodox_problems: "7. Superintelligence can fool human supervisors"
+              target_case: "pessimistic"
+              broad_approach: "engineering"
+              names: "Daniel Kokotajlo, AI Futures Project"
+              ftes: "1"
+              outputs: "Why don't we just…"
+              critiques: "Demski"
+              funded_by: "SFF"
+              funding_2023_4: "$505,000 for the AI Futures Project"
+          
+          - id: deception_indirect
+            name: Indirect deception monitoring
+            description: >
+              Surface-level behavioral signals of deception without looking at internals.
+              Lie classifiers, sycophancy detection, simple behavioral probes. NOT mechanistic
+              (doesn't examine activations). NOT CoT-based (doesn't analyze reasoning). Just
+              input-output behavioral patterns. Examples: simple probes for deception, 
+              sycophancy detection, behavioral lie classifiers.
+            sr2024:
+              summary: "build tools to find whether a model will misbehave in high stakes circumstances by looking at it in testable circumstances. This bucket catches work on lie classifiers, sycophancy, Scaling Trends For Deception"
+              theory_of_change: "maybe we can catch a misaligned model by observing dozens of superficially unrelated parts, or tricking it into self-reporting, or by building the equivalent of brain scans"
+              orthodox_problems: "7. Superintelligence can fool human supervisors"
+              target_case: "pessimistic"
+              broad_approach: "engineering"
+              names: "Anthropic, Monte MacDiarmid, Meg Tong, Mrinank Sharma, Owain Evans, Colognese"
+              ftes: "1-10"
+              outputs: "Simple probes can catch sleeper agents, Sandbag Detection through Noise Injection, Hidden in Plain Text: Emergence & Mitigation of Steganographic Collusion in LLMs"
+              critiques: "1%, contra counting arguments"
+              funded_by: "Anthropic funders"
+              funding_2023_4: "N/A"
+          
+          - id: deception_other
+            name: Other deception prevention
+            description: >
+              Deception prevention approaches not fitting above categories. ONLY use for
+              novel methods distinct from control evals, anomaly detection, indirect monitoring,
+              faithful CoT, or Cadenza's approach.
+      
+      - id: goal_robustness
+        name: Goal robustness
+        description: >
+          Ensuring models maintain intended goals under distribution shift, optimization
+          pressure, or environmental changes. Includes mild optimization, reward learning,
+          and multi-agent safety.
+        children:
+          - id: mild_optimization
+            name: Mild optimisation
+            description: >
+              Approaches to reduce optimization intensity or ensure satisficing behavior.
+              MONA and related methods for preventing excessive optimization.
+            sr2024:
+              summary: "avoid Goodharting by getting AI to satisfice rather than maximise"
+              theory_of_change: "if we fail to exactly nail down the preferences for a superintelligent agent we die to Goodharting → shift from maximising to satisficing in the agent's utility function → we get a nonzero share of the lightcone as opposed to zero; also, moonshot at this being the recipe for fully aligned AI"
+              orthodox_problems: "4. Goals misgeneralize out of distribution"
+              target_case: "pessimistic"
+              broad_approach: "cognitive"
+              names: "Jobst Heitzig, Simon Fischer, Jessica Taylor"
+              ftes: "?"
+              outputs: "How to safely use an optimizer, Aspiration-based designs sequence, Non-maximizing policies that fulfill multi-criterion aspirations in expectation"
+              critiques: "Dearnaley"
+              funded_by: "?"
+              funding_2023_4: "N/A"
+          
+          - id: rl_safety
+            name: RL safety
+            description: >
+              Reinforcement learning safety methods. Includes work by Skalse, behaviorist
+              rewards, AssistanceZero, and other RL-specific safety approaches.
+          
+          - id: multiagent_safety
+            name: Multi-agent safety
+            description: >
+              Safety in multi-agent settings, coordination between AIs, emergent behaviors
+              from agent interaction. NOT cooperation theory (separate category).
+          
+          - id: assistance_games
+            name: Assistance games / reward learning
+            description: >
+              Assistance games framework, learning rewards from human behavior, provably
+              beneficial AI, correlated proxies. CIRL and related approaches.
+            sr2024:
+              summary: "reorient the general thrust of AI research towards provably beneficial systems"
+              theory_of_change: "understand what kinds of things can go wrong when humans are directly involved in training a model → build tools that make it easier for a model to learn what humans want it to learn"
+              see_also: "RLHF and recursive reward modelling, the industrialised forms"
+              orthodox_problems: "1. Value is fragile and hard to specify, 10. Humanlike minds/goals are not necessarily safe"
+              target_case: "varies"
+              broad_approach: "engineering, cognitive"
+              names: "Joar Skalse, Anca Dragan, Stuart Russell, David Krueger"
+              ftes: "10+"
+              outputs: "The Perils of Optimizing Learned Reward Functions, Correlated Proxies: A New Definition and Improved Mitigation for Reward Hacking, Changing and Influenceable Reward Functions, RL, but don't do anything I wouldn't do, Interpreting Preference Models w/ Sparse Autoencoders"
+              critiques: "nice summary of historical problem statements"
+              funded_by: "EA funds, Open Philanthropy. Survival and Flourishing Fund, Manifund"
+              funding_2023_4: ">$1500"
+      
       - id: evals
         name: Evals
         description: >
@@ -29,8 +320,9 @@ taxonomy:
               General capability benchmarks and evaluations not covered by more specific categories.
               Includes comprehensive test suites, multi-domain assessments, broad capability probes,
               and general dangerous capability evaluations. Also includes meta-evaluation work
-              (improving evaluation methodology itself). Examples: Humanity's Last Exam, GPQA Diamond,
-              FrontierMath, HarmBench, broad reasoning benchmarks, meta-discussion on evaluation science.
+              (improving evaluation methodology itself), reasoning evaluations, and forecasting
+              work. Examples: Humanity's Last Exam, GPQA Diamond, FrontierMath, HarmBench, broad
+              reasoning benchmarks, meta-discussion on evaluation science.
           
           - id: evals_autonomy
             name: Autonomy
@@ -43,14 +335,6 @@ taxonomy:
               fit here. Examples: METR autonomy evals (deployment scenarios), AgentHarm (harmful
               autonomous behaviors), AI R&D capability evals (recursive improvement risks), SWE-bench
               when evaluated for autonomous deployment.
-          
-          - id: evals_reasoning
-            name: Reasoning
-            description: >
-              Tests of logical reasoning, multi-step inference, compositional reasoning.
-              Focus on reasoning failures, limitations, and edge cases. Note: forecasting
-              of AI capabilities (even if technically sophisticated) is NOT evaluation -
-              it goes elsewhere. Examples: Two-hop reasoning failures, composition failures.
           
           - id: evals_wmd
             name: WMDs (Weapons of Mass Destruction)
@@ -76,6 +360,14 @@ taxonomy:
               Includes testing for covert channels and hidden coordination. Examples: emergence
               and mitigation of steganographic collusion, secret collusion studies.
           
+          - id: ai_deception
+            name: AI deception
+            description: >
+              Research demonstrating that AI models, particularly agentic ones, can learn and
+              execute deceptive behaviors such as alignment faking (pretending to be safe),
+              manipulation, and sandbagging. Proactive discovery and evaluation of deceptive
+              capabilities to prevent models from fooling human supervisors.
+          
           - id: evals_sandbagging
             name: Sandbagging
             description: >
@@ -99,35 +391,6 @@ taxonomy:
               Does NOT include self-replication (separate category). Examples: Catastrophic
               Cyber Capabilities Benchmark (3CB), cybersecurity offense evaluations.
           
-          - id: openai_preparedness
-            name: OpenAI Preparedness
-            description: >
-              OpenAI Preparedness Framework and team work. Evaluating catastrophic risks, frontier
-              model capabilities, defining risk categories and safeguards, system cards. Risk
-              assessment framework for advanced AI systems including preparedness levels and
-              deployment criteria. Includes RSPs (Responsible Scaling Policies).
-          
-          - id: evals_other
-            name: Other evals
-            description: >
-              Evaluation work not fitting other eval categories. ONLY use for novel eval
-              approaches or domains not covered above. Most evals fit existing categories.
-      
-      - id: surprising_phenomena
-        name: Surprising phenomena
-        description: >
-          Unexpected or emergent model behaviors, generalization failures, anomalous
-          discoveries, edge cases, and findings from adversarial testing and red-teaming
-          efforts. Work revealing surprising model properties or failure modes.
-        children:
-          - id: surprising_generalization
-            name: Things generalising surprisingly / Emergent Misalignment
-            description: >
-              Unexpected generalization patterns, behaviors emerging without explicit training,
-              misalignment that appears during deployment or in novel contexts. Includes surprising
-              zero-shot capabilities, goal misgeneralization, and emergent behaviors that weren't
-              explicitly trained for.
-          
           - id: various_redteams
             name: Various Redteams
             description: >
@@ -136,7 +399,93 @@ taxonomy:
               and discovery of failure modes through adversarial methods. Examples: Anthropic
               Alignment Stress-Testing, many-shot jailbreaking, sleeper agents, phishing attacks,
               sabotage demos, trojan injection, collusion in SAEs, alignment faking discoveries.
+          
+          - id: evals_other
+            name: Other evals
+            description: >
+              Evaluation work not fitting other eval categories. ONLY use for novel eval
+              approaches or domains not covered above. Most evals fit existing categories.
       
+      - id: model_psychology
+        name: Model psychology
+        description: >
+          Behavioral and psychological patterns in language models. Personas, behavioral
+          tendencies, model-specific quirks, and psychological frameworks for understanding
+          model behavior.
+        children:
+          - id: surprising_generalization
+            name: Things generalising surprisingly / Emergent Misalignment
+            description: >
+              Unexpected generalization patterns, behaviors emerging without explicit training,
+              misalignment that appears during deployment or in novel contexts. Includes surprising
+              zero-shot capabilities, goal misgeneralization, and emergent behaviors that weren't
+              explicitly trained for. Fine-tuning on narrow misaligned tasks causing broad
+              unintended misalignment.
+          
+          - id: specs_and_constitutions
+            name: Model specs and constitutions
+            description: >
+              Writing detailed English values and rules, then instilling them with Constitutional
+              AI or deliberative alignment. Defining intentional and unintentional behavior through
+              explicit specifications. Examples: OpenAI Model Spec, Claude's Constitution and
+              Character, system prompts with value specifications.
+          
+          - id: psych_personas
+            name: Character training and persona steering
+            description: >
+              Research on model personalities, persona consistency, behavioral archetypes,
+              character-like patterns. Includes hyper-superstition, LLM psychology, and
+              systematic study of model behavioral patterns. Training and steering of AI
+              assistant personas.
+          
+          - id: psych_other
+            name: Other model psychology
+            description: >
+              Model psychology work not about personas, specs, or emergent misalignment.
+              ONLY use for novel behavioral or psychological patterns not covered by other
+              model psychology categories.
+      
+      - id: better_data
+        name: Better data
+        description: >
+          Data-level interventions for safety across the training pipeline. Includes
+          pre-training data (filtering, poisoning detection), post-training data (RLHF
+          quality, synthetic examples). Focus on making training data safer, higher
+          quality, or more interpretable. Does NOT include data attribution (see whitebox).
+        children:
+          - id: data_filtering
+            name: Data filtering for safety
+            description: >
+              Pre-training data filtering: removing harmful content, bias mitigation,
+              toxicity filtering, unsafe capability data removal. Interventions before
+              training starts.
+          
+          - id: data_poisoning
+            name: Data poisoning defense
+            description: >
+              Detecting and removing poisoned or backdoored training data. Security
+              against adversarial data manipulation, trojans, and inserted vulnerabilities.
+          
+          - id: synthetic_alignment_data
+            name: Synthetic data for alignment
+            description: >
+              Generating synthetic training data to improve alignment: synthetic preference
+              data, AI-generated safety examples, augmented alignment datasets. If
+              AI-generated, overlaps with AI-assisted alignment.
+          
+          - id: alignment_data_quality
+            name: Data quality for alignment
+            description: >
+              RLHF data quality, preference data quality, instruction-following data
+              curation. Post-training data quality for better alignment outcomes.
+
+  - id: whitebox
+    name: White-box alignment
+    description: >
+      Understand and control current model internals. Interpretability, understanding
+      learning dynamics, internal monitoring, and tracing behavior to training data.
+      Methods that look inside the model rather than treating it as a black box.
+    children:
       - id: interpretability
         name: Interpretability
         description: >
@@ -262,6 +611,31 @@ taxonomy:
               interpretability approaches or distinct research programs not covered above.
               Most interp work fits existing categories.
       
+      - id: whitebox_monitoring
+        name: Whitebox monitoring
+        description: >
+          Using internal activations and probes for safety monitoring. Training specific
+          probes to detect known properties or behaviors. Different from mechanistic anomaly
+          detection (which finds unexpected patterns) - this tests for specific things you're
+          looking for. Examples: probes for specific behaviors, activation-based classifiers,
+          representation monitoring for known properties.
+      
+      - id: cot_monitoring
+        name: Chain of thought monitoring
+        description: >
+          Analyzing visible chain-of-thought outputs for safety signals. Monitoring
+          reasoning traces for problematic patterns. NOT about ensuring CoT faithfulness
+          (that's deception_faithful_cot). NOT about deception detection specifically
+          (that's deception_indirect). General safety monitoring of reasoning steps.
+          Examples: detecting dangerous reasoning, monitoring for concerning plans.
+      
+      - id: data_attribution
+        name: Data attribution
+        description: >
+          Understanding what training data influenced model outputs or capabilities.
+          Tracing model behavior back to training examples. Includes influence
+          functions, memorization detection.
+      
       - id: understand_learning
         name: Understand learning
         description: >
@@ -331,359 +705,15 @@ taxonomy:
               critiques: "none found"
               funded_by: "Sir Henry Dale Fellowship, Wellcome-Beit Prize, CIFAR, Schmidt Science Polymath Program"
               funding_2023_4: ">£25,000"
-      
-      - id: model_psychology
-        name: Model psychology
-        description: >
-          Behavioral and psychological patterns in language models. Personas, behavioral
-          tendencies, model-specific quirks, and psychological frameworks for understanding
-          model behavior.
-        children:
-          - id: psych_personas
-            name: Model personas cluster
-            description: >
-              Research on model personalities, persona consistency, behavioral archetypes,
-              character-like patterns. Includes hyper-superstition, LLM psychology, and
-              systematic study of model behavioral patterns.
-          
-          - id: psych_other
-            name: Other model psychology
-            description: >
-              Model psychology work not about personas. ONLY use for novel behavioral or
-              psychological patterns not covered by personas category.
 
-  - id: control_thing
-    name: Control the thing
+  - id: new_safety_by_design
+    name: Safety by design
     description: >
-      Methods to control, monitor, and safely constrain AI systems during operation.
-      Includes alignment techniques, monitoring, control evaluations, and runtime safety measures.
+      New systems, often without singleton deep learning. Fundamentally different AI
+      system designs that might be safer by construction. Non-standard approaches to
+      building AI that avoid some failure modes of current paradigms. Includes formal
+      verification and alternative architectures.
     children:
-      - id: iterative_alignment
-        name: Iterative alignment
-        description: >
-          Alignment through iterative training and post-training methods: RLHF, RLAIF, DPO,
-          constitutional AI, iterative refinement approaches. Methods that improve alignment
-          through multiple rounds of feedback and training. Formerly called "prosaic alignment".
-          Examples: Deliberative Alignment (Constitutional AI redux), REINFORCE variants, WARP,
-          RLCHF, E-RLHF, KTO, IPO, rule-based rewards, reward model ensembles, ProgressGym.
-        sr2024:
-          summary: "nudging base models by optimising their output. (RLHF, Constitutional, DPO, SFT, HHH, RLAIF.)"
-          theory_of_change: "things are generally smooth, relevant capabilities are harder than alignment, assume no mesaoptimisers, that zero-shot deception is hard, assume a fundamentally humanish ontology is learned, assume no simulated agents, assume that noise in the data means that human preferences are not ruled out, assume that alignment is a superficial feature. Assume that task reliability is enough (that tuning for what we want will also get us avoidance of what we don't want). Maybe assume that thoughts are translucent"
-          see_also: "prosaic alignment, incrementalism, alignment-by-default"
-          orthodox_problems: "this agenda implicitly questions this framing"
-          target_case: "optimistic-case"
-          broad_approach: "engineering"
-          names: "post-training teams at most labs. Beren Millidge."
-          ftes: "1000+"
-          outputs: "Deliberative Alignment (Constitutional AI, redux), REINFORCE, WARP, Catastrophic Goodhart, RLCHF, E-RLHF, NLHF, IPO, KTO, Why Don't We Just... Shoggoth+Face+Paraphraser?, Towards a Unified View of Preference Learning for Large Language Models: A Survey, Rule-Based Rewards, Reward Model Ensembles, Guardrails, ProgressGym, What are human values, and how do we align AI to them?"
-          critiques: "hoo boy, Open Problems with RLHF, neo-Arrow, Challenges of Partial Observability in RLHF, Jozdien kinda, RLHF is the worst possible thing, Fundamental Limitations of Alignment in Large Language Models"
-          funded_by: "most of the industry"
-          funding_2023_4: "N/A"
-      
-      - id: deepmind_frontier_safety
-        name: DeepMind Frontier Safety Framework
-        description: >
-          DeepMind's Frontier Safety Framework - comprehensive approach to identifying
-          and mitigating risks from frontier AI systems. Meta-framework for safety
-          protocols, risk assessment, and responsible deployment practices.
-      
-      - id: anthropic_safeguards
-        name: Anthropic Safeguards
-        description: >
-          Anthropic Safeguards team research (2025). Runtime safety measures, defensive
-          systems, and safeguards against misuse. Focus on practical deployment safety
-          beyond core alignment.
-      
-      - id: prevent_deception
-        name: Prevent deception and scheming
-        description: >
-          Detecting and preventing deceptive behaviors, scheming, hidden objectives,
-          and misaligned internal goals. Methods for identifying when models are being
-          dishonest or pursuing covert objectives.
-        children:
-          - id: deception_control_evals
-            name: Control evaluations
-            description: >
-              Evaluating deployment protocols and organizational safety procedures (not just models)
-              by testing with intentionally misaligned models. Assess risk of a particular protocol
-              by silently swapping in backdoored/misaligned model and checking if safety measures
-              catch it. Focus on protocol evaluation rather than model evaluation. Primarily Redwood's
-              AI Control framework and related work. Examples: AI Control paper, Ctrl-Z, Control Arena,
-              SHADE-Arena, D-REX, Subversion Strategy Eval, safety cases.
-            sr2024:
-              summary: "don't evaluate the model, evaluate the humans / organisation / deployment method instead: assess the risk of a particular protocol for deploying your model in a particular scenario, by silently swapping in an intentionally misaligned model"
-              theory_of_change: "prevent high-stakes failures by automating risk assessment of eval and deployment plans"
-              see_also: "safety cases"
-              orthodox_problems: "12. A boxed AGI might exfiltrate itself by steganography, spearphishing"
-              target_case: "worst-case"
-              broad_approach: "engineering / behavioural"
-              names: "Redwood, Buck Shlegeris, Ryan Greenblatt, Kshitij Sachan, Alex Mallen"
-              ftes: "9"
-              outputs: "AI Control, Subversion Strategy Eval, sequence, toy models, notes"
-              critiques: "of org in general, Jozdien"
-              funded_by: "Open Philanthropy, Survival and Flourishing Fund"
-              funding_2023_4: "$6,398,000"
-          
-          - id: deception_criticisms
-            name: Criticisms
-            description: >
-              Skeptical perspectives on deception detection, control methods, or monitoring
-              approaches. Arguments about fundamental limitations or practical difficulties.
-          
-          - id: deception_mech_anomaly
-            name: Mechanistic anomaly detection
-            description: >
-              Detect deception through internal activation anomalies, even without knowing
-              what specific deception is happening. Build baseline of "normal" internal
-              functioning, flag divergences. Uses mechanistic understanding but NOT requiring
-              full interpretability. Different from whitebox probes (which test for specific
-              things) - this detects unexpected patterns. Examples: password-locked elicitation,
-              law of iterated expectations, ARC heuristic estimators.
-            sr2024:
-              summary: "understand what an LLM's normal (~benign) functioning looks like and detect divergence from this, even if we don't understand the exact nature of that divergence"
-              theory_of_change: "build models of normal functioning → find and flag behaviors that look unusual → match the unusual behaviors to problematic outcomes or shut it down outright"
-              orthodox_problems: "7. Superintelligence can fool human supervisors or 8. Superintelligence can hack software supervisors"
-              target_case: "pessimistic"
-              broad_approach: "cognitive"
-              names: "Nora Belrose, Erik Jenner"
-              ftes: "1-10"
-              outputs: "Password-locked model capability elicitation, Towards a Law of Iterated Expectations for Heuristic Estimators, Eleuther research update, Concrete empirical research projects, Mack and Turner"
-              critiques: "critique of past agenda, contra counting arguments?"
-              funded_by: "ARC, Eleuther funders"
-              funding_2023_4: "some fraction of Eleuther's $2,642,273"
-          
-          - id: deception_cadenza
-            name: Cadenza
-            description: >
-              Cadenza Labs project - white-box dishonesty detection using internal activations.
-              Organization-specific category for Cadenza's approach and methods. Examples:
-              Cluster-norm for unsupervised probing, dishonesty detection without labels.
-            sr2024:
-              summary: "now focusing on developing robust white-box dishonesty-detection methods for LLM's and model evals"
-              theory_of_change: "Build and benchmark strong white-box methods to assess trustworthiness and increase transparency of models, and encourage open releases / evals from labs by demonstrating the benefits and necessity of such methods"
-              orthodox_problems: "7. Superintelligence can fool human supervisors or 8. Superintelligence can hack software supervisors"
-              target_case: "pessimistic / worst-case"
-              broad_approach: "cognitive"
-              names: "Kieron Kretschmar, Walter Laurito, Sharan Maiya, Grégoire Dhimoïla"
-              ftes: "3"
-              outputs: "Cluster-Norm for Unsupervised Probing of Knowledge"
-              funded_by: "self-funded / volunteers"
-              funding_2023_4: "none"
-          
-          - id: deception_faithful_cot
-            name: Faithful CoT via separation
-            description: >
-              Architectural solutions to keep chain-of-thought faithful and observable. 
-              Separate reasoning from presentation so models can't hide deceptive thoughts.
-              Design models where internal reasoning must flow through auditable channel.
-              Examples: Shoggoth/face/paraphraser architecture (Kokotajlo), unoptimized
-              reasoning traces, separation of concerns.
-            sr2024:
-              summary: "shoggoth/face + paraphraser. Avoid giving the model incentives to hide its deceptive cognition or steganography"
-              theory_of_change: "keep the CoT unoptimised and informative so that it can be used for control. Make it so we can see (most) misalignment in the hidden CoT"
-              orthodox_problems: "7. Superintelligence can fool human supervisors"
-              target_case: "pessimistic"
-              broad_approach: "engineering"
-              names: "Daniel Kokotajlo, AI Futures Project"
-              ftes: "1"
-              outputs: "Why don't we just…"
-              critiques: "Demski"
-              funded_by: "SFF"
-              funding_2023_4: "$505,000 for the AI Futures Project"
-          
-          - id: deception_indirect
-            name: Indirect deception monitoring
-            description: >
-              Surface-level behavioral signals of deception without looking at internals.
-              Lie classifiers, sycophancy detection, simple behavioral probes. NOT mechanistic
-              (doesn't examine activations). NOT CoT-based (doesn't analyze reasoning). Just
-              input-output behavioral patterns. Examples: simple probes for deception, 
-              sycophancy detection, behavioral lie classifiers.
-            sr2024:
-              summary: "build tools to find whether a model will misbehave in high stakes circumstances by looking at it in testable circumstances. This bucket catches work on lie classifiers, sycophancy, Scaling Trends For Deception"
-              theory_of_change: "maybe we can catch a misaligned model by observing dozens of superficially unrelated parts, or tricking it into self-reporting, or by building the equivalent of brain scans"
-              orthodox_problems: "7. Superintelligence can fool human supervisors"
-              target_case: "pessimistic"
-              broad_approach: "engineering"
-              names: "Anthropic, Monte MacDiarmid, Meg Tong, Mrinank Sharma, Owain Evans, Colognese"
-              ftes: "1-10"
-              outputs: "Simple probes can catch sleeper agents, Sandbag Detection through Noise Injection, Hidden in Plain Text: Emergence & Mitigation of Steganographic Collusion in LLMs"
-              critiques: "1%, contra counting arguments"
-              funded_by: "Anthropic funders"
-              funding_2023_4: "N/A"
-          
-          - id: deception_other
-            name: Other deception prevention
-            description: >
-              Deception prevention approaches not fitting above categories. ONLY use for
-              novel methods distinct from control evals, anomaly detection, indirect monitoring,
-              faithful CoT, or Cadenza's approach.
-      
-      - id: cot_monitoring
-        name: Chain of thought monitoring
-        description: >
-          Analyzing visible chain-of-thought outputs for safety signals. Monitoring
-          reasoning traces for problematic patterns. NOT about ensuring CoT faithfulness
-          (that's deception_faithful_cot). NOT about deception detection specifically
-          (that's deception_indirect). General safety monitoring of reasoning steps.
-          Examples: detecting dangerous reasoning, monitoring for concerning plans.
-        children:
-          - id: cot_monitoring_methods
-            name: CoT monitoring methods
-            description: >
-              Techniques for monitoring chain-of-thought reasoning for safety signals,
-              problematic patterns, or concerning reasoning steps.
-          
-          - id: cot_criticisms
-            name: CoT monitoring criticisms
-            description: >
-              Limitations of CoT monitoring, faithfulness concerns, arguments that
-              CoT may not reflect true model reasoning.
-      
-      - id: whitebox_monitoring
-        name: Whitebox monitoring
-        description: >
-          Using internal activations and probes for safety monitoring. Training specific
-          probes to detect known properties or behaviors. Different from mechanistic anomaly
-          detection (which finds unexpected patterns) - this tests for specific things you're
-          looking for. Examples: probes for specific behaviors, activation-based classifiers,
-          representation monitoring for known properties.
-        children:
-          - id: whitebox_methods
-            name: Whitebox monitoring methods
-            description: >
-              Techniques using internal activations, probes, or representation analysis
-              for monitoring model behavior and ensuring safety.
-          
-          - id: whitebox_criticisms
-            name: Whitebox monitoring criticisms
-            description: >
-              Probe specificity concerns, limitations of activation-based monitoring,
-              arguments about fundamental difficulties.
-      
-      - id: redteam_monitoring
-        name: Red-teaming monitoring
-        description: >
-          Adversarial monitoring using competitive dynamics between models. One model
-          tries to catch what another model hides. Debate-based monitoring, adversarial
-          critics. Different from control evals (which test protocols) or whitebox probes
-          (which test models) - this uses model-vs-model competition. Examples: debate
-          for oversight, adversarial critics, SHADE-Arena, prover-estimator games.
-        children:
-          - id: redteam_monitoring_methods
-            name: Red-teaming monitoring methods
-            description: >
-              Monitoring approaches based on adversarial interaction, debate, or
-              competitive dynamics. Models monitoring other models adversarially.
-          
-          - id: latent_adversarial_training
-            name: Latent adversarial training
-            description: >
-              Adversarial state manipulation, automated red-teaming of internal
-              representations, training against latent adversaries.
-            sr2024:
-              summary: "uncover dangerous properties like scheming in a target model by having another model manipulate its state adversarially"
-              theory_of_change: "automate red-teaming, thus uncover bad goals in a test environment rather than after deployment"
-              see_also: "red-teaming, concept-based interp, Algorithmic Alignment Group"
-              names: "Stephen Casper, Dylan Hadfield-Menell"
-              ftes: "1-10"
-              outputs: "LAT Improves Robustness to Persistent Harmful Behaviors in LLMs, LAT Defends Against Unforeseen Failure Modes"
-              critiques: "not found"
-              funded_by: "?"
-              funding_2023_4: "N/A"
-      
-      - id: surgical_edits
-        name: Surgical model edits
-        description: >
-          Targeted interventions to modify model behavior without full retraining.
-          Includes activation steering, unlearning, and precise capability modification.
-        children:
-          - id: activation_engineering
-            name: Activation engineering
-            description: >
-              Steering vectors, representation engineering, directly modifying activations
-              to control behavior. Includes BiDPO and other activation-based control methods.
-            sr2024:
-              summary: "a sort of interpretable finetuning. Let's see if we can programmatically modify activations to steer outputs towards what we want, in a way that generalises across models and topics"
-              theory_of_change: "test interpretability theories; find new insights from interpretable causal interventions on representations. Or: build more stuff to stack on top of finetuning. Slightly encourage the model to be nice, add one more layer of defence to our bundle of partial alignment methods"
-              see_also: "representation engineering, SAEs"
-              orthodox_problems: "1. Value is fragile and hard to specify, 4. Goals misgeneralize out of distribution, 5. Instrumental convergence, 7. Superintelligence can fool human supervisors, 9. Humans cannot be first-class parties to a superintelligent value handshake"
-              target_case: "pessimistic"
-              broad_approach: "engineering/cognitive"
-              names: "Jan Wehner, Alex Turner, Nina Panickssery, Marc Carauleanu, Collin Burns, Andrew Mack, Pedro Freire, Joseph Miller, Andy Zou, Andy Arditi, Ole Jorgensen"
-              ftes: "10+?"
-              outputs: "Circuit Breakers, An Introduction to Representation Engineering - an activation-based paradigm for controlling LLMs, Steering Llama-2 with contrastive activation additions, Simple probes can catch sleeper agents, Refusal in LLMs is mediated by a single direction, Mechanistically Eliciting Latent Behaviors in Language Models, Uncovering Latent Human Wellbeing in Language Model Embeddings, Goodfire, LatentQA, SelfIE, Mack and Turner, Obfuscated Activations Bypass LLM Latent-Space Defenses"
-              critiques: "of ROME, open question thread for theory of impact, A Sober Look at Steering Vectors for LLMs"
-              funded_by: "various, including EA funds"
-              funding_2023_4: "N/A"
-          
-          - id: utility_engineering
-            name: Utility engineering
-            description: >
-              Directly modifying model utilities or objectives through targeted interventions.
-          
-          - id: unlearning
-            name: Unlearning
-            description: >
-              Removing specific capabilities or knowledge from trained models.
-              Targeted forgetting of dangerous or undesired behaviors.
-      
-      - id: goal_robustness
-        name: Goal robustness
-        description: >
-          Ensuring models maintain intended goals under distribution shift, optimization
-          pressure, or environmental changes. Includes mild optimization, reward learning,
-          and multi-agent safety.
-        children:
-          - id: mild_optimization
-            name: Mild optimisation
-            description: >
-              Approaches to reduce optimization intensity or ensure satisficing behavior.
-              MONA and related methods for preventing excessive optimization.
-            sr2024:
-              summary: "avoid Goodharting by getting AI to satisfice rather than maximise"
-              theory_of_change: "if we fail to exactly nail down the preferences for a superintelligent agent we die to Goodharting → shift from maximising to satisficing in the agent's utility function → we get a nonzero share of the lightcone as opposed to zero; also, moonshot at this being the recipe for fully aligned AI"
-              orthodox_problems: "4. Goals misgeneralize out of distribution"
-              target_case: "pessimistic"
-              broad_approach: "cognitive"
-              names: "Jobst Heitzig, Simon Fischer, Jessica Taylor"
-              ftes: "?"
-              outputs: "How to safely use an optimizer, Aspiration-based designs sequence, Non-maximizing policies that fulfill multi-criterion aspirations in expectation"
-              critiques: "Dearnaley"
-              funded_by: "?"
-              funding_2023_4: "N/A"
-          
-          - id: rl_safety
-            name: RL safety
-            description: >
-              Reinforcement learning safety methods. Includes work by Skalse, behaviorist
-              rewards, AssistanceZero, and other RL-specific safety approaches.
-          
-          - id: multiagent_safety
-            name: Multi-agent safety
-            description: >
-              Safety in multi-agent settings, coordination between AIs, emergent behaviors
-              from agent interaction. NOT cooperation theory (separate category).
-          
-          - id: assistance_games
-            name: Assistance games / reward learning
-            description: >
-              Assistance games framework, learning rewards from human behavior, provably
-              beneficial AI, correlated proxies. CIRL and related approaches.
-            sr2024:
-              summary: "reorient the general thrust of AI research towards provably beneficial systems"
-              theory_of_change: "understand what kinds of things can go wrong when humans are directly involved in training a model → build tools that make it easier for a model to learn what humans want it to learn"
-              see_also: "RLHF and recursive reward modelling, the industrialised forms"
-              orthodox_problems: "1. Value is fragile and hard to specify, 10. Humanlike minds/goals are not necessarily safe"
-              target_case: "varies"
-              broad_approach: "engineering, cognitive"
-              names: "Joar Skalse, Anca Dragan, Stuart Russell, David Krueger"
-              ftes: "10+"
-              outputs: "The Perils of Optimizing Learned Reward Functions, Correlated Proxies: A New Definition and Improved Mitigation for Reward Hacking, Changing and Influenceable Reward Functions, RL, but don't do anything I wouldn't do, Interpreting Preference Models w/ Sparse Autoencoders"
-              critiques: "nice summary of historical problem statements"
-              funded_by: "EA funds, Open Philanthropy. Survival and Flourishing Fund, Manifund"
-              funding_2023_4: ">$1500"
-      
       - id: formal_verification
         name: Guaranteed Safe AI / Formal verification
         description: >
@@ -705,21 +735,31 @@ taxonomy:
           critiques: "Zvi, Gleave, Dickson"
           funded_by: "UK government, OpenPhil, Survival and Flourishing Fund, Mila / CIFAR"
           funding_2023_4: ">$10m"
-
-  - id: alternative_architectures
-    name: Alternative architectures
-    description: >
-      Fundamentally different AI system designs that might be safer by construction.
-      Non-standard approaches to building AI that avoid some failure modes of
-      current paradigms.
-    children:
-      - id: aria_safeguarding
-        name: ARIA Safeguarding
-        description: >
-          UK ARIA's safeguarding program and alternative architecture research.
-          Government-funded exploration of safer-by-design AI systems.
       
-      - id: cognitive_software
+      - id: tegmark
+        name: Tegmark
+        description: >
+          Max Tegmark's work on AI safety, controllable AI, and narrow AI approaches.
+      
+      - id: scientist_ai
+        name: Scientist AI
+        description: >
+          AI systems designed to be scientific reasoners, Bengio's AI Scientist approach,
+          and related work on AI systems that can do science safely.
+      
+      - id: other_formal_verification
+        name: Other formal verification
+        description: >
+          Formal verification work not fitting the main formal verification category.
+          Novel approaches to provably safe AI distinct from established programs.
+      
+      - id: other_world_models
+        name: Other world models
+        description: >
+          World model approaches to AI safety not covered elsewhere. Synthesizing
+          standalone world models, compression-based methods.
+      
+      - id: conjecture
         name: "Conjecture: Cognitive Software"
         description: >
           Conjecture's cognitive programs approach, tactics, bounded tool AI.
@@ -738,8 +778,8 @@ taxonomy:
           funded_by: "Plural Platform, Metaplanet, Others, Firestreak Ventures, EA Funds in 2022"
           funding_2023_4: "N/A"
       
-      - id: social_instinct
-        name: Social-instinct AGI
+      - id: brainlike_agi
+        name: Brainlike-AGI Safety
         description: >
           Byrnes' social-instinct approach, brain-like AGI inspired by social circuits,
           symbol grounding via social learning. Astera Institute work on biologically-inspired
@@ -756,54 +796,6 @@ taxonomy:
           critiques: "Not found"
           funded_by: "Astera Institute"
           funding_2023_4: "N/A"
-
-  - id: better_data
-    name: Better data
-    description: >
-      Data-level interventions for safety across the training pipeline. Includes
-      pre-training data (filtering, poisoning detection), post-training data (RLHF
-      quality, synthetic examples), and data transparency (attribution). Focus on
-      making training data safer, higher quality, or more interpretable.
-    children:
-      - id: data_filtering
-        name: Data filtering for safety
-        description: >
-          Pre-training data filtering: removing harmful content, bias mitigation,
-          toxicity filtering, unsafe capability data removal. Interventions before
-          training starts.
-      
-      - id: data_poisoning
-        name: Data poisoning defense
-        description: >
-          Detecting and removing poisoned or backdoored training data. Security
-          against adversarial data manipulation, trojans, and inserted vulnerabilities.
-      
-      - id: data_attribution
-        name: Data attribution
-        description: >
-          Understanding what training data influenced model outputs or capabilities.
-          Tracing model behavior back to training examples. Includes influence
-          functions, memorization detection.
-      
-      - id: synthetic_alignment_data
-        name: Synthetic data for alignment
-        description: >
-          Generating synthetic training data to improve alignment: synthetic preference
-          data, AI-generated safety examples, augmented alignment datasets. If
-          AI-generated, overlaps with AI-assisted alignment.
-      
-      - id: alignment_data_quality
-        name: Data quality for alignment
-        description: >
-          RLHF data quality, preference data quality, instruction-following data
-          curation. Post-training data quality for better alignment outcomes.
-      
-      - id: data_other
-        name: Other data interventions
-        description: >
-          Data-level safety interventions not fitting above categories. ONLY use for
-          novel data approaches distinct from filtering, poisoning defense, attribution,
-          synthetic data, or quality improvement.
 
   - id: ai_solve_alignment
     name: Make AI solve it
@@ -837,9 +829,10 @@ taxonomy:
               funded_by: "lab funders"
               funding_2023_4: "N/A"
           
-          - id: weak_to_strong
-            name: Weak-to-strong generalization
+          - id: strong_to_weak
+            name: Strong-to-weak elicitation
             description: >
+              Strong models helping weak models, then using enhanced weak models for oversight.
               Weak models supervising strong models, easy-to-hard generalization.
               Can weak supervisors elicit strong capabilities safely?
             sr2024:
@@ -976,24 +969,28 @@ taxonomy:
         description: >
           Using adversarial dynamics for oversight. Competitive or adversarial
           interactions to ensure safety.
-      
-      - id: elicit_ought
-        name: Elicit / Ought
-        description: >
-          Elicit/Ought work on process supervision, decomposition, and researcher
-          epistemics. Focus on governance researcher epistemics and research assistance.
 
   - id: theory
     name: Theory
     description: >
       Theoretical foundations for alignment: agent foundations, formal frameworks,
-      understanding agency and optimization, corrigibility, abstraction.
+      understanding agency and optimization, corrigibility, abstraction. Understand
+      how to understand and control current and future models.
     children:
-      - id: arc_vaintrob_critique
-        name: ARC Vaintrob ~critique
+      - id: new_agent_theories
+        name: New agent theories
         description: >
-          ARC's Vaintrob critique of various alignment approaches or theoretical
-          frameworks.
+          Novel theoretical frameworks for understanding agency. Includes hierarchical
+          agency, scale-free agency, organic alignment, collective intelligence,
+          cooperative AI, and other emerging theoretical approaches to agency.
+      
+      - id: aisi_guarantees
+        name: AISI on asymptotic guarantees
+        description: >
+          UK AISI work on proving that safety processes would work in the limit with
+          sufficient resources. Using complexity theory, game theory, learning theory
+          to develop asymptotic guarantees for safety methods. Making safety cases
+          stronger through formal modeling.
       
       - id: arc_theory_formal
         name: "ARC Theory: Formalizing heuristic arguments"
@@ -1019,109 +1016,9 @@ taxonomy:
         description: >
           Theoretical alignment work not fitting other specific theory categories. General
           formal frameworks, mathematical approaches to alignment problems, foundational
-          questions about AI safety. Use only for genuinely novel theoretical approaches
-          not covered by other theory subcategories.
-      
-      - id: understanding_agency
-        name: Understanding agency
-        description: >
-          Foundational questions about agency: what IS an agent? What IS goal-directedness?
-          What IS optimization? NOT applied methods to make agents safe - that goes elsewhere.
-          Pure theory about the nature of agency. Examples: formalizing goal-directedness,
-          measuring optimization power, understanding what makes something an agent.
-        children:
-          - id: causal_incentives
-            name: Causal Incentives
-            description: >
-              Causal world models, goal-directedness formalization, causal structure
-              of agency. Deepmind work on causal incentives framework.
-            sr2024:
-              summary: "use causal models to understand agents. Originally this was to design environments where they lack the incentive to defect, hence the name"
-              theory_of_change: "as above"
-              orthodox_problems: "1. Value is fragile and hard to specify, 4. Goals misgeneralize out of distribution"
-              target_case: "pessimistic"
-              broad_approach: "behavioural/maths/philosophy"
-              names: "Tom Everitt, Matt McDermott, Francis Rhys Ward, Jonathan Richens, Ryan Carey"
-              ftes: "1-10"
-              outputs: "Robust agents learn causal world models, Measuring Goal-Directedness"
-              critiques: "not found"
-              funded_by: "EA funds, Manifund, Deepmind"
-              funding_2023_4: "Some tacitly from DM"
-          
-          - id: hierarchical_agency
-            name: Hierarchical agency
-            description: >
-              Subagents and superagents, free-energy equilibria, compositional
-              agency, nested optimization. SFF funded.
-            sr2024:
-              summary: "Develop formal models of subagents and superagents, use the model to specify desirable properties of whole-part relations (e.g. how to prevent human-friendly parts getting wiped out)"
-              theory_of_change: "Solve self-unalignment, prevent destructive alignment, allow for scalable noncoercion"
-              see_also: "Alignment of Complex Systems, multi-scale alignment, scale-free theories of agency, active inference, bounded rationality"
-              orthodox_problems: "5. Instrumental convergence, 9. Humans cannot be first-class parties to a superintelligent value handshake"
-              target_case: "pessimistic"
-              broad_approach: "cognitive"
-              names: "Jan Kulveit, Roman Leventov, Scott Viteri, Michael Levin, Ivan Vendrov, Richard Ngo"
-              ftes: "1-10"
-              outputs: "Hierarchical Agency: A Missing Piece in AI Alignment, How do parts form a whole?, Free-energy equilibria, Two conceptions of active inference, generalised active inference"
-              critiques: "indirect"
-              funded_by: "SFF"
-              funding_2023_4: "N/A"
-          
-          - id: dovetail
-            name: Dovetail research
-            description: >
-              Formalizing "structure" and "agency", foundational concepts for
-              understanding agents. LTFF funded.
-            sr2024:
-              summary: "Formalize key ideas (\"structure\", \"agency\", etc) mathematically"
-              theory_of_change: "generalize theorems → formalize agent foundations concepts like the agent structure problem → hopefully assist other projects through increased understanding"
-              orthodox_problems: "intended to help make progress on understanding the nature of the problems through formalization, so that they can be avoided or postponed, or more effectively solved by other research agenda"
-              target_case: "pessimistic"
-              broad_approach: "maths/philosophy"
-              names: "Alex Altair, Alfred Harwood, Daniel C, Dalcy K, José Pedro Faustino"
-              ftes: "2"
-              outputs: "mostly exposition but it's early days. Formalization"
-              critiques: "not found"
-              funded_by: "LTFF"
-              funding_2023_4: "$60,000"
-          
-          - id: boundaries_membranes
-            name: Boundaries / membranes
-            description: >
-              Causal separation, agent boundaries, where one agent ends and another
-              begins. Chris Lakin's work on boundaries.
-            sr2024:
-              summary: "Formalise one piece of morality: the causal separation between agents and their environment"
-              theory_of_change: "Formalise (part of) morality/safety, solve outer alignment"
-              see_also: "Open Agency Architecture"
-              orthodox_problems: "9. Humans cannot be first-class parties to a superintelligent value handshake"
-              target_case: "pessimistic"
-              broad_approach: "maths/philosophy"
-              names: "Chris Lakin, Andrew Critch, davidad, Evan Miyazono, Manuel Baltieri"
-              ftes: "0.5"
-              outputs: "Chris posts"
-              critiques: "not found"
-              funded_by: "?"
-              funding_2023_4: "N/A"
-          
-          - id: understanding_optimization
-            name: Understanding optimisation
-            description: >
-              Optimization power, gradient hacking, mesa-optimization, what optimization
-              is and how to measure it. CLR/EA funded work.
-            sr2024:
-              summary: "what is \"optimisation power\" (formally), how do we build tools that track it, and how relevant is any of this anyway"
-              theory_of_change: "existing theories are either rigorous OR good at capturing what we mean; let's find one that is both → use the concept to build a better understanding of how and when an AI might get more optimisation power. Would be nice if we could detect or rule out speculative stuff like gradient hacking too"
-              see_also: "developmental interpretability"
-              orthodox_problems: "5. Instrumental convergence"
-              target_case: "pessimistic"
-              broad_approach: "maths/philosophy"
-              names: "Alex Flint, Guillaume Corlouer, Nicolas Macé"
-              ftes: "1-10"
-              outputs: "Degeneracies are sticky for SGD"
-              critiques: "not found"
-              funded_by: "CLR, EA funds"
-              funding_2023_4: "N/A"
+          questions about AI safety. Includes Dovetail research (formalizing structure and
+          agency), acausal research, and other novel theoretical approaches. Use only for
+          genuinely novel theoretical approaches not covered by other theory subcategories.
       
       - id: corrigibility
         name: Corrigibility
@@ -1272,28 +1169,6 @@ taxonomy:
           Theoretical work on infrastructure, standards, protocols for AI agent
           ecosystems. Foundations for multi-agent worlds.
       
-      - id: shard_theory
-        name: (Descendents of) Shard theory
-        description: >
-          Shard theory and related approaches to understanding how values form during training.
-          Models internal components of agents, uses humans as model organism of AGI. Policies
-          controlled by ensemble of influences ("shards"). Consider which training approaches
-          increase chance that human-friendly shards influence that ensemble. Now more empirical
-          ML agenda. Examples: gradient routing, intrinsic power-seeking work.
-        sr2024:
-          summary: "model the internal components of agents, use humans as a model organism of AGI (humans seem made up of shards and so might AI). Now more of an empirical ML agenda"
-          theory_of_change: "If policies are controlled by an ensemble of influences (\"shards\"), consider which training approaches increase the chance that human-friendly shards substantially influence that ensemble"
-          see_also: "Activation Engineering, Reward bases, gradient routing"
-          orthodox_problems: "2. Corrigibility is anti-natural"
-          target_case: "optimistic"
-          broad_approach: "cognitive"
-          names: "Alex Turner, Quintin Pope, Alex Cloud, Jacob Goldman-Wetzler, Evzen Wybitul, Joseph Miller"
-          ftes: "1-10"
-          outputs: "Intrinsic Power-Seeking: AI Might Seek Power for Power's Sake, Shard Theory - is it true for humans?, Gradient routing"
-          critiques: "Chan, Soares, Miller, Lang, Kwa, Herd, Rishika, tailcalled"
-          funded_by: "Open Philanthropy (via funding of MATS), EA funds, Manifund"
-          funding_2023_4: ">$581,458"
-      
       - id: singular_learning
         name: Singular Learning Theory
         description: >
@@ -1320,33 +1195,13 @@ taxonomy:
           critiques: "Matolcsi"
           funded_by: "EA Funds, Survival and Flourishing Fund, ARIA"
           funding_2023_4: "$123,000"
-      
-      - id: qaci
-        name: Question-answer counterfactual intervals (QACI)
-        description: >
-          QACI framework: get the AI to work out its own objective function (à la HCH).
-          Make fully formalized goal such that computationally unbounded oracle with it
-          would take desirable actions; design computationally bounded AI good enough to
-          take satisfactory actions. HCH-style iterated amplification, epistemic states
-          and counterfactuals. SFF funded work.
-        sr2024:
-          summary: "Get the thing to work out its own objective function (a la HCH)"
-          theory_of_change: "make a fully formalized goal such that a computationally unbounded oracle with it would take desirable actions; and design a computationally bounded AI which is good enough to take satisfactory actions"
-          orthodox_problems: "1. Value is fragile and hard to specify, 4. Goals misgeneralize out of distribution"
-          target_case: "worst-case"
-          broad_approach: "cognitive"
-          names: "Tamsin Leake, Julia Persson"
-          ftes: "1-10"
-          outputs: "Epistemic states as a potential benign prior"
-          critiques: "none found"
-          funded_by: "Survival and Flourishing Fund"
-          funding_2023_4: "$55,000"
 
   - id: sociotechnical
     name: Sociotechnical
     description: >
-      Alignment approaches that combine technical and social elements. Gradual
-      disempowerment, collective alignment, third-wave AI safety.
+      Understand and control the social context models are in. Alignment approaches
+      that combine technical and social elements. Gradual disempowerment, collective
+      alignment, third-wave AI safety.
     children:
       - id: gradual_disempowerment
         name: Gradual Disempowerment
@@ -1379,18 +1234,6 @@ taxonomy:
           Multi-agent work not fitting other categories (not safety-specific,
           not cooperation theory, not multi-agent safety).
       
-      - id: misc_standards
-        name: Making standards and protocols
-        description: >
-          Creating standards, protocols, or infrastructure for AI safety that
-          doesn't fit other categories.
-      
-      - id: misc_doomsayers
-        name: Doomsayers
-        description: >
-          Work focused primarily on arguing for high P(doom), existential risk
-          communication, or pessimistic takes without proposing solutions.
-      
       - id: misc_tiling
         name: Tiling agents
         description: >
@@ -1405,11 +1248,3 @@ taxonomy:
           simultaneous research directions. Examples of multi-agenda orgs in 2024: Apollo
           (evals + interp + deception), CAIS (benchmarks + legislation), FAR (robustness +
           interp), Anthropic teams, OpenAI teams, UK/US AISIs (evals + policy).
-      
-      - id: misc_other
-        name: Other uncategorized work
-        description: >
-          Truly novel research agendas not fitting any category above. ONLY use for
-          genuinely distinct new approaches that represent unique research directions.
-          Most work fits existing categories - use this sparingly.
-
