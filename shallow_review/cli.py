@@ -600,6 +600,7 @@ def export_taxonomy(
     min_ai_safety: float = typer.Option(0.1, help="Minimum ai_safety_relevance score"),
     min_collect: float = typer.Option(0.1, help="Minimum collect_relevancy score"),
     kinds: str = typer.Option("", help="Comma-separated list of accepted kinds (empty = all)"),
+    source: str = typer.Option("", help="Comma-separated list of accepted sources (empty = all)"),
 ) -> None:
     """Export taxonomy with classified papers as markdown to stdout."""
     import json
@@ -615,6 +616,11 @@ def export_taxonomy(
     kinds_filter = set()
     if kinds:
         kinds_filter = {k.strip() for k in kinds.split(",") if k.strip()}
+    
+    # Parse source filter
+    source_filter = set()
+    if source:
+        source_filter = {s.strip() for s in source.split(",") if s.strip()}
 
     # Query classified items
     with data_db_locked() as db:
@@ -633,6 +639,11 @@ def export_taxonomy(
             placeholders = ",".join("?" * len(kinds_filter))
             query += f" AND kind IN ({placeholders})"
             params.extend(kinds_filter)
+        
+        if source_filter:
+            placeholders = ",".join("?" * len(source_filter))
+            query += f" AND source IN ({placeholders})"
+            params.extend(source_filter)
         
         cursor = db.execute(query, params)
         rows = cursor.fetchall()
@@ -723,6 +734,8 @@ def export_taxonomy(
     output_lines.append(f"**Filters:** shallow_review≥{min_shallow_review}, ai_safety≥{min_ai_safety}, collect≥{min_collect}")
     if kinds_filter:
         output_lines.append(f"**Kinds:** {', '.join(sorted(kinds_filter))}")
+    if source_filter:
+        output_lines.append(f"**Sources:** {', '.join(sorted(source_filter))}")
     output_lines.append("")
     output_lines.append(f"**Total items:** {sum(len(items) for items in items_by_category.values())}")
     output_lines.append("")
