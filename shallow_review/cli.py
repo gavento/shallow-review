@@ -595,12 +595,81 @@ def classify(
 
 
 @app.command()
+def import_feedback(
+    csv_file: str = typer.Argument(..., help="CSV file with human feedback (URL,CATEGORY_ID,PAPER_ID,LINK_TEXT)"),
+    source: str = typer.Option("manual", help="Feedback source label (e.g., 'SR2025-WIP-doc')"),
+    detect_exclusions: bool = typer.Option(True, help="Detect excluded papers by comparing with exportable items"),
+    min_shallow_review: float = typer.Option(0.4, help="Threshold for 'exportable' items when detecting exclusions"),
+    reclassify_obsolete_llm: bool = typer.Option(False, help="ONE-TIME: Reset papers with obsolete LLM categories to 'new' instead of excluding"),
+) -> None:
+    """Import human feedback from CSV file into classify_feedback table."""
+    from datetime import datetime, timezone
+    from pathlib import Path
+
+    from .feedback import import_feedback_from_csv, get_action_counts
+
+    csv_path = Path(csv_file)
+    if not csv_path.exists():
+        console.print(f"[red]Error: CSV file not found: {csv_file}[/red]")
+        sys.exit(1)
+    
+    console.print(f"[bold]Importing feedback from {csv_path.name}[/bold]")
+    console.print(f"Source: {source}")
+    console.print(f"Timestamp: {datetime.now(timezone.utc).isoformat()}")
+    console.print()
+    
+    # Import feedback
+    try:
+        stats = import_feedback_from_csv(
+            csv_path=csv_path,
+            source=source,
+            detect_exclusions=detect_exclusions,
+            min_shallow_review=min_shallow_review,
+            reclassify_obsolete_llm=reclassify_obsolete_llm
+        )
+    except Exception as e:
+        console.print(f"[red]Error during import: {e}[/red]")
+        logger.exception("Failed to import feedback")
+        sys.exit(1)
+    
+    # Display results
+    console.print(f"Parsed {stats.urls_parsed} unique URLs from CSV ({stats.urls_skipped} skipped)")
+    if stats.obsolete_csv_categories > 0:
+        console.print(f"[yellow]⚠ Found {stats.obsolete_csv_categories} papers with obsolete category IDs (marked for recategorization)[/yellow]")
+    console.print()
+    
+    console.print(f"Added {stats.added_to_classify} new URLs to classify table")
+    console.print()
+    
+    if detect_exclusions:
+        console.print(f"Found {stats.excluded_count + stats.obsolete_llm_count} papers not in CSV:")
+        console.print(f"  - Excluding: {stats.excluded_count}")
+        if reclassify_obsolete_llm and stats.obsolete_llm_count > 0:
+            console.print(f"  - Marked for re-classification (obsolete LLM category): {stats.obsolete_llm_count}")
+            console.print(f"    Reset {stats.obsolete_llm_count} papers to status='new' for re-classification")
+        console.print()
+    
+    console.print(f"[green]✓ Inserted {stats.feedback_inserted} feedback entries[/green]")
+    if stats.feedback_duplicates > 0:
+        console.print(f"[yellow]! Skipped {stats.feedback_duplicates} duplicate entries[/yellow]")
+    
+    # Summary stats by action
+    console.print()
+    console.print(f"[bold]Feedback summary for source '{source}':[/bold]")
+    action_counts = get_action_counts(source)
+    for action, count in sorted(action_counts.items()):
+        console.print(f"  {action:<15} {count:>5}")
+
+
+@app.command()
 def export_taxonomy(
     min_shallow_review: float = typer.Option(0.1, help="Minimum shallow_review_inclusion score"),
     min_ai_safety: float = typer.Option(0.1, help="Minimum ai_safety_relevance score"),
     min_collect: float = typer.Option(0.1, help="Minimum collect_relevancy score"),
     kinds: str = typer.Option("", help="Comma-separated list of accepted kinds (empty = all)"),
     source: str = typer.Option("", help="Comma-separated list of accepted sources (empty = all)"),
+    respect_feedback: bool = typer.Option(True, help="Respect human feedback (include/exclude/reclassify)"),
+    feedback_source: str = typer.Option("", help="Only respect feedback from this source (empty = all sources)"),
 ) -> None:
     """Export taxonomy with classified papers as markdown to stdout."""
     import json
@@ -621,6 +690,37 @@ def export_taxonomy(
     source_filter = set()
     if source:
         source_filter = {s.strip() for s in source.split(",") if s.strip()}
+
+    # Load feedback if requested
+    feedback_by_url = {}
+    if respect_feedback:
+        with data_db_locked() as db:
+            # Get most recent feedback for each URL
+            feedback_query = """
+                SELECT url, action, human_category, notes
+                FROM classify_feedback
+                WHERE 1=1
+            """
+            feedback_params = []
+            
+            if feedback_source:
+                feedback_query += " AND feedback_source = ?"
+                feedback_params.append(feedback_source)
+            
+            feedback_query += " ORDER BY feedback_timestamp DESC"
+            
+            cursor = db.execute(feedback_query, feedback_params)
+            
+            # Build feedback dict (most recent per URL due to DESC ordering)
+            for row in cursor.fetchall():
+                url = row['url']
+                if url not in feedback_by_url:
+                    # First entry is most recent due to DESC order
+                    feedback_by_url[url] = {
+                        'action': row['action'],
+                        'human_category': row['human_category'],
+                        'notes': row['notes']
+                    }
 
     # Query classified items
     with data_db_locked() as db:
@@ -648,7 +748,7 @@ def export_taxonomy(
         cursor = db.execute(query, params)
         rows = cursor.fetchall()
 
-    if not rows:
+    if not rows and not feedback_by_url:
         console.print("[yellow]No items found matching filters[/yellow]", file=sys.stderr)
         return
 
@@ -656,18 +756,60 @@ def export_taxonomy(
     from datetime import date as date_type
     
     items_by_category = defaultdict(list)
+    excluded_count = 0
+    included_by_feedback = 0
+    reclassified_count = 0
+    needs_recategorization = 0
+    obsolete_llm_reclassified = 0
     
     for row in rows:
         try:
-            data = json.loads(row["data"])
+            url = row["url"]
             
-            # Get top category ID
-            categories = data.get("categories", [])
-            if not categories:
-                console.print(f"[yellow]Warning: Item {row['url']} has no categories, skipping[/yellow]", file=sys.stderr)
+            # Check feedback
+            feedback = feedback_by_url.get(url)
+            
+            # Apply exclusion feedback
+            if respect_feedback and feedback and feedback['action'] == 'exclude':
+                excluded_count += 1
                 continue
             
-            top_category_id = categories[0]["id"]
+            data = json.loads(row["data"])
+            
+            # Get top category ID (may be overridden by feedback)
+            categories = data.get("categories", [])
+            if not categories:
+                console.print(f"[yellow]Warning: Item {url} has no categories, skipping[/yellow]", file=sys.stderr)
+                continue
+            
+            # Check if needs recategorization (obsolete category from CSV)
+            needs_recat = (respect_feedback and feedback and feedback.get('notes') and 
+                          'NEEDS_RECATEGORIZATION' in feedback['notes'])
+            
+            # Check if was re-classified due to obsolete LLM category (tracked via 'note' action with keyword)
+            obsolete_llm = (respect_feedback and feedback and 
+                           feedback.get('action') == 'note' and 
+                           feedback.get('notes') and 'RECLASSIFY_OBSOLETE_LLM' in feedback['notes'])
+            
+            if needs_recat:
+                needs_recategorization += 1
+            
+            if obsolete_llm:
+                obsolete_llm_reclassified += 1
+            
+            # Use human category if reclassify feedback exists
+            if respect_feedback and feedback and feedback['action'] == 'reclassify' and feedback['human_category']:
+                top_category_id = feedback['human_category']
+                reclassified_count += 1
+            else:
+                top_category_id = categories[0]["id"]
+            
+            # Track if this was included by feedback
+            if respect_feedback and feedback and feedback['action'] == 'include':
+                # Check if it would have been excluded by normal filters
+                if (row["shallow_review_inclusion"] < min_shallow_review or 
+                    row["ai_safety_relevance"] < min_ai_safety):
+                    included_by_feedback += 1
             
             # Build item dict with all needed fields
             item = {
@@ -687,6 +829,8 @@ def export_taxonomy(
                 "top_category_score": categories[0].get("score") if categories else None,
                 "summary": data.get("summary", ""),
                 "key_points": data.get("key_points", []),
+                "needs_recategorization": needs_recat,
+                "obsolete_llm_category": obsolete_llm,
             }
             
             # Filter by date: only include items from 2024-11-01 onwards
@@ -736,6 +880,21 @@ def export_taxonomy(
         output_lines.append(f"**Kinds:** {', '.join(sorted(kinds_filter))}")
     if source_filter:
         output_lines.append(f"**Sources:** {', '.join(sorted(source_filter))}")
+    if respect_feedback:
+        feedback_msg = "**Human feedback:** Respected"
+        if feedback_source:
+            feedback_msg += f" (source: {feedback_source})"
+        output_lines.append(feedback_msg)
+        if excluded_count > 0:
+            output_lines.append(f"  - Excluded by feedback: {excluded_count}")
+        if reclassified_count > 0:
+            output_lines.append(f"  - Reclassified by feedback: {reclassified_count}")
+        if included_by_feedback > 0:
+            output_lines.append(f"  - Included by feedback (below thresholds): {included_by_feedback}")
+        if needs_recategorization > 0:
+            output_lines.append(f"  - ⚠️ Needs recategorization (obsolete CSV category): {needs_recategorization}")
+        if obsolete_llm_reclassified > 0:
+            output_lines.append(f"  - 🔄 Re-classified (obsolete LLM category, one-time): {obsolete_llm_reclassified}")
     output_lines.append("")
     output_lines.append(f"**Total items:** {sum(len(items) for items in items_by_category.values())}")
     output_lines.append("")
@@ -859,8 +1018,15 @@ def export_taxonomy(
                 # Use url_hash_short from database
                 url_hash_short = item["url_hash_short"] or "unknown"
                 
-                # Title (linked)
-                title_part = f"**[{item['title']}]({item['url']})**"
+                # Title (linked) with marker if needs recategorization
+                title_text = item['title']
+                if item.get('needs_recategorization'):
+                    # Obsolete category from CSV (rare after initial migration)
+                    title_text = f"⚠️ {title_text}"
+                elif item.get('obsolete_llm_category'):
+                    # Obsolete LLM category, re-classified (one-time migration)
+                    title_text = f"🔄 {title_text}"
+                title_part = f"**[{title_text}]({item['url']})**"
                 
                 # Authors (italicized)
                 authors_str = ", ".join(item["authors"][:3])  # First 3 authors

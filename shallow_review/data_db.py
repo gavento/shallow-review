@@ -88,6 +88,24 @@ def _create_tables(data_db: sqlite3.Connection, db_path: str) -> None:
         "CREATE INDEX IF NOT EXISTS idx_classify_kind ON classify(kind)",
         "CREATE INDEX IF NOT EXISTS idx_classify_url_hash ON classify(url_hash)",
         "CREATE INDEX IF NOT EXISTS idx_classify_url_hash_short ON classify(url_hash_short)",
+        # Classify feedback table
+        """CREATE TABLE IF NOT EXISTS classify_feedback (
+            url TEXT NOT NULL,
+            url_hash_short TEXT,
+            feedback_source TEXT NOT NULL,
+            feedback_timestamp TEXT NOT NULL,
+            action TEXT NOT NULL,
+            human_category TEXT,
+            paper_id TEXT,
+            link_text TEXT,
+            notes TEXT,
+            PRIMARY KEY (url, feedback_source, feedback_timestamp),
+            CHECK(action IN ('include', 'exclude', 'reclassify', 'note'))
+        )""",
+        "CREATE INDEX IF NOT EXISTS idx_feedback_url ON classify_feedback(url)",
+        "CREATE INDEX IF NOT EXISTS idx_feedback_url_hash_short ON classify_feedback(url_hash_short)",
+        "CREATE INDEX IF NOT EXISTS idx_feedback_action ON classify_feedback(action)",
+        "CREATE INDEX IF NOT EXISTS idx_feedback_human_category ON classify_feedback(human_category)",
     ]
 
     for statement in statements:

@@ -229,6 +229,77 @@ CREATE INDEX idx_classify_url_hash_short ON classify(url_hash_short);
 - `confidence`: Overall classification confidence 0.0-1.0
 - Other fields are LLM-extracted
 
+### classify_feedback table
+
+Stores human feedback on classification decisions (category assignments, inclusions, exclusions).
+
+```sql
+CREATE TABLE classify_feedback (
+    url TEXT NOT NULL,
+    url_hash_short TEXT,
+    feedback_source TEXT NOT NULL,
+    feedback_timestamp TEXT NOT NULL,
+    action TEXT NOT NULL,
+    human_category TEXT,
+    paper_id TEXT,
+    link_text TEXT,
+    notes TEXT,
+    PRIMARY KEY (url, feedback_source, feedback_timestamp),
+    CHECK(action IN ('include', 'exclude', 'reclassify', 'note'))
+);
+
+CREATE INDEX idx_feedback_url ON classify_feedback(url);
+CREATE INDEX idx_feedback_url_hash_short ON classify_feedback(url_hash_short);
+CREATE INDEX idx_feedback_action ON classify_feedback(action);
+CREATE INDEX idx_feedback_human_category ON classify_feedback(human_category);
+```
+
+**Fields:**
+- `url`: URL being reviewed (must match classify.url)
+- `url_hash_short`: First 8 chars of SHA256(url) - for human-readable IDs
+- `feedback_source`: Source of feedback (e.g., "SR2025-WIP-doc", "manual-review")
+- `feedback_timestamp`: ISO 8601 UTC timestamp when feedback was recorded
+- `action`: What to do with this item
+  - `include`: Force inclusion in exports (even if below thresholds)
+  - `exclude`: Force exclusion from exports (even if above thresholds)
+  - `reclassify`: Override LLM category with human category
+  - `note`: Annotation only (no effect on inclusion/exclusion, used for tracking)
+- `human_category`: Taxonomy leaf category ID assigned by human (required for action='reclassify')
+- `paper_id`: Optional ID from source document (for tracking)
+- `link_text`: Original link text from source (for reference)
+- `notes`: Optional comments or reasoning
+
+**Usage:**
+- Import feedback via `pipeline.py import-feedback <csv-file> --source "label" [--reclassify-obsolete-llm]`
+- Classification phase checks for existing feedback and respects reclassification
+- Export phase respects include/exclude actions and uses human categories when available
+- Multiple feedback entries per URL allowed (tracked by source + timestamp composite key)
+
+**Special one-time flag: `--reclassify-obsolete-llm`**
+- Use when taxonomy has changed and old categories no longer exist
+- For papers NOT in CSV but with obsolete LLM-assigned categories:
+  - Instead of excluding them, marks them for re-classification
+  - Resets their status to `new` in classify table
+  - Creates feedback with `action='note'` (annotation only, no forced inclusion/exclusion)
+  - Papers are re-classified with current taxonomy and normal thresholds apply
+  - After re-classification, papers with sr>=0.4 appear in exports marked with 🔄 emoji
+  - Papers with sr<0.4 after re-classification are excluded (as expected)
+- This is a **one-time migration behavior** when restructuring taxonomy
+
+**Precedence rules:**
+1. Most recent feedback (by timestamp) takes precedence for same URL+source
+2. `exclude` action always wins (safety-first approach) - EXCEPT when `--reclassify-obsolete-llm` applies
+3. `reclassify` overrides LLM category in exports
+4. `include` forces inclusion regardless of scores
+
+**Note keywords (for robust matching in code):**
+- `NEEDS_RECATEGORIZATION`: Paper from CSV with obsolete category ID
+- `RECLASSIFY_OBSOLETE_LLM`: Paper had obsolete LLM category, was re-classified
+
+**Markers in exports:**
+- ⚠️ emoji: Paper with `NEEDS_RECATEGORIZATION` (rare, needs manual recategorization)
+- 🔄 emoji: Paper with `RECLASSIFY_OBSOLETE_LLM` (one-time migration, already re-classified)
+
 ## Classification Taxonomy
 
 **Ground truth:** `data/taxonomy.yaml`
