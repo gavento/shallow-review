@@ -235,6 +235,7 @@ Stores human feedback on classification decisions (category assignments, inclusi
 
 ```sql
 CREATE TABLE classify_feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     url TEXT NOT NULL,
     url_hash_short TEXT,
     feedback_source TEXT NOT NULL,
@@ -244,7 +245,6 @@ CREATE TABLE classify_feedback (
     paper_id TEXT,
     link_text TEXT,
     notes TEXT,
-    PRIMARY KEY (url, feedback_source, feedback_timestamp),
     CHECK(action IN ('include', 'exclude', 'reclassify', 'note'))
 );
 
@@ -252,6 +252,16 @@ CREATE INDEX idx_feedback_url ON classify_feedback(url);
 CREATE INDEX idx_feedback_url_hash_short ON classify_feedback(url_hash_short);
 CREATE INDEX idx_feedback_action ON classify_feedback(action);
 CREATE INDEX idx_feedback_human_category ON classify_feedback(human_category);
+CREATE INDEX idx_feedback_source ON classify_feedback(feedback_source);
+
+-- Partial unique indexes to prevent true duplicates while allowing multi-category
+CREATE UNIQUE INDEX idx_feedback_unique_single_action 
+  ON classify_feedback(url, feedback_source, action, feedback_timestamp) 
+  WHERE action IN ('include', 'exclude', 'note');
+
+CREATE UNIQUE INDEX idx_feedback_unique_reclassify 
+  ON classify_feedback(url, feedback_source, action, human_category, feedback_timestamp) 
+  WHERE action = 'reclassify';
 ```
 
 **Fields:**
@@ -273,7 +283,10 @@ CREATE INDEX idx_feedback_human_category ON classify_feedback(human_category);
 - Import feedback via `pipeline.py import-feedback <csv-file> --source "label" [--reclassify-obsolete-llm]`
 - Classification phase checks for existing feedback and respects reclassification
 - Export phase respects include/exclude actions and uses human categories when available
-- Multiple feedback entries per URL allowed (tracked by source + timestamp composite key)
+- **Multi-category support**: A URL can have multiple `reclassify` entries with different `human_category` values
+  - Paper appears in all assigned categories in exports
+  - Partial unique indexes prevent true duplicates while allowing multi-category assignments
+- Auto-increment `id` as primary key eliminates need for timestamp hacks
 
 **Special one-time flag: `--reclassify-obsolete-llm`**
 - Use when taxonomy has changed and old categories no longer exist
@@ -296,9 +309,33 @@ CREATE INDEX idx_feedback_human_category ON classify_feedback(human_category);
 - `NEEDS_RECATEGORIZATION`: Paper from CSV with obsolete category ID
 - `RECLASSIFY_OBSOLETE_LLM`: Paper had obsolete LLM category, was re-classified
 
-**Markers in exports:**
-- ⚠️ emoji: Paper with `NEEDS_RECATEGORIZATION` (rare, needs manual recategorization)
-- 🔄 emoji: Paper with `RECLASSIFY_OBSOLETE_LLM` (one-time migration, already re-classified)
+**Multi-category example:**
+```
+CSV rows:
+  https://arxiv.org/abs/2410.12345,interp_sparse_coding,abc123,Paper X
+  https://arxiv.org/abs/2410.12345,interp_applied,abc123,Paper X
+  https://arxiv.org/abs/2410.12345,model_diff,abc123,Paper X
+
+Feedback entries created:
+  (id=1, url=..., action='reclassify', human_category='interp_sparse_coding')
+  (id=2, url=..., action='include')
+  (id=3, url=..., action='reclassify', human_category='interp_applied')
+  (id=4, url=..., action='reclassify', human_category='model_diff')
+
+Export behavior:
+  Paper X appears in THREE sections: interp_sparse_coding, interp_applied, and model_diff
+```
+
+**Markers in exports (shown in brackets after title):**
+- ⚠️ : Paper with `NEEDS_RECATEGORIZATION` (rare, needs manual recategorization)
+- 🔄 : Paper with `RECLASSIFY_OBSOLETE_LLM` (one-time migration, already re-classified)
+- ✌️(in N categories) : Paper appears in N categories (multi-category assignment)
+
+**Example formatting:**
+```markdown
+- **[Paper Title](url)**, *Authors*, 2025, Venue, [🔄 ✌️(in 2 categories) paper_preprint, sr=0.75, id:abc12345] Summary...
+```
+This indicates: re-classified due to obsolete LLM category, appears in 2 categories total
 
 ## Classification Taxonomy
 

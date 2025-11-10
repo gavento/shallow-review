@@ -652,6 +652,31 @@ def import_feedback(
     console.print(f"[green]✓ Inserted {stats.feedback_inserted} feedback entries[/green]")
     if stats.feedback_duplicates > 0:
         console.print(f"[yellow]! Skipped {stats.feedback_duplicates} duplicate entries[/yellow]")
+        
+        # Show duplicates for debugging
+        if stats.duplicates_list:
+            console.print("\n[yellow]Duplicate entries (caught by unique indexes):[/yellow]")
+            
+            # Group by action for cleaner display
+            from collections import defaultdict
+            dups_by_action = defaultdict(list)
+            for dup in stats.duplicates_list:
+                dups_by_action[dup['action']].append(dup)
+            
+            for action in sorted(dups_by_action.keys()):
+                dups = dups_by_action[action]
+                console.print(f"\n  [cyan]{action}[/cyan] ({len(dups)} duplicates):")
+                
+                # Show first 10 of each action type
+                for dup in dups[:10]:
+                    url_short = dup['url'][:70]
+                    if dup['category']:
+                        console.print(f"    - {url_short} → {dup['category']}")
+                    else:
+                        console.print(f"    - {url_short}")
+                
+                if len(dups) > 10:
+                    console.print(f"    ... and {len(dups) - 10} more")
     
     # Summary stats by action
     console.print()
@@ -695,7 +720,7 @@ def export_taxonomy(
     feedback_by_url = {}
     if respect_feedback:
         with data_db_locked() as db:
-            # Get most recent feedback for each URL
+            # Get all feedback for each URL (may have multiple actions)
             feedback_query = """
                 SELECT url, action, human_category, notes
                 FROM classify_feedback
@@ -711,29 +736,71 @@ def export_taxonomy(
             
             cursor = db.execute(feedback_query, feedback_params)
             
-            # Build feedback dict (most recent per URL due to DESC ordering)
+            # Build feedback dict - consolidate all actions per URL
+            from collections import defaultdict
+            feedback_actions = defaultdict(list)
             for row in cursor.fetchall():
-                url = row['url']
-                if url not in feedback_by_url:
-                    # First entry is most recent due to DESC order
-                    feedback_by_url[url] = {
-                        'action': row['action'],
-                        'human_category': row['human_category'],
-                        'notes': row['notes']
-                    }
+                feedback_actions[row['url']].append({
+                    'action': row['action'],
+                    'human_category': row['human_category'],
+                    'notes': row['notes']
+                })
+            
+            # For each URL, consolidate actions (most recent timestamp first)
+            for url, actions in feedback_actions.items():
+                # Collect ALL human categories from reclassify actions
+                human_categories = [
+                    a['human_category'] for a in actions 
+                    if a['action'] == 'reclassify' and a['human_category']
+                ]
+                
+                feedback_by_url[url] = {
+                    'has_include': any(a['action'] == 'include' for a in actions),
+                    'has_exclude': any(a['action'] == 'exclude' for a in actions),
+                    'has_reclassify': any(a['action'] == 'reclassify' for a in actions),
+                    'has_note': any(a['action'] == 'note' for a in actions),
+                    'human_categories': human_categories,  # List of all human categories
+                    'notes': next((a['notes'] for a in actions if a['notes']), None),
+                }
 
-    # Query classified items
+    # Get URLs with explicit include feedback (if respecting feedback)
+    include_feedback_urls = set()
+    if respect_feedback and feedback_by_url:
+        include_feedback_urls = {
+            url for url, fb in feedback_by_url.items() 
+            if fb['has_include']
+        }
+    
+    # Query classified items - include either threshold-passing OR include-feedback papers
     with data_db_locked() as db:
-        query = """
-            SELECT url, url_hash_short, ai_safety_relevance, shallow_review_inclusion, 
-                   collect_relevancy, kind, data
-            FROM classify
-            WHERE status = 'done'
-              AND ai_safety_relevance >= ?
-              AND shallow_review_inclusion >= ?
-              AND (collect_relevancy >= ? OR collect_relevancy IS NULL)
-        """
-        params = [min_ai_safety, min_shallow_review, min_collect]
+        if respect_feedback and include_feedback_urls:
+            # Two-part query: normal filters OR has include feedback
+            url_placeholders = ",".join("?" * len(include_feedback_urls))
+            query = f"""
+                SELECT url, url_hash_short, ai_safety_relevance, shallow_review_inclusion, 
+                       collect_relevancy, kind, data
+                FROM classify
+                WHERE status = 'done'
+                  AND (
+                    (ai_safety_relevance >= ? 
+                     AND shallow_review_inclusion >= ?
+                     AND (collect_relevancy >= ? OR collect_relevancy IS NULL))
+                    OR url IN ({url_placeholders})
+                  )
+            """
+            params = [min_ai_safety, min_shallow_review, min_collect] + list(include_feedback_urls)
+        else:
+            # Original simple query
+            query = """
+                SELECT url, url_hash_short, ai_safety_relevance, shallow_review_inclusion, 
+                       collect_relevancy, kind, data
+                FROM classify
+                WHERE status = 'done'
+                  AND ai_safety_relevance >= ?
+                  AND shallow_review_inclusion >= ?
+                  AND (collect_relevancy >= ? OR collect_relevancy IS NULL)
+            """
+            params = [min_ai_safety, min_shallow_review, min_collect]
         
         if kinds_filter:
             placeholders = ",".join("?" * len(kinds_filter))
@@ -769,8 +836,8 @@ def export_taxonomy(
             # Check feedback
             feedback = feedback_by_url.get(url)
             
-            # Apply exclusion feedback
-            if respect_feedback and feedback and feedback['action'] == 'exclude':
+            # Apply exclusion feedback (highest priority)
+            if respect_feedback and feedback and feedback['has_exclude']:
                 excluded_count += 1
                 continue
             
@@ -787,8 +854,7 @@ def export_taxonomy(
                           'NEEDS_RECATEGORIZATION' in feedback['notes'])
             
             # Check if was re-classified due to obsolete LLM category (tracked via 'note' action with keyword)
-            obsolete_llm = (respect_feedback and feedback and 
-                           feedback.get('action') == 'note' and 
+            obsolete_llm = (respect_feedback and feedback and feedback['has_note'] and
                            feedback.get('notes') and 'RECLASSIFY_OBSOLETE_LLM' in feedback['notes'])
             
             if needs_recat:
@@ -797,15 +863,21 @@ def export_taxonomy(
             if obsolete_llm:
                 obsolete_llm_reclassified += 1
             
-            # Use human category if reclassify feedback exists
-            if respect_feedback and feedback and feedback['action'] == 'reclassify' and feedback['human_category']:
-                top_category_id = feedback['human_category']
+            # Determine which categories this paper should appear in
+            category_ids = []
+            is_multi_category = False
+            
+            if respect_feedback and feedback and feedback['has_reclassify'] and feedback['human_categories']:
+                # Use human categories (can be multiple!)
+                category_ids = feedback['human_categories']
+                is_multi_category = len(category_ids) > 1
                 reclassified_count += 1
             else:
-                top_category_id = categories[0]["id"]
+                # Use LLM's top category
+                category_ids = [categories[0]["id"]]
             
             # Track if this was included by feedback
-            if respect_feedback and feedback and feedback['action'] == 'include':
+            if respect_feedback and feedback and feedback['has_include']:
                 # Check if it would have been excluded by normal filters
                 if (row["shallow_review_inclusion"] < min_shallow_review or 
                     row["ai_safety_relevance"] < min_ai_safety):
@@ -831,6 +903,8 @@ def export_taxonomy(
                 "key_points": data.get("key_points", []),
                 "needs_recategorization": needs_recat,
                 "obsolete_llm_category": obsolete_llm,
+                "is_multi_category": is_multi_category,
+                "category_count": len(category_ids),
             }
             
             # Filter by date: only include items from 2024-11-01 onwards
@@ -856,8 +930,10 @@ def export_taxonomy(
                     pass
             # If no date info, include_item stays True (include by default)
             
+            # Add to all assigned categories
             if include_item:
-                items_by_category[top_category_id].append(item)
+                for category_id in category_ids:
+                    items_by_category[category_id].append(item)
             
         except (json.JSONDecodeError, KeyError) as e:
             console.print(f"[yellow]Warning: Failed to parse data for {row['url']}: {e}[/yellow]", file=sys.stderr)
@@ -896,7 +972,13 @@ def export_taxonomy(
         if obsolete_llm_reclassified > 0:
             output_lines.append(f"  - 🔄 Re-classified (obsolete LLM category, one-time): {obsolete_llm_reclassified}")
     output_lines.append("")
-    output_lines.append(f"**Total items:** {sum(len(items) for items in items_by_category.values())}")
+    # Count unique URLs (not total items, since papers can appear in multiple categories)
+    unique_urls = set()
+    for items in items_by_category.values():
+        for item in items:
+            unique_urls.add(item["url"])
+    total_appearances = sum(len(items) for items in items_by_category.values())
+    output_lines.append(f"**Total unique papers:** {len(unique_urls)} (appearing {total_appearances} times across categories)")
     output_lines.append("")
     output_lines.append("---")
     output_lines.append("")
@@ -1018,15 +1100,8 @@ def export_taxonomy(
                 # Use url_hash_short from database
                 url_hash_short = item["url_hash_short"] or "unknown"
                 
-                # Title (linked) with marker if needs recategorization
-                title_text = item['title']
-                if item.get('needs_recategorization'):
-                    # Obsolete category from CSV (rare after initial migration)
-                    title_text = f"⚠️ {title_text}"
-                elif item.get('obsolete_llm_category'):
-                    # Obsolete LLM category, re-classified (one-time migration)
-                    title_text = f"🔄 {title_text}"
-                title_part = f"**[{title_text}]({item['url']})**"
+                # Title (linked) - move markers to brackets, not title
+                title_part = f"**[{item['title']}]({item['url']})**"
                 
                 # Authors (italicized)
                 authors_str = ", ".join(item["authors"][:3])  # First 3 authors
@@ -1048,15 +1123,21 @@ def export_taxonomy(
                 # Venue
                 venue_part = item["venue"] if item["venue"] else ""
                 
-                # Stats in brackets
-                # Old scores (disabled):
-                # cr_str = f", cr={item['collect_relevancy']:.2f}" if item['collect_relevancy'] is not None else ""
-                # stats_part = f"[{item['kind']}, ais={item['ai_safety_relevance']:.2f}, **sr={item['shallow_review_inclusion']:.2f}**{cr_str}, item:{url_hash_short}]"
+                # Stats in brackets with status markers
+                markers = []
                 
-                # New scores: sr, conf, cats
-                # conf_str = f", conf={item['confidence']:.2f}" if item['confidence'] is not None else ""
-                # cats_str = f", cats={item['top_category_score']:.2f}" if item['top_category_score'] is not None else ""
-                stats_part = f"<span style=\"color:#777\">[{item['kind']}, sr={item['shallow_review_inclusion']:.2f}, id:{url_hash_short}]</span>"
+                # Obsolete category markers
+                if item.get('needs_recategorization'):
+                    markers.append("⚠️")
+                if item.get('obsolete_llm_category'):
+                    markers.append("🔄")
+                
+                # Multi-category marker
+                if item.get('is_multi_category'):
+                    markers.append(f"✌️(in {item['category_count']} categories)")
+                
+                marker_str = "".join(markers) + " " if markers else ""
+                stats_part = f"<span style=\"color:#777\">[{marker_str}{item['kind']}, sr={item['shallow_review_inclusion']:.2f}, id:{url_hash_short}]</span>"
                 
                 # Summary
                 summary = item["summary"].replace("\n", " ").strip()

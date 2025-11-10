@@ -4,7 +4,7 @@ import csv
 import json
 import logging
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -29,6 +29,7 @@ class FeedbackImportStats:
     obsolete_llm_count: int = 0
     feedback_inserted: int = 0
     feedback_duplicates: int = 0
+    duplicates_list: list[dict[str, str]] = field(default_factory=list)  # List of {url, action, category}
     
     def get_action_counts(self) -> dict[str, int]:
         """Get counts by action type from database."""
@@ -90,8 +91,12 @@ def import_feedback_from_csv(
                 stats.urls_skipped += 1
                 continue
             
+            # Track unique URLs (first occurrence)
+            is_first_occurrence = url not in csv_urls
             csv_urls.add(url)
-            stats.urls_parsed += 1
+            
+            if is_first_occurrence:
+                stats.urls_parsed += 1
             
             # Get other fields
             category_id = row.get('CATEGORY_ID', '').strip()
@@ -103,20 +108,22 @@ def import_feedback_from_csv(
                 # Check if category is valid in current taxonomy
                 if category_id not in valid_leaf_ids:
                     # Obsolete category: mark for human review
-                    stats.obsolete_csv_categories += 1
-                    feedback_entries.append({
-                        'url': url,
-                        'url_hash_short': url_hash_short(url),
-                        'feedback_source': source,
-                        'feedback_timestamp': timestamp,
-                        'action': 'include',
-                        'human_category': None,
-                        'paper_id': paper_id,
-                        'link_text': link_text,
-                        'notes': f'NEEDS_RECATEGORIZATION: obsolete category "{category_id}" from {csv_path.name}'
-                    })
+                    # Only create this on first occurrence (don't duplicate for multi-category cases)
+                    if is_first_occurrence:
+                        stats.obsolete_csv_categories += 1
+                        feedback_entries.append({
+                            'url': url,
+                            'url_hash_short': url_hash_short(url),
+                            'feedback_source': source,
+                            'feedback_timestamp': timestamp,
+                            'action': 'include',
+                            'human_category': None,
+                            'paper_id': paper_id,
+                            'link_text': link_text,
+                            'notes': f'NEEDS_RECATEGORIZATION: obsolete category "{category_id}" from {csv_path.name}'
+                        })
                 else:
-                    # Valid category: this is a reclassify + include action
+                    # Valid category: create reclassify entry (can have multiple per URL with different categories)
                     feedback_entries.append({
                         'url': url,
                         'url_hash_short': url_hash_short(url),
@@ -128,7 +135,23 @@ def import_feedback_from_csv(
                         'link_text': link_text,
                         'notes': f'Imported from {csv_path.name}'
                     })
-                    # Also add an explicit include
+                    # Also add include on first occurrence only
+                    if is_first_occurrence:
+                        feedback_entries.append({
+                            'url': url,
+                            'url_hash_short': url_hash_short(url),
+                            'feedback_source': source,
+                            'feedback_timestamp': timestamp,
+                            'action': 'include',
+                            'human_category': None,
+                            'paper_id': paper_id,
+                            'link_text': link_text,
+                            'notes': f'Imported from {csv_path.name}'
+                        })
+            else:
+                # No category: just mark as included (probably a lab category with no detailed papers)
+                # Only create on first occurrence
+                if is_first_occurrence:
                     feedback_entries.append({
                         'url': url,
                         'url_hash_short': url_hash_short(url),
@@ -138,41 +161,33 @@ def import_feedback_from_csv(
                         'human_category': None,
                         'paper_id': paper_id,
                         'link_text': link_text,
-                        'notes': f'Imported from {csv_path.name}'
+                        'notes': f'Imported from {csv_path.name} (no category assigned)'
                     })
-            else:
-                # No category: just mark as included (probably a lab category with no detailed papers)
-                feedback_entries.append({
-                    'url': url,
-                    'url_hash_short': url_hash_short(url),
-                    'feedback_source': source,
-                    'feedback_timestamp': timestamp,
-                    'action': 'include',
-                    'human_category': None,
-                    'paper_id': paper_id,
-                    'link_text': link_text,
-                    'notes': f'Imported from {csv_path.name} (no category assigned)'
-                })
     
     # Add URLs to classify table if not already present
     logger.info("Checking which URLs need to be added to classify table...")
+    
+    # First, check which URLs are missing (inside lock)
+    urls_to_add = []
     with data_db_locked() as db:
         for url in csv_urls:
-            # Check if URL exists in classify table
             cursor = db.execute("SELECT url FROM classify WHERE url = ?", (url,))
             if not cursor.fetchone():
-                # Add to classify table
-                try:
-                    is_new = add_classify_candidate(
-                        url=url,
-                        source=f"feedback-{source}",
-                        source_url=None,
-                        collect_relevancy=None
-                    )
-                    if is_new:
-                        stats.added_to_classify += 1
-                except Exception as e:
-                    logger.warning(f"Could not add {url[:60]} to classify: {e}")
+                urls_to_add.append(url)
+    
+    # Then add them (outside lock, as add_classify_candidate acquires its own lock)
+    for url in urls_to_add:
+        try:
+            is_new = add_classify_candidate(
+                url=url,
+                source=f"feedback-{source}",
+                source_url=None,
+                collect_relevancy=None
+            )
+            if is_new:
+                stats.added_to_classify += 1
+        except Exception as e:
+            logger.warning(f"Could not add {url[:60]} to classify: {e}")
     
     # Detect exclusions (exportable items NOT in CSV)
     excluded_entries = []
@@ -214,7 +229,7 @@ def import_feedback_from_csv(
                         if llm_category_id not in valid_leaf_ids:
                             has_obsolete_llm_category = True
                 except (json.JSONDecodeError, KeyError, IndexError):
-                    pass
+                    raise
             
             if has_obsolete_llm_category:
                 # Special case: LLM put it in a now-deleted category
@@ -258,7 +273,9 @@ def import_feedback_from_csv(
                     )
     
     # Insert all feedback into database
-    logger.info(f"Inserting feedback entries...")
+    logger.info("Inserting feedback entries...")
+    duplicates_list = []
+    
     with data_db_locked() as db:
         for entry in feedback_entries + excluded_entries + reclassify_obsolete_entries:
             try:
@@ -282,8 +299,26 @@ def import_feedback_from_csv(
                 )
                 stats.feedback_inserted += 1
             except sqlite3.IntegrityError:
-                # Duplicate entry (same url + source + timestamp)
+                # Duplicate entry caught by unique indexes
+                # - For include/exclude/note: same url+source+action+timestamp
+                # - For reclassify: same url+source+action+human_category+timestamp
                 stats.feedback_duplicates += 1
+                
+                # Record duplicate for reporting
+                dup_info = {
+                    'url': entry['url'],
+                    'action': entry['action'],
+                    'category': entry.get('human_category'),
+                }
+                duplicates_list.append(dup_info)
+                
+                logger.debug(
+                    f"Duplicate feedback: url={entry['url'][:60]}, "
+                    f"action={entry['action']}, category={entry.get('human_category')}"
+                )
+    
+    # Store duplicates in stats
+    stats.duplicates_list = duplicates_list
     
     logger.info(f"Feedback import complete: {stats.feedback_inserted} inserted, {stats.feedback_duplicates} duplicates")
     

@@ -72,22 +72,21 @@ taxonomy:
         Language Models
       funded_by: most of the industry
       funding_2023_4: N/A
+  - id: surgical_edits
+    name: Surgical model edits
+    description: >-
+      Targeted interventions to modify model behavior without full retraining. Includes activation steering,
+      unlearning, and precise capability modification.
     children:
-    - id: surgical_edits
-      name: Surgical model edits
+    - id: utility_engineering
+      name: Utility engineering
       description: >-
-        Targeted interventions to modify model behavior without full retraining. Includes activation steering,
-        unlearning, and precise capability modification.
-      children:
-      - id: utility_engineering
-        name: Utility engineering
-        description: >-
-          Directly modifying model utilities or objectives through targeted interventions.
-      - id: unlearning
-        name: Unlearning
-        description: >-
-          Removing specific capabilities or knowledge from trained models. Targeted forgetting of dangerous
-          or undesired behaviors.
+        Directly modifying model utilities or objectives through targeted interventions.
+    - id: unlearning
+      name: Unlearning
+      description: >-
+        Removing specific capabilities or knowledge from trained models. Targeted forgetting of dangerous
+        or undesired behaviors.
   - id: control
     name: Control
     description: >-

@@ -90,6 +90,7 @@ def _create_tables(data_db: sqlite3.Connection, db_path: str) -> None:
         "CREATE INDEX IF NOT EXISTS idx_classify_url_hash_short ON classify(url_hash_short)",
         # Classify feedback table
         """CREATE TABLE IF NOT EXISTS classify_feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             url TEXT NOT NULL,
             url_hash_short TEXT,
             feedback_source TEXT NOT NULL,
@@ -99,13 +100,19 @@ def _create_tables(data_db: sqlite3.Connection, db_path: str) -> None:
             paper_id TEXT,
             link_text TEXT,
             notes TEXT,
-            PRIMARY KEY (url, feedback_source, feedback_timestamp),
             CHECK(action IN ('include', 'exclude', 'reclassify', 'note'))
         )""",
         "CREATE INDEX IF NOT EXISTS idx_feedback_url ON classify_feedback(url)",
         "CREATE INDEX IF NOT EXISTS idx_feedback_url_hash_short ON classify_feedback(url_hash_short)",
         "CREATE INDEX IF NOT EXISTS idx_feedback_action ON classify_feedback(action)",
         "CREATE INDEX IF NOT EXISTS idx_feedback_human_category ON classify_feedback(human_category)",
+        "CREATE INDEX IF NOT EXISTS idx_feedback_source ON classify_feedback(feedback_source)",
+        """CREATE UNIQUE INDEX IF NOT EXISTS idx_feedback_unique_single_action 
+           ON classify_feedback(url, feedback_source, action, feedback_timestamp) 
+           WHERE action IN ('include', 'exclude', 'note')""",
+        """CREATE UNIQUE INDEX IF NOT EXISTS idx_feedback_unique_reclassify 
+           ON classify_feedback(url, feedback_source, action, human_category, feedback_timestamp) 
+           WHERE action = 'reclassify'""",
     ]
 
     for statement in statements:
