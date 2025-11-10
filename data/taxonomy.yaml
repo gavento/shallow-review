@@ -509,11 +509,6 @@ taxonomy:
       description: >-
         Understanding what training data influenced model outputs or capabilities. Tracing model behavior
         back to training examples. Includes influence functions, memorization detection.
-  - id: interp_other
-    name: Other interpretability
-    description: >-
-      Interpretability work not fitting other interp categories. ONLY use for novel interpretability
-      approaches or distinct research programs not covered above. Most interp work fits existing categories.
   - id: whitebox_monitoring
     name: Whitebox control / monitoring
     description: >-
@@ -559,11 +554,6 @@ taxonomy:
       patterns. NOT about ensuring CoT faithfulness (that's deception_faithful_cot). NOT about deception
       detection specifically (that's deception_indirect). General safety monitoring of reasoning steps.
       Examples: detecting dangerous reasoning, monitoring for concerning plans.
-  - id: data_attribution
-    name: Data attribution
-    description: >-
-      Understanding what training data influenced model outputs or capabilities. Tracing model behavior
-      back to training examples. Includes influence functions, memorization detection.
   - id: understand_learning
     name: Understand learning
     description: >-
