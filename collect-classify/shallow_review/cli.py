@@ -28,7 +28,9 @@ app = typer.Typer(
 
 
 @app.command()
-def info() -> None:
+def info(
+    source: Optional[str] = typer.Option(None, help="Filter statistics by source (applies to collect and classify tables)"),
+) -> None:
     """Show configuration, paths, and database statistics."""
     import json
     from rich.table import Table
@@ -42,6 +44,8 @@ def info() -> None:
     console.print(f"Data path: {DATA_PATH}")
     console.print(f"Prompts path: {PROMPTS_PATH}")
     console.print(f"Runs path: {RUNS_PATH}")
+    if source:
+        console.print(f"[cyan]Filter: source = {source}[/cyan]")
     console.print()
 
     # Database statistics
@@ -98,11 +102,18 @@ def info() -> None:
         collect_table.add_column("Scrape Errors", justify="right")
         collect_table.add_column("Extract Errors", justify="right")
 
-        total_collect = db.execute("SELECT COUNT(*) as cnt FROM collect").fetchone()["cnt"]
-        new_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'new'").fetchone()["cnt"]
-        done_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'done'").fetchone()["cnt"]
-        scrape_err_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'scrape_error'").fetchone()["cnt"]
-        extract_err_collect = db.execute("SELECT COUNT(*) as cnt FROM collect WHERE status = 'extract_error'").fetchone()["cnt"]
+        # Build WHERE clause for source filter
+        source_filter = ""
+        source_params = []
+        if source:
+            source_filter = " AND source = ?"
+            source_params = [source]
+
+        total_collect = db.execute(f"SELECT COUNT(*) as cnt FROM collect{source_filter.replace('AND', 'WHERE') if source_filter else ''}", source_params).fetchone()["cnt"]
+        new_collect = db.execute(f"SELECT COUNT(*) as cnt FROM collect WHERE status = 'new'{source_filter}", source_params).fetchone()["cnt"]
+        done_collect = db.execute(f"SELECT COUNT(*) as cnt FROM collect WHERE status = 'done'{source_filter}", source_params).fetchone()["cnt"]
+        scrape_err_collect = db.execute(f"SELECT COUNT(*) as cnt FROM collect WHERE status = 'scrape_error'{source_filter}", source_params).fetchone()["cnt"]
+        extract_err_collect = db.execute(f"SELECT COUNT(*) as cnt FROM collect WHERE status = 'extract_error'{source_filter}", source_params).fetchone()["cnt"]
 
         collect_table.add_row(
             str(total_collect),
@@ -116,7 +127,13 @@ def info() -> None:
     
     # Collect distributions
     with data_db_locked() as db:
-        collect_data = db.execute("SELECT data FROM collect WHERE status = 'done' AND data IS NOT NULL").fetchall()
+        collect_query = "SELECT data FROM collect WHERE status = 'done' AND data IS NOT NULL"
+        if source:
+            collect_query += " AND source = ?"
+            collect_data = db.execute(collect_query, [source]).fetchall()
+        else:
+            collect_data = db.execute(collect_query).fetchall()
+        
         if collect_data:
             tokens_full = [json.loads(row["data"]).get("tokens_full") for row in collect_data if json.loads(row["data"]).get("tokens_full")]
             if tokens_full:
@@ -156,11 +173,18 @@ def info() -> None:
         classify_table.add_column("Scrape Errors", justify="right")
         classify_table.add_column("Classify Errors", justify="right")
 
-        total_classify = db.execute("SELECT COUNT(*) as cnt FROM classify").fetchone()["cnt"]
-        new_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'new'").fetchone()["cnt"]
-        done_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'done'").fetchone()["cnt"]
-        scrape_err_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'scrape_error'").fetchone()["cnt"]
-        classify_err_classify = db.execute("SELECT COUNT(*) as cnt FROM classify WHERE status = 'classify_error'").fetchone()["cnt"]
+        # Build WHERE clause for source filter
+        source_filter = ""
+        source_params = []
+        if source:
+            source_filter = " AND source = ?"
+            source_params = [source]
+
+        total_classify = db.execute(f"SELECT COUNT(*) as cnt FROM classify{source_filter.replace('AND', 'WHERE') if source_filter else ''}", source_params).fetchone()["cnt"]
+        new_classify = db.execute(f"SELECT COUNT(*) as cnt FROM classify WHERE status = 'new'{source_filter}", source_params).fetchone()["cnt"]
+        done_classify = db.execute(f"SELECT COUNT(*) as cnt FROM classify WHERE status = 'done'{source_filter}", source_params).fetchone()["cnt"]
+        scrape_err_classify = db.execute(f"SELECT COUNT(*) as cnt FROM classify WHERE status = 'scrape_error'{source_filter}", source_params).fetchone()["cnt"]
+        classify_err_classify = db.execute(f"SELECT COUNT(*) as cnt FROM classify WHERE status = 'classify_error'{source_filter}", source_params).fetchone()["cnt"]
 
         classify_table.add_row(
             str(total_classify),
@@ -175,20 +199,40 @@ def info() -> None:
     # Classify distributions
     with data_db_locked() as db:
         # Relevance scores from columns
-        ai_safety_relevance = [row["ai_safety_relevance"] for row in db.execute("SELECT ai_safety_relevance FROM classify WHERE ai_safety_relevance IS NOT NULL").fetchall()]
+        ai_safety_query = "SELECT ai_safety_relevance FROM classify WHERE ai_safety_relevance IS NOT NULL"
+        if source:
+            ai_safety_query += " AND source = ?"
+            ai_safety_relevance = [row["ai_safety_relevance"] for row in db.execute(ai_safety_query, [source]).fetchall()]
+        else:
+            ai_safety_relevance = [row["ai_safety_relevance"] for row in db.execute(ai_safety_query).fetchall()]
         if ai_safety_relevance:
             console.print(f"  [dim]{'ai_safety_relevance':<25}[/dim] {one_line_histogram(ai_safety_relevance, bins=20, field_width=12)}")
         
-        shallow_review_inclusion = [row["shallow_review_inclusion"] for row in db.execute("SELECT shallow_review_inclusion FROM classify WHERE shallow_review_inclusion IS NOT NULL").fetchall()]
+        shallow_review_query = "SELECT shallow_review_inclusion FROM classify WHERE shallow_review_inclusion IS NOT NULL"
+        if source:
+            shallow_review_query += " AND source = ?"
+            shallow_review_inclusion = [row["shallow_review_inclusion"] for row in db.execute(shallow_review_query, [source]).fetchall()]
+        else:
+            shallow_review_inclusion = [row["shallow_review_inclusion"] for row in db.execute(shallow_review_query).fetchall()]
         if shallow_review_inclusion:
             console.print(f"  [dim]{'shallow_review_inclusion':<25}[/dim] {one_line_histogram(shallow_review_inclusion, bins=20, field_width=12)}")
         
-        collect_relevancy = [row["collect_relevancy"] for row in db.execute("SELECT collect_relevancy FROM classify WHERE collect_relevancy IS NOT NULL").fetchall()]
+        collect_relevancy_query = "SELECT collect_relevancy FROM classify WHERE collect_relevancy IS NOT NULL"
+        if source:
+            collect_relevancy_query += " AND source = ?"
+            collect_relevancy = [row["collect_relevancy"] for row in db.execute(collect_relevancy_query, [source]).fetchall()]
+        else:
+            collect_relevancy = [row["collect_relevancy"] for row in db.execute(collect_relevancy_query).fetchall()]
         if collect_relevancy:
             console.print(f"  [dim]{'collect_relevancy':<25}[/dim] {one_line_histogram(collect_relevancy, bins=20, field_width=12)}")
         
         # Extract JSON metrics
-        classify_data = db.execute("SELECT data FROM classify WHERE status = 'done' AND data IS NOT NULL").fetchall()
+        classify_data_query = "SELECT data FROM classify WHERE status = 'done' AND data IS NOT NULL"
+        if source:
+            classify_data_query += " AND source = ?"
+            classify_data = db.execute(classify_data_query, [source]).fetchall()
+        else:
+            classify_data = db.execute(classify_data_query).fetchall()
         if classify_data:
             tokens_full = [json.loads(row["data"]).get("tokens_full") for row in classify_data if json.loads(row["data"]).get("tokens_full")]
             if tokens_full:
@@ -201,6 +245,131 @@ def info() -> None:
             classify_duration = [json.loads(row["data"]).get("classify_duration") for row in classify_data if json.loads(row["data"]).get("classify_duration")]
             if classify_duration:
                 console.print(f"  [dim]{'classify_duration':<25}[/dim] {one_line_histogram(classify_duration, bins=20, field_width=12)}")
+
+
+@app.command()
+def reset_classify(
+    kind: Optional[str] = typer.Option(None, help="Filter by kind"),
+    source: Optional[str] = typer.Option(None, help="Filter by source"),
+    status: Optional[str] = typer.Option(None, help="Filter by current status"),
+    remove_scrapes: bool = typer.Option(False, "--remove-scrapes", help="Also delete scrapes for matching URLs"),
+) -> None:
+    """Reset classify table entries to 'new' status, optionally deleting their scrapes."""
+    from pathlib import Path
+    
+    from .common import ClassifyStatus, SCRAPED_PATH
+    from .data_db import data_db_locked
+    from .scrape import get_scrape_path
+    from .utils import url_hash
+
+    # Build WHERE clause and parameters
+    conditions = []
+    params = []
+    
+    if kind:
+        conditions.append("kind = ?")
+        params.append(kind)
+    
+    if source:
+        conditions.append("source = ?")
+        params.append(source)
+    
+    if status:
+        conditions.append("status = ?")
+        params.append(status)
+    
+    where_clause = ""
+    if conditions:
+        where_clause = " WHERE " + " AND ".join(conditions)
+    
+    # Get matching entries and their current status
+    with data_db_locked() as db:
+        query = f"SELECT url, status FROM classify{where_clause}"
+        cursor = db.execute(query, params)
+        matching_rows = cursor.fetchall()
+    
+    if not matching_rows:
+        console.print("[yellow]No matching entries found[/yellow]")
+        return
+    
+    total_affected = len(matching_rows)
+    already_new = sum(1 for row in matching_rows if row["status"] == ClassifyStatus.NEW.value)
+    to_change = total_affected - already_new
+    
+    # Show what will be affected
+    console.print(f"[bold]Found {total_affected} matching entries[/bold]")
+    if to_change == 0:
+        console.print("[yellow]All entries are already 'new', nothing to change[/yellow]")
+        if not remove_scrapes:
+            return
+    else:
+        console.print(f"  - {already_new} already 'new'")
+        console.print(f"  - {to_change} will be reset to 'new'")
+    console.print()
+    
+    # Update entries to 'new'
+    if to_change > 0:
+        with data_db_locked() as db:
+            # Build update query - add condition to only update non-new entries
+            update_conditions = conditions.copy()
+            if not status:
+                # Only add status filter if not already filtering by status
+                update_conditions.append("status != ?")
+            
+            update_where = " WHERE " + " AND ".join(update_conditions)
+            update_params = [ClassifyStatus.NEW.value] + params
+            if not status:
+                update_params.append(ClassifyStatus.NEW.value)
+            
+            update_query = f"UPDATE classify SET status = ?{update_where}"
+            db.execute(update_query, update_params)
+            db.commit()
+        
+        console.print(f"[green]✓ Reset {to_change} entries to 'new'[/green]")
+    
+    # Delete scrapes if requested (primary: database rows, secondary: files)
+    scrapes_deleted = 0
+    if remove_scrapes:
+        urls_to_delete = [row["url"] for row in matching_rows]
+        
+        # Primary: Delete from scrape table
+        with data_db_locked() as db:
+            url_placeholders = ",".join("?" * len(urls_to_delete))
+            delete_query = f"DELETE FROM scrape WHERE url IN ({url_placeholders})"
+            cursor = db.execute(delete_query, urls_to_delete)
+            scrapes_deleted = cursor.rowcount
+            db.commit()
+        
+        console.print(f"[green]✓ Deleted {scrapes_deleted} scrape table rows[/green]")
+        
+        # Secondary: Delete scrape files (if they exist)
+        files_deleted = 0
+        stripped_deleted = 0
+        for url in urls_to_delete:
+            scrape_path = get_scrape_path(url)
+            if scrape_path.exists():
+                scrape_path.unlink()
+                files_deleted += 1
+            
+            # Also check for stripped HTML file (if SAVE_STRIPPED_HTML was enabled)
+            hash_value = url_hash(url)
+            stripped_path = SCRAPED_PATH / f"{hash_value}-stripped.html"
+            if stripped_path.exists():
+                stripped_path.unlink()
+                stripped_deleted += 1
+        
+        if files_deleted > 0:
+            console.print(f"[green]✓ Deleted {files_deleted} scrape files[/green]")
+        if stripped_deleted > 0:
+            console.print(f"[green]✓ Deleted {stripped_deleted} stripped HTML files[/green]")
+    
+    # Print summary
+    console.print()
+    console.print("[bold]Summary:[/bold]")
+    console.print(f"  Total affected: {total_affected}")
+    console.print(f"  Changed to 'new': {to_change}")
+    if remove_scrapes:
+        console.print(f"  Scrapes deleted: {scrapes_deleted}")
 
 
 @app.command()
