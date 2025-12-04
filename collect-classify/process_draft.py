@@ -554,7 +554,9 @@ def enrich_papers_from_db(doc: ProcessedDocument, verbose: bool = False) -> tupl
 # ============================================================================
 
 
-def validate_document_structure(doc: ProcessedDocument) -> tuple[list[str], list[str]]:
+def validate_document_structure(
+    doc: ProcessedDocument, llm_processed_agenda_ids: set[str] | None = None
+) -> tuple[list[str], list[str]]:
     """Validate document structure and return (errors, warnings).
 
     Checks:
@@ -562,14 +564,17 @@ def validate_document_structure(doc: ProcessedDocument) -> tuple[list[str], list
     - Section levels increase by at most one
     - No nested agendas
     - No strange tags in names (e.g. no other `[`)
-    - All agendas have reasonable amount of fields (at least 5)
+    - All LLM-processed agendas have reasonable amount of fields (at least 5)
 
     Args:
         doc: ProcessedDocument to validate
+        llm_processed_agenda_ids: Set of agenda IDs that were LLM-processed (for field count check)
 
     Returns:
         Tuple of (errors, warnings) lists
     """
+    if llm_processed_agenda_ids is None:
+        llm_processed_agenda_ids = set()
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -642,7 +647,8 @@ def validate_document_structure(doc: ProcessedDocument) -> tuple[list[str], list
                     )
 
             # Check agenda has reasonable amount of fields (at least 5 non-empty)
-            if item.agenda_metadata:
+            # Only check for agendas that were LLM-processed
+            if item.agenda_metadata and item.id in llm_processed_agenda_ids:
                 field_count = sum(
                     [
                         1 if item.agenda_metadata.who_edits else 0,
@@ -705,6 +711,14 @@ def validate_document_structure(doc: ProcessedDocument) -> tuple[list[str], list
                                     f"Agenda '{item.name}' ({item.id}) has invalid output URL: "
                                     f"{output.url}"
                                 )
+    
+    # Warn about agendas not LLM-processed
+    all_agenda_ids = {item.id for item in doc.items if item.item_type == ItemType.AGENDA}
+    unprocessed_count = len(all_agenda_ids - llm_processed_agenda_ids)
+    if unprocessed_count > 0:
+        warnings.append(
+            f"{unprocessed_count} agenda(s) were not LLM-processed (skipped due to --limit or processing error)"
+        )
 
     return errors, warnings
 
@@ -781,6 +795,9 @@ def parse(
     # ========================================================================
     console.print("[cyan]Step 2: Extracting metadata with Claude Haiku...[/cyan]")
 
+    # Track which agendas were LLM-processed
+    llm_processed_agenda_ids: set[str] = set()
+
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -837,6 +854,9 @@ def parse(
                 existing_issues = set(item.agenda_metadata.parsing_issues or [])
                 new_issues = set(extracted.parsing_issues or [])
                 item.agenda_metadata.parsing_issues = list(existing_issues | new_issues)
+                
+                # Mark as LLM-processed
+                llm_processed_agenda_ids.add(item.id)
 
             except Exception as e:
                 logger.error(f"Failed to extract metadata for {item.id}: {e}")
@@ -863,7 +883,7 @@ def parse(
     # Step 4: Validate structure
     # ========================================================================
     console.print("[cyan]Step 3: Validating parsed document...[/cyan]")
-    errors, warnings = validate_document_structure(doc)
+    errors, warnings = validate_document_structure(doc, llm_processed_agenda_ids)
 
     # Add LLM-detected parsing issues to warnings
     for item in doc.items:
