@@ -438,6 +438,29 @@ def extract_agenda_metadata(
         json_text = json_match.group(1)
     else:
         json_text = response_text
+    
+    # Fix common JSON escape issues from LLM output
+    # Replace invalid escapes (e.g., \( \) \# etc.) with properly escaped versions
+    # Valid JSON escapes are: \", \\, \/, \b, \f, \n, \r, \t, \uXXXX
+    # We need to escape backslashes that aren't part of valid JSON escapes
+    def fix_json_escapes(text: str) -> str:
+        """Fix invalid backslash escapes in JSON text."""
+        # This is tricky - we want to replace \X with \\X only when X is not a valid JSON escape
+        # Valid escapes: " \ / b f n r t u
+        # Strategy: replace \ with \\ first, then fix the valid ones back
+        result = text.replace('\\', '\\\\')  # Escape all backslashes
+        # Now unescape the valid JSON escapes (they're now double-escaped)
+        result = result.replace('\\\\n', '\\n')
+        result = result.replace('\\\\t', '\\t')
+        result = result.replace('\\\\r', '\\r')
+        result = result.replace('\\\\f', '\\f')
+        result = result.replace('\\\\b', '\\b')
+        result = result.replace('\\\\/', '\\/')
+        result = result.replace('\\\\"', '\\"')
+        result = result.replace('\\\\\\\\', '\\\\')  # Fix double-escaped backslashes
+        return result
+    
+    json_text = fix_json_escapes(json_text)
 
     # Parse and validate
     try:
