@@ -608,18 +608,29 @@ def validate_document_structure(doc: ProcessedDocument) -> tuple[list[str], list
 
         elif item.item_type == ItemType.AGENDA:
             # Validate agenda is exactly one level below its containing section
-            if not section_stack:
+            # Use parent_id to find the actual parent (which should be a section)
+            if not item.parent_id:
                 errors.append(
                     f"Agenda '{item.name}' ({item.id}) has no parent section"
                 )
             else:
-                parent_section = section_stack[-1]
-                expected_level = parent_section.header_level + 1
-                if item.header_level != expected_level:
+                parent = items_by_id.get(item.parent_id)
+                if not parent:
                     errors.append(
-                        f"Agenda '{item.name}' ({item.id}) has level {item.header_level}, "
-                        f"expected {expected_level} (one level below section '{parent_section.name}')"
+                        f"Agenda '{item.name}' ({item.id}) has invalid parent_id: {item.parent_id}"
                     )
+                elif parent.item_type != ItemType.SECTION:
+                    errors.append(
+                        f"Agenda '{item.name}' ({item.id}) has parent '{parent.name}' ({parent.id}) "
+                        f"which is not a section"
+                    )
+                else:
+                    expected_level = parent.header_level + 1
+                    if item.header_level != expected_level:
+                        errors.append(
+                            f"Agenda '{item.name}' ({item.id}) has level {item.header_level}, "
+                            f"expected {expected_level} (one level below section '{parent.name}')"
+                        )
 
             # Check for nested agendas (agenda as parent of another agenda)
             if item.parent_id and items_by_id.get(item.parent_id):

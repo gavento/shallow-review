@@ -491,17 +491,30 @@ def find_markers_and_headers(text: str) -> list[tuple[str, str, int, int, int]]:
 
 
 def extract_header_name(text: str, start_pos: int) -> tuple[str, int]:
-    """Extract header name and level from content starting at position.
+    """Extract header name and level from the line containing the marker.
+
+    The marker is at the end of the header line, so we need to search backward
+    to find the start of the line, then extract the header from that line.
 
     Args:
         text: Full document text
-        start_pos: Start position to search from
+        start_pos: Position of the marker (at end of header line)
 
     Returns:
         Tuple of (header_name, header_level)
     """
-    remaining = text[start_pos:]
-    header_match = re.search(r"^(#+)\s+(.+)$", remaining, re.MULTILINE)
+    # Find the start of the line containing the marker
+    line_start = text.rfind('\n', 0, start_pos) + 1
+    # Find the end of the line
+    line_end = text.find('\n', start_pos)
+    if line_end == -1:
+        line_end = len(text)
+    
+    # Extract the line
+    line_text = text[line_start:line_end]
+    
+    # Match header pattern on this line (allow leading whitespace)
+    header_match = re.match(r"^\s*(#+)\s+(.+)$", line_text)
     if header_match:
         header_level = len(header_match.group(1))
         header_name = header_match.group(2).strip().rstrip("\\ \t")
@@ -629,6 +642,11 @@ def parse_document(file_path: Path) -> ProcessedDocument:
             logger.warning(
                 f"No header found for {marker_type}:{marker_id}, using fallback name: {header_name}"
             )
+        else:
+            # Remove marker from header name (e.g., "OpenAI Safety [a:openai]" -> "OpenAI Safety")
+            # Match both escaped \[...\] and unescaped [...]
+            header_name = re.sub(r'(?:\\\[|\[)(?:sec|a):[^\]]+(?:\\\]|\])', '', header_name)
+            header_name = header_name.strip()
         if detected_level > 0:
             header_level = detected_level
         
