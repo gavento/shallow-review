@@ -1135,8 +1135,8 @@ def parse(
 
     # Add LLM-detected parsing issues to warnings
     for item in doc.items:
-        if item.agenda_attributes and item.agenda_attributes.parsing_issues:
-            for issue in item.agenda_attributes.parsing_issues:
+        if item.parsing_issues:
+            for issue in item.parsing_issues:
                 warnings.append(f"{item.id}: {issue}")
 
     # Display errors and warnings
