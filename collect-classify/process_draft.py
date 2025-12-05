@@ -157,7 +157,7 @@ def collect_links(
 
 # LLM extraction prompt template - takes DocumentItem and returns it filled
 EXTRACTION_PROMPT = Template(
-    """You are extracting structured metadata from a research agenda in a shallow review document.
+"""You are extracting structured metadata from a research agenda in a shallow review document.
 
 You will receive:
 1. A DocumentItem structure (JSON) with id, name, header_level, parent_id, item_type already filled
@@ -295,7 +295,7 @@ Example 2 - Research Agenda (sec:iterative_alignment):
 Input DocumentItem:
 ```json
 {
-  "id": "sec:iterative_alignment",
+  "id": "a:iterative_alignment",
   "name": "Iterative alignment",
   "header_level": 2,
   "parent_id": null,
@@ -311,10 +311,10 @@ Content:
 **Who edits (internal):** Stag✅
 **One-sentence summary:** nudging base models by optimising their output.
 **Theory of change:** LLMs don't seem very dangerous and might scale to AGI, assume alignment is a superficial feature.
-**See also:** [character training](#character-training-[a:psych_personas])
+**See also:** character training
 **Orthodox problems:** this agenda implicitly questions this framing.
 **Target case:** optimistic-case
-**Broad approach:** engineering
+**Broad approach:** Engineering
 **Some names:** post-training teams at most labs.
 **Estimated FTEs:** 1200+
 **Funded by:** most of the industry
@@ -324,7 +324,8 @@ Content:
 * [**Towards Cognitively-Faithful Models**](https://arxiv.org/abs/2509.04445)
 
 ### Iterative alignment at post-train-time
-* [**RLHS: Mitigating Misalignment**](https://arxiv.org/abs/2501.08617)
+* [https://arxiv.org/abs/2501.08617](https://arxiv.org/abs/2501.08617), Kaiqu Liang, Haimin Hu, Ryan Liu, Thomas L. Griffiths, Jaime Fernández Fisac, 2025 
+* https://arxiv.org/abs/2503.04569
 </content>
 
 Output DocumentItem (only non-default values shown):
@@ -363,11 +364,19 @@ Output DocumentItem (only non-default values shown):
       },
       {
         "url": "https://arxiv.org/abs/2501.08617",
-        "original_md": "* [**RLHS: Mitigating Misalignment**](https://arxiv.org/abs/2501.08617)"
+        "original_md": "* [**RLHS: Mitigating Misalignment**](https://arxiv.org/abs/2501.08617), Kaiqu Liang, Haimin Hu, Ryan Liu, Thomas L. Griffiths, Jaime Fernández Fisac, 2025"
+      },
+      {
+        "url": "https://arxiv.org/abs/2503.04569",
+        "original_md": "* https://arxiv.org/abs/2503.04569"
       }
     ]
   },
-  "parsing_issues": ["Orthodox problems field says 'this agenda implicitly questions this framing' - unclear which problems this relates to"]
+  "parsing_issues": [
+    "Orthodox problems field says 'this agenda implicitly questions this framing' - unclear which problems this relates to",
+    "Target case field says 'optimistic-case' - closest match is 'average_case'",
+    "Funded by field says 'most of the industry' - unclear which industry this relates to"
+  ]
 }
 ```
 
@@ -375,7 +384,7 @@ Note in examples:
 - **Omit default values**: Fields with defaults (null, [], {}) can be omitted from output for brevity. The examples above show only non-default values.
 - Extract text EXACTLY as written, preserving markdown formatting
 - For "see_also": resolve external links to agenda IDs when possible (e.g., "character training" with link to [a:psych_personas] becomes "a:psych_personas")
-- For "target_case": map "optimistic-case" to "average_case" (closest match)
+- For "target_case": map "optimistic-case" to "optimistic_case" (closest match)
 - For organization/labs: focus on teams, funders, structure, public plans
 - For research agendas: focus on theory of change, orthodox problems, target case, broad approach
 - Merge "Public alignment agenda" and "Public plan" fields into single "public_alignment_agenda"
@@ -390,33 +399,48 @@ IMPORTANT:
 - Preserve markdown formatting exactly as written in the source.
 - **Omit fields with default values** (null, [], {}) for brevity - they will be filled in automatically.
 
-Respond with a complete DocumentItem JSON object (example with ALL fields shown):
-```json
-{
-  "id": "a:openai",  // MUST match input exactly
-  "name": "OpenAI Safety",  // MUST match input exactly
-  "header_level": 2,  // MUST match input exactly
-  "parent_id": "sec:big_labs",  // MUST match input exactly
-  "content": null,  // ALWAYS null
-  "item_type": "agenda",  // MUST match input exactly
-  "agenda_attributes": {
-    // Only include fields with non-default values:
-    "who_edits": "Name✅",
-    "one_sentence_summary": "Brief description",
-    "see_also": ["a:id1", "sec:id2"],
-    "some_names": ["Name1", "Name2"],
-    "funded_by": "Company A, Company B",
-    "outputs": [
-      {
-        "url": "https://arxiv.org/abs/1234.5678",
-        "original_md": "* [**Paper Title**](https://arxiv.org/abs/1234.5678)"
-      }
-    ]
-    // Omit: orthodox_problems (empty), target_case (null), teams (null), etc.
-  },
-  "parsing_issues": []  // Last field, can be omitted if empty
-}
-```
+**JSON Schema for Output:**
+
+DocumentItem (must match input structure exactly):
+- id: string (REQUIRED, must match input)
+- name: string (REQUIRED, must match input)
+- header_level: integer (REQUIRED, must match input)
+- parent_id: string | null (REQUIRED, must match input)
+- content: null (REQUIRED, always null)
+- item_type: "section" | "agenda" (REQUIRED, must match input)
+- agenda_attributes: AgendaAttributes | null (populate this)
+- parsing_issues: string[] (defaults to [])
+
+AgendaAttributes (omit fields with default values):
+- who_edits: string | null
+- one_sentence_summary: string | null
+- theory_of_change: string | null
+- see_also: string[] (defaults to [])
+- orthodox_problems: string[] (defaults to [])
+- target_case: string | null
+- broad_approach: string | null
+- some_names: string[] (defaults to [])
+- estimated_ftes: string | null
+- critiques: string | null
+- funded_by: string | null
+- funding_in_2025: string | null
+- organization_structure: string | null
+- teams: string | null
+- public_alignment_agenda: string | null
+- framework: string | null
+- outputs: (Paper | OutputSectionHeader)[] (defaults to [])
+- other_attributes: object (defaults to {})
+
+Paper:
+- url: string | null
+- original_md: string (REQUIRED)
+- title, authors, author_organizations, date, published_year, venue, kind, summary, key_result: (omit, defaults to null/[])
+
+OutputSectionHeader:
+- name: string (REQUIRED)
+- header_level: integer (REQUIRED)
+- description: string | null
+- original_md: string (REQUIRED)
 """
 )
 
