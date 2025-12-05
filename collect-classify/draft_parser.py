@@ -163,7 +163,7 @@ class OutputSectionHeader(BaseModel):
     """
 
     name: str = Field(description="Section header name")
-    header_level: int = Field(description="Markdown header level (typically 3 or 4)")
+    header_level: int = Field(description="Markdown header level (typically 3, 4 or more)")
     description: str | None = Field(default=None, description="Optional text block describing the section")
     original_md: str = Field(description="Original markdown text as read from source")
 

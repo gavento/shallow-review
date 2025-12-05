@@ -308,6 +308,7 @@ Input DocumentItem:
 
 Content:
 <content>
+
 **Who edits (internal):** Stag✅
 **One-sentence summary:** nudging base models by optimising their output.
 **Theory of change:** LLMs don't seem very dangerous and might scale to AGI, assume alignment is a superficial feature.
@@ -406,9 +407,9 @@ DocumentItem (must match input structure exactly):
 - name: string (REQUIRED, must match input)
 - header_level: integer (REQUIRED, must match input)
 - parent_id: string | null (REQUIRED, must match input)
-- content: null (REQUIRED, always null)
-- item_type: "section" | "agenda" (REQUIRED, must match input)
 - agenda_attributes: AgendaAttributes | null (populate this)
+- content: string | null (REQUIRED, only the relevant content that is not represented in agenda_attributes, e.g. quotes, non-internal meta or epistemic remarks etc.; stand-alone markdown text)
+- item_type: "section" | "agenda" (REQUIRED, must match input)
 - parsing_issues: string[] (defaults to [])
 
 AgendaAttributes (omit fields with default values):
