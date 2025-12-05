@@ -163,15 +163,7 @@ You will receive:
 1. A DocumentItem structure (JSON) with id, name, header_level, parent_id, item_type already filled
 2. The markdown content for this item in <content></content> XML tags
 
-Your task: Return the SAME DocumentItem structure with agenda_attributes populated and parsing_issues added.
-
-**CRITICAL**: The output MUST preserve these input fields EXACTLY:
-- id (e.g., "a:openai")
-- name (e.g., "OpenAI Safety")
-- header_level (e.g., 2)
-- parent_id (e.g., "sec:big_labs" or null)
-- item_type (always "agenda")
-- content (always null in output)
+Your task: Return the SAME DocumentItem structure with agenda_attributes populated and parsing_issues added. Preserve id, name, header_level, parent_id, and item_type fields exactly.
 
 **Input DocumentItem:**
 ```json
@@ -185,23 +177,23 @@ Your task: Return the SAME DocumentItem structure with agenda_attributes populat
 
 Extract the following information from the content:
 
-**Standard Attributes** (extract if present):
-- who_edits: Editor name (internal), possibly with a status emoji
-- one_sentence_summary: Brief description
-- theory_of_change: How this work contributes to safety
-- see_also: Related agenda IDs (list of strings like "a:id1", "a:id2", "sec:id1"). Use the agenda list provided below to resolve plain text references to IDs.
-- orthodox_problems: List of orthodox problem IDs (see table below)
-- target_case: Target case ID (see table below)
-- broad_approach: Broad approach ID (see table below)
-- some_names: Key researchers (list)
-- estimated_ftes: Workforce estimate
-- critiques: Critiques as markdown text (links, descriptions, etc.)
-- funded_by: Funders (optional)
-- funding_in_2025: Dollar amounts (optional)
-- organization_structure: Organization structure (e.g., "public benefit corp", "for-profit", "research laboratory subsidiary of a for-profit"). Handles both "Host org structure" and "Structure" fields.
-- teams: Teams/divisions description in markdown (for labs)
-- public_alignment_agenda: Public alignment agenda and/or public plan in markdown (for labs). Merge "Public alignment agenda" and "Public plan" if both are present.
-- framework: Framework link/description in markdown (for labs)
+**Standard Attributes** (extract if present, look for these bold headers):
+- who_edits: From "**Who edits (internal):**" - Editor name, possibly with status emoji
+- one_sentence_summary: From "**One-sentence summary:**" - Brief description
+- theory_of_change: From "**Theory of change:**" - How this work contributes to safety
+- see_also: From "**See also:**" - Related agenda IDs (list of strings like "a:id1", "a:id2", "sec:id1"). Use the agenda list below to resolve plain text references to IDs.
+- orthodox_problems: From "**Orthodox problems:**" - List of orthodox problem IDs (see table below)
+- target_case: From "**Target case:**" - Target case ID (see table below)
+- broad_approach: From "**Broad approach:**" - Broad approach ID (see table below)
+- some_names: From "**Some names:**" - Key researchers (list)
+- estimated_ftes: From "**Estimated FTEs:**" - Workforce estimate
+- critiques: From "**Critiques:**" - Critiques as markdown text (links, descriptions, etc.)
+- funded_by: From "**Funded by:**" - Funders (optional)
+- funding_in_2025: From "**Funding in 2025:**" - Dollar amounts (optional)
+- organization_structure: From "**Host org structure:**" or "**Structure:**" - Organization type (e.g., "public benefit corp", "for-profit", "research laboratory subsidiary of a for-profit")
+- teams: From "**Teams:**" - Teams/divisions description in markdown (for labs)
+- public_alignment_agenda: From "**Public alignment agenda:**" and/or "**Public plan:**" - Merge both if present (for labs)
+- framework: From "**Framework:**" - Framework link/description in markdown (for labs)
 
 **Available Agendas and Sections** (use these IDs in see_also):
 {% for item in agenda_list %}
@@ -223,7 +215,13 @@ Extract the following information from the content:
 - {{ approach_id }}: {{ approach_info.name }}
 {% endfor %}
 
-**Outputs in 2025**: This section has already been parsed structurally. If you see an "Outputs in 2025" section in the content, you can ignore it (it will be removed before extraction). Do NOT extract outputs URLs - they are handled separately.
+**Outputs** (extract from "**Outputs in 2025:**" or "**Outputs:**" section if present):
+- Extract all output items (papers, blog posts, etc.) as a flat list
+- For items with URLs: Extract the URL and preserve the original markdown
+- For items without URLs: Set url=null and preserve the original markdown in original_md
+- For subsection headers (e.g., "### Interpretability at pretrain-time"): Create OutputSectionHeader items with name, header_level, and original_md
+- Ignore the header depth - just preserve the structure and order
+- Leave title, authors, date, venue, kind, summary, key_result as null (they will be enriched from database later)
 
 **Other Attributes**: Any attributes with **Attribute Name:** format that don't match the standard ones above.
 
@@ -254,9 +252,15 @@ Input text:
 **Some names:** Johannes Heidecke, Boaz Barak, Mia Glaese, Jenny Nitishinskaya, Lama Ahmad, Naomi Bashkansky, Miles Wang
 
 **Funded by:** Microsoft, [AWS](https://www.aboutamazon.com/news/aws/aws-open-ai-workloads-compute-infrastructure), Oracle, NVIDIA, SoftBank, G42, AMD
+
+**Outputs in 2025:**
+
+* Their 60-page System Cards now contain a large amount of their public safety work.
+* [https://alignment.openai.com/](https://alignment.openai.com/)
+* [**Monitoring Reasoning Models for Misbehavior**](https://arxiv.org/abs/2503.11926)
 ```
 
-Expected output:
+Expected output (agenda_attributes only, DocumentItem wrapper omitted for brevity):
 ```json
 {
   "who_edits": null,
@@ -275,7 +279,47 @@ Expected output:
   "teams": "Alignment, Safety Systems (Interpretability, Safety Oversight, Pretraining Safety, Robustness, Safety Research, Trustworthy AI, new Misalignment Research team [coming](https://archive.is/eDB1D)), Preparedness, Model Policy, Safety and Security Committee, Safety Advisory Group. The [Persona Features](https://www.arxiv.org/pdf/2506.19823) paper had a distinct author list. No named successor to Superalignment.",
   "public_alignment_agenda": "[None](https://openai.com/safety/how-we-think-about-safety-alignment/). Barak [offers](https://www.lesswrong.com/posts/3jnziqCF3vA2NXAKp/six-thoughts-on-ai-safety) personal [views](https://windowsontheory.org/2025/06/24/machines-of-faithful-obedience/). **Public plan**: [Preparedness Framework](https://cdn.openai.com/pdf/18a02b5d-6b67-4cec-ab64-68cdfbddebcd/preparedness-framework-v2.pdf)",
   "framework": null,
-  "outputs": [],
+  "outputs": [
+    {
+      "url": null,
+      "original_md": "* Their 60-page System Cards now contain a large amount of their public safety work.",
+      "title": null,
+      "authors": [],
+      "author_organizations": [],
+      "date": null,
+      "published_year": null,
+      "venue": null,
+      "kind": null,
+      "summary": null,
+      "key_result": null
+    },
+    {
+      "url": "https://alignment.openai.com/",
+      "original_md": "* [https://alignment.openai.com/](https://alignment.openai.com/)",
+      "title": null,
+      "authors": [],
+      "author_organizations": [],
+      "date": null,
+      "published_year": null,
+      "venue": null,
+      "kind": null,
+      "summary": null,
+      "key_result": null
+    },
+    {
+      "url": "https://arxiv.org/abs/2503.11926",
+      "original_md": "* [**Monitoring Reasoning Models for Misbehavior**](https://arxiv.org/abs/2503.11926)",
+      "title": null,
+      "authors": [],
+      "author_organizations": [],
+      "date": null,
+      "published_year": null,
+      "venue": null,
+      "kind": null,
+      "summary": null,
+      "key_result": null
+    }
+  ],
   "other_attributes": {},
   "parsing_issues": []
 }
@@ -296,9 +340,21 @@ Input text:
 **Estimated FTEs:** 1200+
 **Critiques:** [Bellot](https://arxiv.org/abs/2506.02923), [Alfour](https://cognition.cafe/p/ai-alignment-based-on-intentions), [STACK](https://arxiv.org/abs/2506.24068), [AI Alignment Strategies from a Risk Perspective](https://arxiv.org/abs/2510.11235)
 **Funded by:** most of the industry
+**Outputs in 2025:** Subdivided as follows:
+
+### Iterative alignment at pretrain-time
+
+**One-sentence summary:** build better structures to adjust weights before training altogether.
+* [**Towards Cognitively-Faithful Decision-Making Models**](https://arxiv.org/abs/2509.04445)
+* [**ACE and Diverse Generalization via Selective Disagreement**](https://arxiv.org/abs/2509.07955)
+
+### Iterative alignment at post-train-time
+
+**One-sentence summary:** modify weights after pre-training.
+* [**RLHS: Mitigating Misalignment in RLHF**](https://arxiv.org/abs/2501.08617)
 ```
 
-Expected output:
+Expected output (agenda_attributes only):
 ```json
 {
   "who_edits": "Stag✅",
@@ -317,7 +373,59 @@ Expected output:
   "teams": null,
   "public_alignment_agenda": null,
   "framework": null,
-  "outputs": [],
+  "outputs": [
+    {
+      "name": "Iterative alignment at pretrain-time",
+      "header_level": 3,
+      "description": "**One-sentence summary:** build better structures to adjust weights before training altogether.",
+      "original_md": "### Iterative alignment at pretrain-time\n\n**One-sentence summary:** build better structures to adjust weights before training altogether."
+    },
+    {
+      "url": "https://arxiv.org/abs/2509.04445",
+      "original_md": "* [**Towards Cognitively-Faithful Decision-Making Models**](https://arxiv.org/abs/2509.04445)",
+      "title": null,
+      "authors": [],
+      "author_organizations": [],
+      "date": null,
+      "published_year": null,
+      "venue": null,
+      "kind": null,
+      "summary": null,
+      "key_result": null
+    },
+    {
+      "url": "https://arxiv.org/abs/2509.07955",
+      "original_md": "* [**ACE and Diverse Generalization via Selective Disagreement**](https://arxiv.org/abs/2509.07955)",
+      "title": null,
+      "authors": [],
+      "author_organizations": [],
+      "date": null,
+      "published_year": null,
+      "venue": null,
+      "kind": null,
+      "summary": null,
+      "key_result": null
+    },
+    {
+      "name": "Iterative alignment at post-train-time",
+      "header_level": 3,
+      "description": "**One-sentence summary:** modify weights after pre-training.",
+      "original_md": "### Iterative alignment at post-train-time\n\n**One-sentence summary:** modify weights after pre-training."
+    },
+    {
+      "url": "https://arxiv.org/abs/2501.08617",
+      "original_md": "* [**RLHS: Mitigating Misalignment in RLHF**](https://arxiv.org/abs/2501.08617)",
+      "title": null,
+      "authors": [],
+      "author_organizations": [],
+      "date": null,
+      "published_year": null,
+      "venue": null,
+      "kind": null,
+      "summary": null,
+      "key_result": null
+    }
+  ],
   "other_attributes": {},
   "parsing_issues": ["Orthodox problems field says 'this agenda implicitly questions this framing' - unclear which problems this relates to"]
 }
@@ -330,8 +438,11 @@ Note in examples:
 - For organization/labs: focus on teams, funders, structure, public plans
 - For research agendas: focus on theory of change, orthodox problems, target case, broad approach
 - Merge "Public alignment agenda" and "Public plan" fields into single "public_alignment_agenda"
-
-**Outputs in 2025**: Extract all research outputs (papers, blog posts, etc.) from content. Parse structure with subsection headers.
+- For "outputs": Extract all items from "**Outputs in 2025:**" or "**Outputs:**" section
+  - URLs go in "url" field, preserve full markdown in "original_md"
+  - Items without URLs have url=null
+  - Subsection headers become OutputSectionHeader items (with name, header_level, description, original_md)
+  - Preserve order and structure, leave database fields (title, authors, etc.) as null
 
 IMPORTANT: Return valid JSON only. Do not use backslash escapes except for standard JSON escapes (\\n, \\t, \\", \\\\). Preserve markdown formatting exactly as written in the source.
 
