@@ -525,9 +525,13 @@ def extract_header_name(text: str, start_pos: int) -> tuple[str, int]:
     header_match = re.match(r"^\s*(#+)\s+(.+)$", line_text)
     if header_match:
         header_level = len(header_match.group(1))
-        header_name = header_match.group(2).strip().rstrip("\\ \t")
-        # Remove escaped brackets: \[ -> [, \] -> ]
+        header_name = header_match.group(2).strip()
+        # Unescape common Markdown escape sequences
+        # Order matters: do \[ and \] first to avoid interference
         header_name = header_name.replace("\\[", "[").replace("\\]", "]")
+        header_name = header_name.replace("\\_", "_")
+        header_name = header_name.replace("\\*", "*")
+        header_name = header_name.replace("\\#", "#")
         return header_name, header_level
     return "", 0
 
@@ -654,8 +658,9 @@ def parse_document(file_path: Path) -> PreparsedDocument:
             )
         else:
             # Remove marker from header name (e.g., "OpenAI Safety [a:openai]" -> "OpenAI Safety")
-            # Match both escaped \[...\] and unescaped [...]
-            header_name = re.sub(r'(?:\\\[|\[)(?:sec|a):[^\]]+(?:\\\]|\])', '', header_name)
+            # After unescaping above, markers will be in the form [sec:id] or [a:id]
+            # Match both forms for robustness (escaped and unescaped)
+            header_name = re.sub(r'(?:\\\[|\[)(?:sec|a):[^\]]+?(?:\\\]|\])', '', header_name)
             header_name = header_name.strip()
         
         if detected_level > 0:

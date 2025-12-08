@@ -15,7 +15,7 @@ from jinja2 import Template
 from litellm.caching.caching import Cache
 from pydantic import ValidationError
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from tenacity import (
     before_sleep_log,
     retry,
@@ -155,297 +155,6 @@ def collect_links(
 # ============================================================================
 
 
-# LLM extraction prompt template - takes DocumentItem and returns it filled
-EXTRACTION_PROMPT = Template(
-"""You are extracting structured metadata from a research agenda in a shallow review document.
-
-You will receive:
-1. A DocumentItem structure (JSON) with id, name, header_level, parent_id, item_type already filled
-2. The markdown content for this item in <content></content> XML tags
-
-Your task: Return the SAME DocumentItem structure with agenda_attributes populated and parsing_issues added. Preserve id, name, header_level, parent_id, and item_type fields exactly.
-
-**Input DocumentItem:**
-```json
-{{ item_json }}
-```
-
-**Markdown content to extract from:**
-<content>
-{{ content }}
-</content>
-
-Extract the following information from the content:
-
-**Standard Attributes** (extract if present, look for these bold headers):
-- who_edits: From "**Who edits (internal):**" - Editor name, possibly with status emoji
-- one_sentence_summary: From "**One-sentence summary:**" - Brief description
-- theory_of_change: From "**Theory of change:**" - How this work contributes to safety
-- see_also: From "**See also:**" - Related agenda IDs (list of strings like "a:id1", "a:id2", "sec:id1"). Use the agenda list below to resolve plain text references to IDs.
-- orthodox_problems: From "**Orthodox problems:**" - List of orthodox problem IDs (see table below)
-- target_case: From "**Target case:**" - Target case ID (see table below)
-- broad_approach: From "**Broad approach:**" - Broad approach ID (see table below)
-- some_names: From "**Some names:**" - Key researchers (list)
-- estimated_ftes: From "**Estimated FTEs:**" - Workforce estimate
-- critiques: From "**Critiques:**" - Critiques as markdown text (links, descriptions, etc.)
-- funded_by: From "**Funded by:**" - Funders (optional)
-- funding_in_2025: From "**Funding in 2025:**" - Dollar amounts (optional)
-- organization_structure: From "**Host org structure:**" or "**Structure:**" - Organization type (e.g., "public benefit corp", "for-profit", "research laboratory subsidiary of a for-profit")
-- teams: From "**Teams:**" - Teams/divisions description in markdown (e.g. for labs)
-- public_alignment_agenda: From "**Public alignment agenda:**" and/or "**Public plan:**" - Merge both if present (e.g. for labs)
-- framework: From "**Framework:**" - Framework link/description in markdown (e.g. for labs)
-
-**Available Agendas and Sections** (use these IDs in see_also):
-{% for item in agenda_list %}
-- {{ item.id }}: {{ item.name }}
-{% endfor %}
-
-**Orthodox Problems** (use IDs from this table):
-{% for problem_id, problem_info in orthodox_problems.items() %}
-- {{ problem_id }}: {{ problem_info.name }}
-{% endfor %}
-
-**Target Cases** (use IDs from this table):
-{% for case_id, case_info in target_cases.items() %}
-- {{ case_id }}: {{ case_info.name }}
-{% endfor %}
-
-**Broad Approaches** (use IDs from this table):
-{% for approach_id, approach_info in broad_approaches.items() %}
-- {{ approach_id }}: {{ approach_info.name }}
-{% endfor %}
-
-**Outputs** (extract from "**Outputs in 2025:**" or "**Outputs:**" section if present):
-- Extract all output items (papers, blog posts, etc.) as a flat list
-- For items with URLs: Extract the URL and preserve the original markdown
-- For items without URLs: Set url=null and preserve the original markdown in original_md
-- For subsection headers (e.g., "### Interpretability at pretrain-time"): Create OutputSectionHeader items with name, header_level, and original_md
-- Ignore the header depth - just preserve the structure and order
-- Leave title, authors, date, venue, kind, summary, key_result as null (they will be enriched from database later)
-
-**Other Attributes**: Any attributes with **Attribute Name:** format that don't match the standard ones above.
-
-**Parsing Issues**: Detect and report any issues with the content or parsing:
-- Source document issues: missing headers, wrong sec:/a: markers, formatting problems
-- Content issues: empty/minimal content, mismatched titles, wrong company/org info
-- Parsing issues: confusion about structure, ambiguous attributions, etc.
-If everything looks correct and complete, return an empty list.
-
-**EXAMPLES:**
-
-Example 1 - Lab/Organization (a:openai):
-
-Input DocumentItem:
-```json
-{
-  "id": "a:openai",
-  "name": "OpenAI Safety",
-  "header_level": 2,
-  "parent_id": "sec:big_labs",
-  "content": null,
-  "item_type": "agenda",
-  "agenda_attributes": null,
-  "parsing_issues": []
-}
-```
-
-Content:
-<content>
-**See also:** iterative alignment, safeguards, personas.
-**Host org structure**: public benefit corp
-**Teams**: Alignment, Safety Systems (Interpretability, Safety Oversight, Pretraining Safety)
-**Public alignment agenda:** [None](https://openai.com/safety). Barak [offers](https://lesswrong.com) personal views.
-**Public plan**: [Preparedness Framework](https://cdn.openai.com/pdf/preparedness-framework.pdf)
-**Critiques:** [Stein-Perlman](https://ailabwatch.org/companies/openai)
-**Some names:** Johannes Heidecke, Boaz Barak
-**Funded by:** Microsoft, AWS, Oracle
-**Outputs in 2025:**
-* Their System Cards contain safety work.
-* [https://alignment.openai.com/](https://alignment.openai.com/)
-</content>
-
-Output DocumentItem (only non-default values shown):
-```json
-{
-  "id": "a:openai",
-  "name": "OpenAI Safety",
-  "header_level": 2,
-  "parent_id": "sec:big_labs",
-  "content": null,
-  "item_type": "agenda",
-  "agenda_attributes": {
-    "see_also": ["sec:iterative_alignment", "a:anthropic_safeguards", "a:psych_personas"],
-    "some_names": ["Johannes Heidecke", "Boaz Barak"],
-    "critiques": "[Stein-Perlman](https://ailabwatch.org/companies/openai)",
-    "funded_by": "Microsoft, AWS, Oracle",
-    "organization_structure": "public benefit corp",
-    "teams": "Alignment, Safety Systems (Interpretability, Safety Oversight, Pretraining Safety)",
-    "public_alignment_agenda": "[None](https://openai.com/safety). Barak [offers](https://lesswrong.com) personal views. **Public plan**: [Preparedness Framework](https://cdn.openai.com/pdf/preparedness-framework.pdf)",
-    "outputs": [
-      {"original_md": "* Their System Cards contain safety work."},
-      {"url": "https://alignment.openai.com/", "original_md": "* [https://alignment.openai.com/](https://alignment.openai.com/)"}
-    ]
-  },
-  "parsing_issues": []
-}
-```
-
-Example 2 - Research Agenda (sec:iterative_alignment):
-
-Input DocumentItem:
-```json
-{
-  "id": "a:iterative_alignment",
-  "name": "Iterative alignment",
-  "header_level": 2,
-  "parent_id": null,
-  "content": null,
-  "item_type": "section",
-  "agenda_attributes": null,
-  "parsing_issues": []
-}
-```
-
-Content:
-<content>
-
-**Who edits (internal):** Stag✅
-**One-sentence summary:** nudging base models by optimising their output.
-**Theory of change:** LLMs don't seem very dangerous and might scale to AGI, assume alignment is a superficial feature.
-**See also:** character training
-**Orthodox problems:** this agenda implicitly questions this framing.
-**Target case:** optimistic-case
-**Broad approach:** Engineering
-**Some names:** post-training teams at most labs.
-**Estimated FTEs:** 1200+
-**Funded by:** most of the industry
-**Outputs:** Subdivided as follows:
-
-### Iterative alignment at pretrain-time
-* [**Towards Cognitively-Faithful Models**](https://arxiv.org/abs/2509.04445)
-
-### Iterative alignment at post-train-time
-* [https://arxiv.org/abs/2501.08617](https://arxiv.org/abs/2501.08617), Kaiqu Liang, Haimin Hu, Ryan Liu, Thomas L. Griffiths, Jaime Fernández Fisac, 2025 
-* https://arxiv.org/abs/2503.04569
-</content>
-
-Output DocumentItem (only non-default values shown):
-```json
-{
-  "id": "sec:iterative_alignment",
-  "name": "Iterative alignment",
-  "header_level": 2,
-  "parent_id": null,
-  "content": null,
-  "item_type": "section",
-  "agenda_attributes": {
-    "who_edits": "Stag✅",
-    "one_sentence_summary": "nudging base models by optimising their output.",
-    "theory_of_change": "LLMs don't seem very dangerous and might scale to AGI, assume alignment is a superficial feature.",
-    "see_also": ["a:psych_personas"],
-    "target_case": "average_case",
-    "broad_approach": "engineering",
-    "some_names": ["post-training teams at most labs"],
-    "estimated_ftes": "1200+",
-    "funded_by": "most of the industry",
-    "outputs": [
-      {
-        "name": "Iterative alignment at pretrain-time",
-        "header_level": 3,
-        "original_md": "### Iterative alignment at pretrain-time"
-      },
-      {
-        "url": "https://arxiv.org/abs/2509.04445",
-        "original_md": "* [**Towards Cognitively-Faithful Models**](https://arxiv.org/abs/2509.04445)"
-      },
-      {
-        "name": "Iterative alignment at post-train-time",
-        "header_level": 3,
-        "original_md": "### Iterative alignment at post-train-time"
-      },
-      {
-        "url": "https://arxiv.org/abs/2501.08617",
-        "original_md": "* [**RLHS: Mitigating Misalignment**](https://arxiv.org/abs/2501.08617), Kaiqu Liang, Haimin Hu, Ryan Liu, Thomas L. Griffiths, Jaime Fernández Fisac, 2025"
-      },
-      {
-        "url": "https://arxiv.org/abs/2503.04569",
-        "original_md": "* https://arxiv.org/abs/2503.04569"
-      }
-    ]
-  },
-  "parsing_issues": [
-    "Orthodox problems field says 'this agenda implicitly questions this framing' - unclear which problems this relates to",
-    "Target case field says 'optimistic-case' - closest match is 'average_case'",
-    "Funded by field says 'most of the industry' - unclear which industry this relates to"
-  ]
-}
-```
-
-Note in examples:
-- **Omit default values**: Fields with defaults (null, [], {}) can be omitted from output for brevity. The examples above show only non-default values.
-- Extract text EXACTLY as written, preserving markdown formatting
-- For "see_also": resolve external links to agenda IDs when possible (e.g., "character training" with link to [a:psych_personas] becomes "a:psych_personas")
-- For "target_case": map "optimistic-case" to "optimistic_case" (closest match)
-- For organization/labs: focus on teams, funders, structure, public plans
-- For research agendas: focus on theory of change, orthodox problems, target case, broad approach
-- Merge "Public alignment agenda" and "Public plan" fields into single "public_alignment_agenda"
-- For "outputs": Extract all items from "**Outputs in 2025:**" or "**Outputs:**" section
-  - URLs go in "url" field, preserve full markdown in "original_md"
-  - Items without URLs: omit "url" field (defaults to null), include "original_md"
-  - Subsection headers: OutputSectionHeader with "name", "header_level", "original_md" (omit description if not present)
-  - Preserve order and structure, leave database fields (title, authors, etc.) as null (can be omitted)
-
-IMPORTANT: 
-- Return valid JSON only. Do not use backslash escapes except for standard JSON escapes (\\n, \\t, \\", \\\\).
-- Preserve markdown formatting exactly as written in the source.
-- **Omit fields with default values** (null, [], {}) for brevity - they will be filled in automatically.
-
-**JSON Schema for Output:**
-
-DocumentItem (must match input structure exactly):
-- id: string (REQUIRED, must match input)
-- name: string (REQUIRED, must match input)
-- header_level: integer (REQUIRED, must match input)
-- parent_id: string | null (REQUIRED, must match input)
-- agenda_attributes: AgendaAttributes | null (populate this)
-- content: string | null (REQUIRED, only the relevant content that is not represented in agenda_attributes, e.g. quotes, non-internal meta or epistemic remarks etc.; stand-alone markdown text)
-- item_type: "section" | "agenda" (REQUIRED, must match input)
-- parsing_issues: string[] (defaults to [])
-
-AgendaAttributes (omit fields with default values):
-- who_edits: string | null
-- one_sentence_summary: string | null
-- theory_of_change: string | null
-- see_also: string[] (defaults to [])
-- orthodox_problems: string[] (defaults to [])
-- target_case: string | null
-- broad_approach: string | null
-- some_names: string[] (defaults to [])
-- estimated_ftes: string | null
-- critiques: string | null
-- funded_by: string | null
-- funding_in_2025: string | null
-- organization_structure: string | null
-- teams: string | null
-- public_alignment_agenda: string | null
-- framework: string | null
-- outputs: (Paper | OutputSectionHeader)[] (defaults to [])
-- other_attributes: object (defaults to {})
-
-Paper:
-- url: string | null
-- original_md: string (REQUIRED)
-- title, authors, author_organizations, date, published_year, venue, kind, summary, key_result: (omit, defaults to null/[])
-
-OutputSectionHeader:
-- name: string (REQUIRED)
-- header_level: integer (REQUIRED)
-- description: string | null
-- original_md: string (REQUIRED)
-"""
-)
-
-
 def _should_retry(exception):
     """Determine if we should retry on this exception."""
     if isinstance(exception, KeyboardInterrupt):
@@ -462,8 +171,6 @@ def _should_retry(exception):
     before_sleep=before_sleep_log(logger, logging.WARNING),
     reraise=True,
 )
-
-
 def clean_agenda_content(content: str) -> str:
     """Remove structured fields from content, keeping only unstructured prose.
     
@@ -516,194 +223,6 @@ def clean_agenda_content(content: str) -> str:
     
     logger.debug(f"Cleaned content length: {len(cleaned)} (from {len(content)})")
     return cleaned
-
-
-def extract_agenda_attributes(
-    item: DocumentItem,
-    content: str,
-    agenda_list: list[dict[str, str]],
-) -> DocumentItem:
-    """Extract structured metadata from agenda content using Claude Haiku.
-
-    Takes a DocumentItem with structural fields (id, name, header_level, parent_id)
-    and content separately. Returns the same DocumentItem with agenda_attributes populated.
-
-    Args:
-        item: DocumentItem with id, name, header_level, parent_id filled (content should be None)
-        content: Markdown content to extract from
-        agenda_list: List of all agendas/sections for see_also resolution (dicts with 'id' and 'name')
-
-    Returns:
-        DocumentItem with agenda_attributes populated (and parsing_issues added)
-    """
-    from litellm import completion
-
-    # Defensive checks
-    if item.content is not None:
-        logger.warning(f"Item {item.id} has non-null content field, should be null for extraction")
-    
-    if not content or not content.strip():
-        logger.warning(f"Empty content for {item.id}, returning item with empty attributes")
-        item.agenda_attributes = AgendaAttributes()
-        item.parsing_issues.append("Empty content provided for extraction")
-        return item
-
-    if not agenda_list:
-        logger.warning(f"Empty agenda_list for {item.id}, see_also resolution may fail")
-
-    # Create input item JSON (without content field for prompt)
-    item_for_prompt = item.model_copy()
-    item_for_prompt.content = None  # Ensure content is None
-    item_json = item_for_prompt.model_dump_json(indent=2, exclude_none=False)
-
-    # Render prompt with item structure and content
-    try:
-        prompt = EXTRACTION_PROMPT.render(
-            item_json=item_json,
-            content=content,
-            orthodox_problems=ORTHODOX_PROBLEMS,
-            target_cases=TARGET_CASES,
-            broad_approaches=BROAD_APPROACHES,
-            agenda_list=agenda_list,
-        )
-    except Exception as e:
-        logger.error(f"Failed to render prompt for {item.id}: {e}")
-        item.agenda_attributes = AgendaAttributes()
-        item.parsing_issues.append(f"Prompt rendering failed: {str(e)}")
-        return item
-
-    # Call LLM
-    try:
-        response = completion(
-            model="claude-haiku-4-5",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=8000,  # Increased for full DocumentItem output
-            temperature=0.0,
-        )
-    except Exception as e:
-        logger.error(f"LLM call failed for {item.id}: {e}")
-        item.agenda_attributes = AgendaAttributes()
-        item.parsing_issues.append(f"LLM call failed: {str(e)}")
-        return item
-
-    # Extract response
-    if not response or not response.choices or not response.choices[0].message:
-        logger.error(f"Invalid LLM response for {item.id}")
-        item.agenda_attributes = AgendaAttributes()
-        item.parsing_issues.append("Invalid LLM response structure")
-        return item
-
-    response_text = response.choices[0].message.content
-    if not response_text:
-        logger.error(f"Empty LLM response for {item.id}")
-        item.agenda_attributes = AgendaAttributes()
-        item.parsing_issues.append("Empty LLM response")
-        return item
-
-    # Parse JSON from response (handle markdown code blocks)
-    json_match = re.search(r"```(?:json)?\s*\n(.*?)\n```", response_text, re.DOTALL)
-    if json_match:
-        json_text = json_match.group(1)
-    else:
-        json_text = response_text
-    
-    # Fix common JSON escape issues from LLM output
-    def fix_json_escapes(text: str) -> str:
-        """Fix invalid backslash escapes in JSON text."""
-        result = text.replace('\\', '\\\\')  # Escape all backslashes
-        # Now unescape the valid JSON escapes (they're now double-escaped)
-        result = result.replace('\\\\n', '\\n')
-        result = result.replace('\\\\t', '\\t')
-        result = result.replace('\\\\r', '\\r')
-        result = result.replace('\\\\f', '\\f')
-        result = result.replace('\\\\b', '\\b')
-        result = result.replace('\\\\/', '\\/')
-        result = result.replace('\\\\"', '\\"')
-        result = result.replace('\\\\\\\\', '\\\\')  # Fix double-escaped backslashes
-        return result
-    
-    json_text = fix_json_escapes(json_text)
-
-    # Parse as DocumentItem
-    try:
-        returned_item = DocumentItem.model_validate_json(json_text)
-    except (json.JSONDecodeError, ValidationError) as e:
-        logger.error(f"Failed to parse JSON for {item.id}: {e}")
-        logger.debug(f"Response text: {response_text[:500]}")
-        item.agenda_attributes = AgendaAttributes()
-        item.parsing_issues.append(f"JSON parsing failed: {str(e)}")
-        return item
-    
-    # Validate structural fields are unchanged
-    validation_errors = []
-    if returned_item.id != item.id:
-        validation_errors.append(f"ID mismatch: expected {item.id}, got {returned_item.id}")
-    if returned_item.name != item.name:
-        validation_errors.append(f"Name mismatch: expected {item.name}, got {returned_item.name}")
-    if returned_item.header_level != item.header_level:
-        validation_errors.append(f"Header level mismatch: expected {item.header_level}, got {returned_item.header_level}")
-    if returned_item.parent_id != item.parent_id:
-        validation_errors.append(f"Parent ID mismatch: expected {item.parent_id}, got {returned_item.parent_id}")
-    if returned_item.item_type != item.item_type:
-        validation_errors.append(f"Item type mismatch: expected {item.item_type}, got {returned_item.item_type}")
-    if returned_item.content is not None:
-        validation_errors.append(f"Content should be null, got: {returned_item.content[:50] if returned_item.content else 'None'}...")
-    
-    if validation_errors:
-        logger.error(f"LLM changed structural fields for {item.id}: {validation_errors}")
-        item.agenda_attributes = AgendaAttributes()
-        item.parsing_issues.extend(validation_errors)
-        return item
-
-    # Validate agenda_attributes content
-    if not returned_item.agenda_attributes:
-        logger.warning(f"LLM didn't populate agenda_attributes for {item.id}")
-        item.agenda_attributes = AgendaAttributes()
-        item.parsing_issues.append("LLM response missing agenda_attributes")
-        return item
-    
-    attrs = returned_item.agenda_attributes
-    
-    # Validate see_also IDs exist in agenda_list
-    valid_agenda_ids = {a["id"] for a in agenda_list}
-    if attrs.see_also:
-        invalid_see_also = set(attrs.see_also) - valid_agenda_ids
-        if invalid_see_also:
-            logger.warning(
-                f"Invalid see_also IDs for {item.id}: {invalid_see_also}. "
-                f"Valid IDs: {sorted(valid_agenda_ids)[:10]}..."
-            )
-            returned_item.parsing_issues.append(
-                f"Invalid see_also IDs: {sorted(invalid_see_also)}"
-            )
-
-    # Validate orthodox_problems IDs
-    if attrs.orthodox_problems:
-        invalid_problems = [p for p in attrs.orthodox_problems if p not in ORTHODOX_PROBLEMS]
-        if invalid_problems:
-            logger.warning(
-                f"Invalid orthodox_problem IDs for {item.id}: {invalid_problems}"
-            )
-            returned_item.parsing_issues.append(
-                f"Invalid orthodox_problem IDs: {invalid_problems}"
-            )
-
-    # Validate target_case ID
-    if attrs.target_case and attrs.target_case not in TARGET_CASES:
-        logger.warning(
-            f"Invalid target_case ID for {item.id}: {attrs.target_case}"
-        )
-        returned_item.parsing_issues.append(f"Invalid target_case ID: {attrs.target_case}")
-
-    # Validate broad_approach ID
-    if attrs.broad_approach and attrs.broad_approach not in BROAD_APPROACHES:
-        logger.warning(
-            f"Invalid broad_approach ID for {item.id}: {attrs.broad_approach}"
-        )
-        returned_item.parsing_issues.append(f"Invalid broad_approach ID: {attrs.broad_approach}")
-
-    # Success - return the filled item
-    return returned_item
 
 
 # ============================================================================
@@ -1006,6 +525,7 @@ def parse(
     limit: int | None = typer.Option(
         None, "--limit", "-n", help="Limit LLM extraction to first N agendas (full document is always parsed)"
     ),
+    workers: int = typer.Option(4, "--workers", "-w", help="Number of parallel workers for LLM extraction"),
 ) -> None:
     """Parse a draft document into structured JSON using Claude Haiku.
 
@@ -1061,63 +581,53 @@ def parse(
     ]
 
     # ========================================================================
-    # Step 2: Extract metadata with LLM
+    # Step 2: Extract metadata with LLM (parallelized)
     # ========================================================================
-    console.print("[cyan]Step 2: Extracting metadata with Claude Haiku...[/cyan]")
+    console.print(f"[cyan]Step 2: Extracting metadata with Claude Haiku ({workers} workers)...[/cyan]")
 
     # Track which agendas were LLM-processed
     llm_processed_agenda_ids: set[str] = set()
-
+    
+    # Progress tracking for parallel processing
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
         console=console,
     ) as progress:
         task = progress.add_task(f"Processing {len(agenda_items)} agendas...", total=len(agenda_items))
-
-        for idx, item in enumerate(agenda_items):
-            progress.update(
-                task, description=f"Processing {item.id}...", advance=0
-            )
-
-            # Extract attributes with LLM
-            try:
-                # Scrub content before passing to LLM
-                from draft_parser import scrub_markdown
-                content_for_llm = scrub_markdown(item.content or "")
-                
-                # Create input item with content=None
-                item_for_llm = item.model_copy()
-                item_for_llm.content = None
-                
-                # Call LLM extraction (returns filled DocumentItem)
-                filled_item = extract_agenda_attributes(
-                    item_for_llm,
-                    content_for_llm,
-                    agenda_list,
-                )
-                
-                # Replace item in list with filled version
-                # Find original item in doc.items and replace
-                for doc_idx, doc_item in enumerate(doc.items):
-                    if doc_item.id == item.id:
-                        doc.items[doc_idx] = filled_item
-                        break
-                
-                # Update reference for next iterations
-                agenda_items[idx] = filled_item
-                
-                # Mark as LLM-processed
-                llm_processed_agenda_ids.add(filled_item.id)
-
-            except Exception as e:
-                logger.error(f"Failed to extract attributes for {item.id}: {e}")
-                console.print(
-                    f"[yellow]Warning: Failed to extract {item.id}: {e}[/yellow]"
-                )
-                item.parsing_issues.append(f"Extraction failed: {str(e)}")
-
-            progress.update(task, advance=1)
+        
+        def update_progress(current: int, total: int, item_id: str, error: str | None):
+            """Progress callback for parallel extraction."""
+            if error:
+                progress.update(task, description=f"[yellow]Warning:[/yellow] {item_id} failed", advance=1)
+            else:
+                progress.update(task, description=f"Processed {item_id}", advance=1)
+        
+        # Run parallel extraction
+        from shallow_review.draft_processing import extract_agendas_parallel
+        
+        filled_items = extract_agendas_parallel(
+            agenda_items=agenda_items,
+            agenda_list=agenda_list,
+            orthodox_problems=ORTHODOX_PROBLEMS,
+            target_cases=TARGET_CASES,
+            broad_approaches=BROAD_APPROACHES,
+            max_workers=workers,
+            progress_callback=update_progress,
+        )
+        
+        # Replace items in doc.items with filled versions
+        item_id_to_filled = {item.id: item for item in filled_items}
+        for doc_idx, doc_item in enumerate(doc.items):
+            if doc_item.id in item_id_to_filled:
+                doc.items[doc_idx] = item_id_to_filled[doc_item.id]
+        
+        # Track which agendas were LLM-processed
+        for item in filled_items:
+            if item.agenda_attributes:
+                llm_processed_agenda_ids.add(item.id)
 
     # ========================================================================
     # Step 3: Enrich papers from database
