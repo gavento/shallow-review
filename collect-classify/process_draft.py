@@ -24,7 +24,11 @@ from tenacity import (
     wait_exponential,
 )
 
-from draft_parser import (
+from shallow_review.draft_parser import (
+    extract_all_links_from_file,
+    parse_document,
+)
+from shallow_review.draft_types import (
     BROAD_APPROACHES,
     ORTHODOX_PROBLEMS,
     TARGET_CASES,
@@ -32,8 +36,6 @@ from draft_parser import (
     DocumentItem,
     ItemType,
     ProcessedDocument,
-    extract_all_links_from_file,
-    parse_document,
 )
 
 # Setup
@@ -244,7 +246,7 @@ def enrich_papers_from_db(doc: ProcessedDocument, verbose: bool = False) -> tupl
         logger.warning("shallow_review modules not available - skipping paper enrichment")
         return (0, 0)
     
-    from draft_parser import Paper
+    from shallow_review.draft_types import Paper
     
     # Collect all paper URLs from all agendas
     paper_urls: set[str] = set()
@@ -492,7 +494,7 @@ def validate_document_structure(
                 
                 # Validate outputs URLs are valid if present
                 if item.agenda_attributes.outputs:
-                    from draft_parser import Paper
+                    from shallow_review.draft_types import Paper
                     for output in item.agenda_attributes.outputs:
                         if isinstance(output, Paper) and output.url:
                             if not output.url.startswith(("http://", "https://")):

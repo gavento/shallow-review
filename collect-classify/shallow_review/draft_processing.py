@@ -50,7 +50,7 @@ def extract_agenda_attributes(
     if not content or not content.strip():
         logger.warning(f"Empty content for {item.id}, returning item with empty attributes")
         # Import AgendaAttributes here to avoid circular imports
-        from draft_parser import AgendaAttributes
+        from .draft_types import AgendaAttributes
         item.agenda_attributes = AgendaAttributes()
         item.parsing_issues.append("Empty content provided for extraction")
         return item
@@ -83,7 +83,7 @@ def extract_agenda_attributes(
         )
     except Exception as e:
         logger.error(f"Failed to render prompt for {item.id}: {e}")
-        from draft_parser import AgendaAttributes
+        from .draft_types import AgendaAttributes
         item.agenda_attributes = AgendaAttributes()
         item.parsing_issues.append(f"Prompt rendering failed: {str(e)}")
         return item
@@ -98,7 +98,7 @@ def extract_agenda_attributes(
         )
     except Exception as e:
         logger.error(f"LLM call failed for {item.id}: {e}")
-        from draft_parser import AgendaAttributes
+        from .draft_types import AgendaAttributes
         item.agenda_attributes = AgendaAttributes()
         item.parsing_issues.append(f"LLM call failed: {str(e)}")
         return item
@@ -106,7 +106,7 @@ def extract_agenda_attributes(
     # Extract response
     if not response or not response.choices or not response.choices[0].message:
         logger.error(f"Invalid LLM response for {item.id}")
-        from draft_parser import AgendaAttributes
+        from .draft_types import AgendaAttributes
         item.agenda_attributes = AgendaAttributes()
         item.parsing_issues.append("Invalid LLM response structure")
         return item
@@ -114,7 +114,7 @@ def extract_agenda_attributes(
     response_text = response.choices[0].message.content
     if not response_text:
         logger.error(f"Empty LLM response for {item.id}")
-        from draft_parser import AgendaAttributes
+        from .draft_types import AgendaAttributes
         item.agenda_attributes = AgendaAttributes()
         item.parsing_issues.append("Empty LLM response")
         return item
@@ -145,13 +145,13 @@ def extract_agenda_attributes(
     json_text = fix_json_escapes(json_text)
 
     # Parse as DocumentItem
-    from draft_parser import DocumentItem
+    from .draft_types import DocumentItem
     try:
         returned_item = DocumentItem.model_validate_json(json_text)
     except (json.JSONDecodeError, ValidationError) as e:
         logger.error(f"Failed to parse JSON for {item.id}: {e}")
         logger.debug(f"Response text: {response_text[:500]}")
-        from draft_parser import AgendaAttributes
+        from .draft_types import AgendaAttributes
         item.agenda_attributes = AgendaAttributes()
         item.parsing_issues.append(f"JSON parsing failed: {str(e)}")
         return item
@@ -173,7 +173,7 @@ def extract_agenda_attributes(
     
     if validation_errors:
         logger.error(f"LLM changed structural fields for {item.id}: {validation_errors}")
-        from draft_parser import AgendaAttributes
+        from .draft_types import AgendaAttributes
         item.agenda_attributes = AgendaAttributes()
         item.parsing_issues.extend(validation_errors)
         return item
@@ -181,7 +181,7 @@ def extract_agenda_attributes(
     # Validate agenda_attributes content
     if not returned_item.agenda_attributes:
         logger.warning(f"LLM didn't populate agenda_attributes for {item.id}")
-        from draft_parser import AgendaAttributes
+        from .draft_types import AgendaAttributes
         item.agenda_attributes = AgendaAttributes()
         item.parsing_issues.append("LLM response missing agenda_attributes")
         return item
@@ -253,7 +253,7 @@ def extract_agendas_parallel(
     Returns:
         List of DocumentItem objects with agenda_attributes populated
     """
-    from draft_parser import scrub_markdown
+    from .draft_parser import scrub_markdown
     
     def process_item(item):
         """Process a single item (for ThreadPoolExecutor)."""
