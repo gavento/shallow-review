@@ -872,6 +872,296 @@ def format(
 
 
 # ============================================================================
+# generate-doc subcommand
+# ============================================================================
+
+
+def _sort_papers_by_relevancy(doc: ProcessedDocument, verbose: bool = False) -> int:
+    """Sort papers in each agenda's outputs by shallow_review_inclusion score (descending).
+    
+    Papers without a score in the database are sorted to the end.
+    If OutputSectionHeaders are present, papers are sorted within each section.
+    
+    Args:
+        doc: ProcessedDocument to modify in-place
+        verbose: If True, show debug information
+        
+    Returns:
+        Number of paper outputs sorted
+    """
+    from shallow_review.draft_types import Paper, OutputSectionHeader
+    
+    # Collect all paper URLs
+    paper_urls: set[str] = set()
+    for item in doc.items:
+        if item.agenda_attributes and item.agenda_attributes.outputs:
+            for output in item.agenda_attributes.outputs:
+                if isinstance(output, Paper) and output.link_url:
+                    paper_urls.add(output.link_url)
+    
+    if not paper_urls:
+        return 0
+    
+    # Query database for relevancy scores
+    url_to_score: dict[str, float] = {}
+    
+    with data_db_locked() as db:
+        # Batch query for all URLs
+        placeholders = ','.join('?' * len(paper_urls))
+        query = f"""
+            SELECT url, shallow_review_inclusion 
+            FROM classify 
+            WHERE url IN ({placeholders})
+            AND shallow_review_inclusion IS NOT NULL
+        """
+        
+        rows = db.execute(query, list(paper_urls)).fetchall()
+        for row in rows:
+            url_to_score[row["url"]] = row["shallow_review_inclusion"]
+        
+        if verbose:
+            console.print(f"[dim]  Found scores for {len(url_to_score)}/{len(paper_urls)} papers[/dim]")
+    
+    # Sort outputs in each agenda
+    papers_sorted = 0
+    
+    for item in doc.items:
+        if not item.agenda_attributes or not item.agenda_attributes.outputs:
+            continue
+        
+        outputs = item.agenda_attributes.outputs
+        
+        if not outputs:
+            continue
+        
+        # Group outputs into sections (separated by OutputSectionHeaders)
+        sections = []
+        current_section = []
+        current_header = None
+        
+        for output in outputs:
+            if isinstance(output, OutputSectionHeader):
+                # Save previous section if it has content
+                if current_section:
+                    sections.append((current_header, current_section))
+                # Start new section
+                current_header = output
+                current_section = []
+            elif isinstance(output, Paper):
+                current_section.append(output)
+        
+        # Add last section
+        if current_section:
+            sections.append((current_header, current_section))
+        
+        # Sort papers within each section
+        new_outputs = []
+        for header, papers in sections:
+            # Add header if present
+            if header:
+                new_outputs.append(header)
+            
+            # Sort papers by score (descending), missing scores go to end
+            papers_with_scores = [
+                (url_to_score.get(p.link_url, -1.0) if p.link_url else -1.0, p)
+                for p in papers
+            ]
+            papers_with_scores.sort(key=lambda x: x[0], reverse=True)
+            
+            # Add sorted papers
+            new_outputs.extend(p for _, p in papers_with_scores)
+            papers_sorted += len(papers)
+        
+        item.agenda_attributes.outputs = new_outputs
+        
+        if verbose and sections:
+            total_papers = sum(len(papers) for _, papers in sections)
+            console.print(f"[dim]  {item.id}: sorted {total_papers} papers in {len(sections)} section(s)[/dim]")
+    
+    return papers_sorted
+
+
+@app.command("generate-doc")
+def generate_doc(
+    input_file: str = typer.Argument(..., help="Path to parsed YAML or JSON file"),
+    output_file: str | None = typer.Option(
+        None, "--output", "-o", help="Output file path (default: <input>-doc.md)"
+    ),
+    template_file: str | None = typer.Option(
+        None, "--template", "-t", help="Path to Jinja2 template (default: templates/document.md.jinja)"
+    ),
+    format: str = typer.Option(
+        "md", "--format", "-f", help="Output format: md or html (not yet implemented)"
+    ),
+    sort_by_relevancy: bool = typer.Option(
+        False, "--sort-by-relevancy", "-s", help="Sort papers by shallow_review_inclusion score (descending)"
+    ),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
+) -> None:
+    """Generate formatted documentation from parsed YAML/JSON.
+    
+    Takes the YAML or JSON output from the parse command and renders it using
+    a Jinja2 template into a nicely formatted markdown document suitable for
+    publishing or review.
+    """
+    setup_logging(verbose)
+    
+    input_path = Path(input_file)
+    if not input_path.exists():
+        console.print(f"[red]Error: File not found: {input_file}[/red]")
+        raise typer.Exit(1)
+    
+    # Determine template path
+    if template_file is None:
+        template_path = Path(__file__).parent / "templates" / "document.md.jinja"
+    else:
+        template_path = Path(template_file)
+    
+    if not template_path.exists():
+        console.print(f"[red]Error: Template not found: {template_path}[/red]")
+        raise typer.Exit(1)
+    
+    # Determine output path
+    if output_file is None:
+        suffix = ".md" if format == "md" else f".{format}"
+        output_path = input_path.parent / f"{input_path.stem.replace('-parsed', '')}-doc{suffix}"
+    else:
+        output_path = Path(output_file)
+    
+    console.print(f"[cyan]Loading parsed data from {input_file}...[/cyan]")
+    
+    # Load parsed YAML or JSON
+    try:
+        if input_path.suffix in ['.yaml', '.yml']:
+            data = yaml.safe_load(input_path.read_text())
+        else:
+            data = json.loads(input_path.read_text())
+    except (yaml.YAMLError, json.JSONDecodeError) as e:
+        console.print(f"[red]Error: Invalid YAML/JSON in {input_file}: {e}[/red]")
+        raise typer.Exit(1)
+    
+    # Validate data structure
+    try:
+        doc = ProcessedDocument(**data)
+    except ValidationError as e:
+        console.print(f"[red]Error: Invalid document structure: {e}[/red]")
+        if verbose:
+            logger.exception("Validation error")
+        raise typer.Exit(1)
+    
+    console.print(f"[green]Loaded {len(doc.items)} items[/green]")
+    
+    # Count sections and agendas
+    sections = [item for item in doc.items if item.item_type == ItemType.SECTION]
+    agendas = [item for item in doc.items if item.item_type == ItemType.AGENDA]
+    console.print(f"[dim]  {len(sections)} sections, {len(agendas)} agendas[/dim]")
+    
+    # Sort papers by relevancy if requested
+    if sort_by_relevancy:
+        if not _SHALLOW_REVIEW_AVAILABLE:
+            console.print("[yellow]Warning: shallow_review modules not available - cannot sort by relevancy[/yellow]")
+        else:
+            console.print("[cyan]Sorting papers by shallow_review_inclusion score...[/cyan]")
+            papers_sorted = _sort_papers_by_relevancy(doc, verbose)
+            console.print(f"[green]Sorted {papers_sorted} paper outputs[/green]")
+    
+    # Load template
+    console.print(f"[cyan]Applying template {template_path.name}...[/cyan]")
+    from jinja2 import Environment, FileSystemLoader, select_autoescape
+    
+    # Create Jinja2 environment with template directory
+    env = Environment(
+        loader=FileSystemLoader(template_path.parent),
+        autoescape=select_autoescape(['html', 'xml']) if format == 'html' else False,
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
+    
+    # Register custom filters
+    def format_see_also_ref(ref: str, items_by_id: dict) -> str:
+        """Format a see_also reference."""
+        if ref.startswith(("http://", "https://")):
+            return ref
+        elif ref in items_by_id:
+            return f"[{items_by_id[ref].name}](#{ref})"
+        else:
+            return ref
+    
+    def split_critiques(critiques_text: str) -> list[str]:
+        """Split critiques string by commas, but not commas inside markdown links.
+        
+        Markdown links are [text](url), so we split by commas that are NOT
+        inside square brackets or parentheses.
+        """
+        if not critiques_text:
+            return []
+        
+        # First normalize whitespace (replace newlines with spaces)
+        critiques_text = ' '.join(critiques_text.split())
+        
+        items = []
+        current = []
+        paren_depth = 0
+        bracket_depth = 0
+        
+        for char in critiques_text:
+            if char == '[':
+                bracket_depth += 1
+                current.append(char)
+            elif char == ']':
+                bracket_depth -= 1
+                current.append(char)
+            elif char == '(':
+                paren_depth += 1
+                current.append(char)
+            elif char == ')':
+                paren_depth -= 1
+                current.append(char)
+            elif char == ',' and paren_depth == 0 and bracket_depth == 0:
+                # Split here - comma is outside both brackets and parentheses
+                if current:
+                    items.append(''.join(current).strip())
+                current = []
+            else:
+                current.append(char)
+        
+        # Add last item
+        if current:
+            items.append(''.join(current).strip())
+        
+        return [item for item in items if item]
+    
+    env.filters['format_see_also_ref'] = format_see_also_ref
+    env.filters['split_critiques'] = split_critiques
+    
+    # Load and render template
+    try:
+        template = env.get_template(template_path.name)
+        
+        # Prepare template context
+        context = {
+            'items': doc.items,
+            'source_file': doc.source_file,
+            'orthodox_problems': ORTHODOX_PROBLEMS,
+            'target_cases': TARGET_CASES,
+            'broad_approaches': BROAD_APPROACHES,
+        }
+        
+        rendered = template.render(**context)
+    except Exception as e:
+        console.print(f"[red]Error: Template rendering failed: {e}[/red]")
+        if verbose:
+            logger.exception("Template rendering error")
+        raise typer.Exit(1)
+    
+    # Write output
+    output_path.write_text(rendered)
+    
+    console.print(f"[green]Generated document written to {output_path}[/green]")
+    console.print(f"[dim]Format: {format}, Size: {len(rendered)} chars[/dim]")
+
+
+# ============================================================================
 # Main entry point
 # ============================================================================
 

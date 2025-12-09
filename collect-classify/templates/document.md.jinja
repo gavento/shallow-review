@@ -1,0 +1,148 @@
+{# Document template for rendering structured research agendas #}
+{# Helper macros #}
+
+{# Macro to format a paper/output as markdown link #}
+{% macro format_paper(paper) -%}
+{% if paper.link_url -%}
+[{{ paper.link_text or paper.title or paper.link_url }}]({{ paper.link_url }})
+{%- else -%}
+{{ paper.original_md }}
+{%- endif %}
+{%- endmacro %}
+
+{# Macro to format see_also references #}
+{% macro format_see_also_ref(ref, items_by_id) -%}
+{% if ref.startswith('http://') or ref.startswith('https://') -%}
+{{ ref }}
+{%- elif ref in items_by_id -%}
+[{{ items_by_id[ref].name }}](#{{ ref }})
+{%- else -%}
+{{ ref }}
+{%- endif %}
+{%- endmacro %}
+
+{# Macro to render an agenda item #}
+{% macro render_agenda(item, items_by_id, orthodox_problems, target_cases, broad_approaches) -%}
+<a id="{{ item.id }}"></a>
+### {{ item.name }}
+{% if item.agenda_attributes -%}
+{% set attrs = item.agenda_attributes -%}
+
+{# One sentence summary in italics #}
+{% if attrs.one_sentence_summary -%}
+*{{ attrs.one_sentence_summary }}*
+
+{% endif -%}
+
+{# Theory of change #}
+{% if attrs.theory_of_change -%}
+≈ {{ attrs.theory_of_change }}
+
+{% endif -%}
+
+{# Metadata line: broad_approach · target_case · estimated_ftes #}
+{% set metadata_parts = [] -%}
+{% if attrs.broad_approach and attrs.broad_approach in broad_approaches -%}
+{% set _ = metadata_parts.append('⚙ ' + broad_approaches[attrs.broad_approach].name.lower()) -%}
+{% endif -%}
+{% if attrs.target_case and attrs.target_case in target_cases -%}
+{% set _ = metadata_parts.append('◐ ' + target_cases[attrs.target_case].name.lower()) -%}
+{% endif -%}
+{% if attrs.estimated_ftes -%}
+{% set _ = metadata_parts.append('~' + attrs.estimated_ftes) -%}
+{% endif -%}
+{% if metadata_parts -%}
+{{ metadata_parts | join(' · ') }}
+{% endif -%}
+
+{# Funding sources #}
+{% if attrs.funded_by -%}
+$ {{ attrs.funded_by }}
+{% endif -%}
+
+{# Orthodox problems (warnings) #}
+{% if attrs.orthodox_problems -%}
+⚠ {{ attrs.orthodox_problems | join(' · ') }}
+{% endif -%}
+
+{# See also / related topics #}
+{% if attrs.see_also -%}
+↔ {{ attrs.see_also | map('format_see_also_ref', items_by_id) | join(' · ') }}
+{% endif -%}
+
+{# Key people/researchers #}
+{% if attrs.some_names -%}
+☉ {{ attrs.some_names | join(', ') }}
+{% endif -%}
+
+{# Outputs - split into critiques and regular outputs #}
+{% if attrs.outputs -%}
+{% set critiques_outputs = [] -%}
+{% set regular_outputs = [] -%}
+
+{# Classify outputs - papers with negative sentiment go to critiques #}
+{% for output in attrs.outputs -%}
+{% if output.__class__.__name__ == 'Paper' -%}
+{# Simple heuristic: if original_md contains ✗ or critique-like markers, it's a critique #}
+{% if '✗' in output.original_md or output.original_md.strip().startswith('* ✗') or output.original_md.strip().startswith('- ✗') -%}
+{% set _ = critiques_outputs.append(output) -%}
+{% else -%}
+{% set _ = regular_outputs.append(output) -%}
+{% endif -%}
+{% endif -%}
+{% endfor -%}
+
+{# Add critiques from critiques field if present #}
+{% if attrs.critiques -%}
+{# Use split_critiques filter to properly parse markdown links #}
+{% for item in attrs.critiques | split_critiques -%}
+✗ {{ item }}
+{% endfor -%}
+{% elif critiques_outputs -%}
+{# Render critique outputs #}
+{% for output in critiques_outputs -%}
+✗ {{ format_paper(output) }}
+{% endfor -%}
+{% endif -%}
+
+{# Render regular outputs #}
+{% if regular_outputs -%}
+{% for output in regular_outputs -%}
+▸ {{ format_paper(output) }}
+{% endfor -%}
+{% endif -%}
+{% endif -%}
+
+{# Other attributes #}
+{% if attrs.other_attributes -%}
+{% for key, value in attrs.other_attributes.items() -%}
+**{{ key }}**: {{ value }}
+{% endfor -%}
+{% endif -%}
+{% endif -%}
+{%- endmacro %}
+
+{# Main document rendering #}
+{# Build items_by_id lookup #}
+{% set items_by_id = {} -%}
+{% for item in items -%}
+{% set _ = items_by_id.update({item.id: item}) -%}
+{% endfor -%}
+
+{# Render document #}
+{% for item in items -%}
+{% if item.item_type == 'section' -%}
+{# Render section header #}
+<a id="{{ item.id }}"></a>
+{{ '#' * item.header_level }} {{ item.name }}
+
+{% if item.content -%}
+{{ item.content }}
+
+{% endif -%}
+{% elif item.item_type == 'agenda' -%}
+{# Render agenda with all its attributes #}
+{{ render_agenda(item, items_by_id, orthodox_problems, target_cases, broad_approaches) }}
+
+{% endif -%}
+{% endfor -%}
