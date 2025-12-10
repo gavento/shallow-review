@@ -294,7 +294,7 @@ def extract_agenda_attributes(
     # Note: Items starting with "other:" are allowed as catch-all for non-matching problems
     if attrs.orthodox_problems:
         # Filter out "other:" entries before validation
-        id_problems = [p for p in attrs.orthodox_problems if not p.startswith("other:")]
+        id_problems = [p for p in attrs.orthodox_problems if not (p.startswith("Other:") or p.startswith("other:"))]
         invalid_problems = [p for p in id_problems if p not in orthodox_problems]
         if invalid_problems:
             logger.warning(
@@ -304,19 +304,25 @@ def extract_agenda_attributes(
                 f"Invalid orthodox_problem IDs: {invalid_problems}"
             )
 
-    # Validate target_case ID
-    if attrs.target_case and attrs.target_case not in target_cases:
+    # Validate target_case_*
+    if attrs.target_case_id and attrs.target_case_id not in target_cases:
         logger.warning(
-            f"Invalid target_case ID for {item.id}: {attrs.target_case}"
+            f"Invalid target_case_id for {item.id}: {attrs.target_case_id}"
         )
-        returned_item.parsing_issues.append(f"Invalid target_case ID: {attrs.target_case}")
+        returned_item.parsing_issues.append(f"Invalid target_case_id: {attrs.target_case_id}")
+    if attrs.target_case_id and not attrs.target_case_text:
+        logger.warning(f"target_case_text is missing for {item.id}: {attrs.target_case_id}")
+        returned_item.parsing_issues.append(f"target_case_text is missing for {attrs.target_case_id}")
 
-    # Validate broad_approach ID
-    if attrs.broad_approach and attrs.broad_approach not in broad_approaches:
+    # Validate broad_approach_*
+    if attrs.broad_approach_id and attrs.broad_approach_id not in broad_approaches:
         logger.warning(
-            f"Invalid broad_approach ID for {item.id}: {attrs.broad_approach}"
+            f"Invalid broad_approach_id for {item.id}: {attrs.broad_approach_id}"
         )
-        returned_item.parsing_issues.append(f"Invalid broad_approach ID: {attrs.broad_approach}")
+        returned_item.parsing_issues.append(f"Invalid broad_approach_id: {attrs.broad_approach_id}")
+    if attrs.broad_approach_id and not attrs.broad_approach_text:
+        logger.warning(f"broad_approach_text is missing for {item.id}: {attrs.broad_approach_id}")
+        returned_item.parsing_issues.append(f"broad_approach_text is missing for {attrs.broad_approach_id}")
 
     # Success - return the filled item
     return returned_item

@@ -535,7 +535,7 @@ Nudging base models by optimising their output. Worked on by the post-training t
 **Theory of change:** Learned ‘personas’ significantly shape model behavior, but we lack clear mechanistic understanding of how and why they emerge. A better understanding of AI personas will allow us first to detect when more advanced models are drifting towards unsafe regimes, and consequently steer them towards safer regimes.
 **See also:** Simulators, activation engineering, emergent misalignment, hyperstition, Anthropic, [Cyborgism](https://www.lesswrong.com/posts/bxt7uCiHam4QXrQAA/cyborgism), shard theory, [AI psychiatry](https://nitter.net/Jack_W_Lindsey/status/1948138767753326654#m), [Ward et al](https://arxiv.org/abs/2410.04272)
 **Orthodox problems:** 1\. Value is fragile and hard to specify.
-**Target case:** average_case?
+**Target case:** average_case
 **Broad approach:** cognitive.
 **Some names:** Truthful AI, OpenAI, Anthropic, CLR, Amanda Askell, Jack Lindsey, Sharan Maiya, Evan Hubinger
 **Estimated FTEs:**
@@ -620,7 +620,7 @@ Nudging base models by optimising their output. Worked on by the post-training t
 **Theory of change:** Measure the influence of existing AI narratives in the training data → seed and develop more salutary ontologies and self-conceptions for AI models → control and redirect AI models’ self-concepts through selectively amplifying certain components of the training data.
 **See also:** Data filtering, [active inference](https://arxiv.org/abs/2311.10215), LLM whisperers
 
-**Orthodox problems:** Skeptical of this framing, but partly 1\. Value is fragile and hard to specify.
+**Orthodox problems:** 1. Value is fragile and hard to specify.
 **Target case:** average_case
 **Broad approach:** cognitive
 **Some names:** Alex Turner, [Hyperstition AI](https://www.hyperstitionai.com/)
@@ -657,10 +657,10 @@ Nudging base models by optimising their output. Worked on by the post-training t
 **Theory of change:** We can overcome the bottleneck of human feedback and data by using models to generate vast amounts of high-quality, targeted data for safety, preference tuning, and capability elicitation.
 **See also:** data quality for alignment, data filtering, scalable oversight, automated alignment research, weak-to-strong generalization.
 **Orthodox problems:** goals misgeneralize out of distribution, superintelligence can fool human supervisors, value is fragile and hard to specify.
-**Target case:** average_case.
-**Broad approach:** engineering.
-**Some names:** Mianqiu Huang, Xiaoran Liu, Rylan Schaeffer, Nevan Wichers, Aram Ebtekar, Jiaxin Wen, Vishakh Padmakumar, Benjamin Newman.
-**Estimated FTEs:** 50-150.
+**Target case:** average_case
+**Broad approach:** engineering
+**Some names:** Mianqiu Huang, Xiaoran Liu, Rylan Schaeffer, Nevan Wichers, Aram Ebtekar, Jiaxin Wen, Vishakh Padmakumar, Benjamin Newman
+**Estimated FTEs:** 50-150
 **Critiques:** [Synthetic Data in AI: Challenges, Applications, and Ethical Implications](https://arxiv.org/abs/2401.01629). Sort of [Demski](https://www.lesswrong.com/posts/nQwbDPgYvAbqAmAud/llms-for-alignment-research-a-safety-priority).
 **Funded by:** Anthropic, Google DeepMind, OpenAI, Meta AI, various academic groups.
 **Outputs in 2025:**
@@ -1329,8 +1329,6 @@ Approaches which minimise the use of singleton deep learning models.
 * [**UK AISI Alignment Team: Debate Sequence**](https://www.lesswrong.com/s/NdovveRcyfxgMoujf), *Benjamin Hilton, Jacob Pfau, et al.*
 * [**Prover-Estimator Debate: A New Scalable Oversight Protocol**](https://lesswrong.com/posts/8XHBaugB5S3r27MG9/prover-estimator-debate-a-new-scalable-oversight-protocol)
 * [**Ensemble Debates with Local Large Language Models for AI Alignment**](https://arxiv.org/abs/2509.00091)
-* [**AI Debate Aids Assessment of Controversial Claims**](https://arxiv.org/abs/2506.02175)
-* [**An alignment safety case sketch based on debate**](https://arxiv.org/abs/2505.03989)
 
 
 ## LLM introspection training \[a:introspection\_training\]
@@ -1413,7 +1411,7 @@ Develop a principled scientific understanding that will help us reliably underst
 **One-sentence summary:** Formalize key ideas (“structure”, “agency”, etc) mathematically.
 **Theory of change:** generalize theorems → formalize agent foundations concepts like the agent structure problem → hopefully assist other projects through increased understanding
 **See also:** Agent foundations
-**Orthodox problems:** "intended to help make progress on understanding the nature of the problems through formalization, so that they can be avoided or postponed, or more effectively solved by other research agenda."
+**Orthodox problems:** "understanding the nature of the problems through formalization"
 **Target case:** pessimistic
 **Broad approach:** maths/philosophy
 **Some names:** Alex Altair, Alfred Harwood, Daniel C, Dalcy K, José Pedro Faustino
@@ -1720,7 +1718,7 @@ https://arxiv.org/abs/2412.19010
 
 **Who edits (internal):** **Peli**
 
-**One-sentence summary:** Develop tools and technique for designing and testing multi-agent AI scenarios, for auditing real-world muti-agent AI dynamics, and for aligning AIs  in multi-AI settings
+**One-sentence summary:** Develop tools and technique for designing and testing multi-agent AI scenarios, for auditing real-world multi-agent AI dynamics, and for aligning AIs  in multi-AI settings
 
 **Theory of change:** Addressing multi-agent AI dynamics is key for aligning near-future agents and their impact on the world. Feedback loops from multi-agent dynamics can radically change the future AI landscape, and require a different toolset from model psychology to audit and control
 
@@ -1804,9 +1802,10 @@ https://arxiv.org/abs/2412.19010
 **Target case:** Mixed
 **Broad approach:** Behavioural/Cognitive
 **Some names:**  Richard Ngo, Emmett Shear, Softmax, Full Stack Alignment, AI Objectives Institute, Sahil, TJ, Andrew Critch
-**Estimated FTEs:** 5 \-10
+**Estimated FTEs:** 5-10
 **Critiques:** not found
 **Funded by:** Future of Life Institute, Emmet Shear
+**Outputs:**
 
 [Towards a Scale-Free Theory of Intelligent Agency](https://www.alignmentforum.org/posts/5tYTKX4pNpiG4vzYg/towards-a-scale-free-theory-of-intelligent-agency)
 
@@ -1843,7 +1842,7 @@ https://arxiv.org/abs/2412.19010
 **Target case:** mixed
 **Broad approach:** behavioral
 **Some names:** CAIS, CFI Kinds of Intelligence, Apart Research, OpenAI, METR, Lexin Zhou, Adam Scholl, Lorenzo Pacchiardi.
-**Estimated FTEs:** 20
+**Estimated FTEs:** 10-50
 **Critiques:** [Is the Definition of AGI a Percentage?](https://aievaluation.substack.com/p/is-the-definition-of-agi-a-percentage)**,** [The "Length" of "Horizons"](https://www.lesswrong.com/posts/PzLSuaT6WGLQGJJJD/the-length-of-horizons)
 **Funded by:** Leverhulme Trust, Open Philanthropy, Long-Term Future Fund.
 **Outputs in 2025:**

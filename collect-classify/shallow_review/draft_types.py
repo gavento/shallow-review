@@ -179,11 +179,17 @@ class AgendaAttributes(BaseModel):
         default_factory=list,
         description="List of orthodox problem IDs (keys from ORTHODOX_PROBLEMS)",
     )
-    target_case: str | None = Field(
+    target_case_id: str | None = Field(
         default=None, description="Target case ID (key from TARGET_CASES)"
     )
-    broad_approach: str | None = Field(
+    target_case_text: str | None = Field(
+        default=None, description="Target case text"
+    )
+    broad_approach_id: str | None = Field(
         default=None, description="Broad approach ID (key from BROAD_APPROACHES)"
+    )
+    broad_approach_text: str | None = Field(
+        default=None, description="Broad approach text"
     )
     some_names: list[str] = Field(default_factory=list, description="Key researchers")
     estimated_ftes: str | None = Field(default=None, description="FTE estimate or range")

@@ -23,8 +23,10 @@ items:
     - a:anthropic_safeguards
     - a:psych_personas
     orthodox_problems: []
-    target_case: null
-    broad_approach: null
+    target_case_id: null
+    target_case_text: null
+    broad_approach_id: null
+    broad_approach_text: null
     some_names:
     - Johannes Heidecke
     - Boaz Barak
@@ -49,9 +51,9 @@ items:
       [Midas](https://www.openaifiles.org/transparency-and-safety), [defense](https://www.wired.com/story/openai-anduril-defense/),
       [Carlsmith](https://joecarlsmith.com/2025/11/03/leaving-open-philanthropy-going-to-anthropic#:~:text=a%20few%20words%20about%20some%20more%20general%20concerns%20about%20AI%2Dsafety%2Dfocused%20people%20going%20to%20work%20at%20AI%20companies%20\(and/or%2C%20at%20Anthropic%20in%20particular\).)
       on labs in general. It''s [difficult](https://conversationswithtyler.com/episodes/sam-altman-2/)
-      to model OpenAI as a single agent: "*ALTMAN: I very rarely get to have anybody
+      to model OpenAI as a single agent: *"ALTMAN: I very rarely get to have anybody
       work on anything. One thing about researchers is they''re going to work on what
-      they''re going to work on, and that''s that.*"'
+      they''re going to work on, and that''s that."*'
     funded_by: Microsoft, [AWS](https://www.aboutamazon.com/news/aws/aws-open-ai-workloads-compute-infrastructure),
       Oracle, NVIDIA, SoftBank, G42, AMD, Dragoneer, Coatue, Thrive, Altimeter, MGX,
       Blackstone, TPG, T. Rowe Price, Andreessen Horowitz, D1 Capital Partners, Fidelity
@@ -313,10 +315,12 @@ items:
     theory_of_change: null
     see_also:
     - sec:interpretability
-    - a:weak_to_strong
+    - Scalable Oversight
     orthodox_problems: []
-    target_case: null
-    broad_approach: null
+    target_case_id: null
+    target_case_text: null
+    broad_approach_id: null
+    broad_approach_text: null
     some_names:
     - Rohin Shah
     - Allan Dafoe
@@ -351,7 +355,7 @@ items:
     critiques: '[Stein-Perlman](https://ailabwatch.org/companies/deepmind), [Carlsmith](https://joecarlsmith.com/2025/11/03/leaving-open-philanthropy-going-to-anthropic#:~:text=a%20few%20words%20about%20some%20more%20general%20concerns%20about%20AI%2Dsafety%2Dfocused%20people%20going%20to%20work%20at%20AI%20companies%20\(and/or%2C%20at%20Anthropic%20in%20particular\).),
       [underelicitation](https://www.lesswrong.com/posts/AK6AihHGjirdoiJg6/ai-companies-eval-reports-mostly-don-t-support-their-claims),
       [On Google''s Safety Plan](https://lesswrong.com/posts/hvEikwtsbf6zaXG2s/on-google-s-safety-plan)'
-    funded_by: Google. Explicit Deepmind spending as a whole was [£1.3B](https://s3.eu-west-2.amazonaws.com/document-api-images-live.ch.gov.uk/docs/WT_VNJe9leRjfcU0-OtRjWqF7WiqueStclXgHPbdG4U/application-pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAWRGBDBV3ETBK6MEZ%2F20251107%2Feu-west-2%2Fs3%2Faws4_request&X-Amz-Date=20251107T165323Z&X-Amz-Expires=60&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEPT%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCWV1LXdlc3QtMiJHMEUCIBO%2FN0Q9tFWQR%2FLthFYa8oNsFTPSnysg4ONrTUQ%2FyyG1AiEAkPoujFneu%2Bmo73eOnOGNV0tBYKpjLeiP7yATK0BxE7oqigQIvf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAFGgw0NDkyMjkwMzI4MjIiDAUWi2tKimijl1eBRireA4WSlhKuVaQDvGJ2Mhhn6yANCCUO3zN8OlpSoMI2QFoeu6i%2BPxwG7TrcECWjXvY2m5d8vAbJZj%2BTfCgRBvOqlWdcvynzDenryX3a%2F0oh1M1LCvKFgZxSZxV1Pb0l6uDpcBww%2BeRUgnTyClEsdjxo0fACkgiFoJkRbXQr3jnzmghu%2B%2B9kDtWERtaeGA5Dmjfr6i0EibJHo0BwsaleiFdKCuWMnNVpgEO4u%2F85kMy%2ByX7vM1Kfj53OvRKF9cyULlQnwb0q7Rs%2FjRespSsIF%2BAiQbUDck3iT%2BkG0wdrnnLEdm1nIHpoBQO65a8GwLvYsNIS7LckCyuG275y1h1%2B%2BUozd4PyyJjLhqmWn71LcsHuPbjSlAfU9E%2BkE73%2FNuuaE4hRICKlqLl4V9IXPiysd1IfazKQwS3lXmXrFiXvASKvLH8VDuBBz%2Bwj0SG50Rhfwpmrl2lmJ4RFVd6Se9S20eZQjnV183HKkCsvyx09YizNCuJqxEeJmQ%2BAJZVyFjDWKLrpC8F9Yzo3Sf4hYtvQRXqrANoB3n4J%2BUUvrUEDSQqOeQOki1xpE37FBu8Ozs%2FKo%2FrYgESZDsXra0gLcJ7zJb3rJs75kxEyqYDiHuBQ8IKbobY%2BC%2FMHC5MOHqfW%2Bu%2Fl%2FUownLq3yAY6pQG1n3iz%2B09NSvDWENlBA5hC3lLvGiD5f1DTjYA9v1GKjA3feHOZ3Iegs1Egz9G%2FTST6riAYyauyj0At6oEUiUnTQn%2BJxtM%2BH%2FuVzzq45lboS5WE7pDOKA6jDVgzgjy6Mlm%2FY3dy28KxiOrV4EsefEtYTd8Nr6XIvJ0PGVEHhMsWo%2Bsn3IzkuKEqQsFsIiQHCb9oREBNnmY%2FDa2iO0fJijogUtrkxMs%3D&X-Amz-SignedHeaders=host&response-content-disposition=inline%3Bfilename%3D%22companies_house_document.pdf%22&X-Amz-Signature=da8a32ce365dd9ee8f6824636e1e893e1a87a58b64c65013631c1e2014bf7e3e),
+    funded_by: Google. Explicit Deepmind spending as a whole was [£1.3B](https://s3.eu-west-2.amazonaws.com/document-api-images-live.ch.gov.uk/docs/WT_VNJe9leRjfcU0-OtRjWqF7WiqueStclXgHPbdG4U/application-pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAWRGBDBV3ETBK6MEZ%2F20251107%2Feu-west-2%2Fs3%2Faws4_request&X-Amz-Date=20251107T165323Z&X-Amz-Expires=60&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEPT%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCWV1LXdlc3QtMiJHMEUCIBO%2FN0Q9tFWQR%2FLthFYa8oNsFTPSnysg4ONrTUQ%2FyyG1AiEAkPoujFneu%2Bmo73eOnOGNV0tBYKpjLeiP7yATK0BxE7oqigQIvf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAFGgw0NDkyMjkwMzI4MjIiDAUWi2tKimijl1eBRireA4WSlhKuVaQDvGJ2Mhhn6yANCCUO3zN8OlpSoMI2QFoeu6i%2BPxwG7TrcECWjXvY2m5d8vAbJZj%2BTfCgRBvOqlWdcvynzDenryX3a%2F0oh1M1LCvKFgZxSZxV1Pb0l6uDpcBww%2BeRUgnTyClEsdjxo0fACkgiFoJkRbXQr3jnzmghu%2B%2B9kDtWERtaeGA5Dmjfr6i0EibJHo0BwsaleiFdKCuWMnNVpgEO4u%2F85kMy%2ByX7vM1Kfj53OvRKF9cyULlQnwb0q7Rs%2FjRespSsIF%2BAiQbUDck3iT%2BkG0wdrnnLEdm1nIHpoBQO65a8GwLvYsNIS7LckCyuG275y1h1%2B%2BUozd4PyyJjLhqmWn71LcsHuPbjSlAfU9E%2BkE73%2FNuuaE4hRICKlqLl4V9IXPiysd1IfazKQwS3lXmXrFiXvASKvLH8VDuBBz%2Bwj0SG50Rhfwpmrl2lmJ4RFVd6Se9S20eZQjnV183HKkCsvyx09YizNCuJqxEeJmQ%2BAJZVyFjDWKLrpC8F9Yzo3Sf4hYtvQRXqrANoB3n4J%2BUUvrUEDSQqOeQOki1xpE37FBu8Ozs%2FKo%2FrYgESZDsXra0gLcJ7zJb3rJs75kxEyqYDiHuBQ8IKbobY%2BC%2FMHC5MOHqfW%2Bu%2Bl%2FUownLq3yAY6pQG1n3iz%2B09NSvDWENlBA5hC3lLvGiD5f1DTjYA9v1GKjA3feHOZ3Iegs1Egz9G%2FTST6riAYyauyj0At6oEUiUnTQn%2BJxtM%2BH%2FuVzzq45lboS5WE7pDOKA6jDVgzgjy6Mlm%2FY3dy28KxiOrV4EsefEtYTd8Nr6XIvJ0PGVEHhMsWo%2Bsn3IzkuKEqQsFsIiQHCb9oREBNnmY%2FDa2iO0fJijogUtrkxMs%3D&X-Amz-SignedHeaders=host&response-content-disposition=inline%3Bfilename%3D%22companies_house_document.pdf%22&X-Amz-Signature=da8a32ce365dd9ee8f6824636e1e893e1a87a58b64c65013631c1e2014bf7e3e),
       but this doesn't count e.g. Gemini compute.
     outputs:
     - link_url: https://www.alignmentforum.org/posts/StENzDcD3kpfGJssR/a-pragmatic-vision-for-interpretability%20
@@ -649,8 +653,10 @@ items:
     - sec:interpretability
     - Scalable Oversight
     orthodox_problems: []
-    target_case: null
-    broad_approach: null
+    target_case_id: null
+    target_case_text: null
+    broad_approach_id: null
+    broad_approach_text: null
     some_names:
     - Chris Olah
     - Evan Hubinger
@@ -674,7 +680,7 @@ items:
     estimated_ftes: null
     critiques: '[Stein](https://ailabwatch.org/anthropic-opinions)-[Perlman](https://ailabwatch.org/companies/anthropic),
       [Casper](https://www.lesswrong.com/posts/pH6tyhEnngqWAXi9i/eis-xiii-reflections-on-anthropic-s-sae-research-circa-may#A_review___thoughts),
-      [Carlsmith](https://joecarlsmith.com/2025/11/03/leaving-open-philanthropy-going-to-anthropic#:~:text=a%20few%20words%20about%20some%20more%20general%20concerns%20about%20AI%2Dsafety%2Dfocused%20people%20going%20to%20work%20at%20AI%20companies%20\(and/or%2C%20at%20Anthropic%20in%20particular\).),
+      [Carlsmith](https://joecarlsmith.com/2025/11/03/leaving-open-philanthropy-going-to-anthropic#:~:text=a%20few%20words%20about%20some%20more%20general%20concerns%20about%20AI%2Dsafety%2Dfocused%2Dpeople%20going%20to%20work%20at%20AI%20companies%20\(and/or%2C%20at%20Anthropic%20in%20particular\).),
       [underelicitation](https://www.lesswrong.com/posts/AK6AihHGjirdoiJg6/ai-companies-eval-reports-mostly-don-t-support-their-claims),
       [Greenblatt](https://nitter.net/RyanPGreenblatt/status/1925992236648464774),
       [Samin](https://www.lesswrong.com/posts/5aKRshJzhojqfbRyo/unless-its-governance-changes-anthropic-is-untrustworthy),
@@ -683,7 +689,7 @@ items:
     funded_by: Amazon, Google, ICONIQ, Fidelity, Lightspeed, Altimeter, Baillie Gifford,
       BlackRock, Blackstone, Coatue, D1 Capital Partners, General Atlantic, General
       Catalyst, GIC, Goldman Sachs, Insight Partners, Jane Street, Ontario Teachers'
-      Pension Plan, Qatar Investment Authority, TPG, T. Rowe Price, WCM, XN.
+      Pension Plan, Qatar Investment Authority, TPG, T. Rowe Price, WCM, XN
     outputs:
     - link_url: https://assets.anthropic.com/m/74342f2c96095771/original/Natural-emergent-misalignment-from-reward-hacking-paper.pdf
       link_text: Natural emergent misalignment from reward hacking
@@ -1040,19 +1046,6 @@ items:
       published_year: 2024
       venue: GitHub Gist
       kind: other
-    - link_url: https://x.com/AmandaAskell/status/1995610567923695633
-      link_text: confirmed
-      original_md: '* [The Soul Document](https://gist.github.com/Richard-Weiss/efe157692991535403bd7e7fb20b6695)
-        ([confirmed](https://x.com/AmandaAskell/status/1995610567923695633))'
-      title: Confirmation of Claude Character Training Document
-      authors:
-      - Amanda Askell
-      author_organizations:
-      - Anthropic
-      date: '2025-12-01'
-      published_year: 2025
-      venue: X (Twitter)
-      kind: social_media
     - link_url: https://alignment.anthropic.com/2025/honesty-elicitation/
       link_text: Evaluating honesty and lie detection techniques on a diverse suite
         of dishonest models
@@ -1096,8 +1089,10 @@ items:
     theory_of_change: null
     see_also: []
     orthodox_problems: []
-    target_case: null
-    broad_approach: null
+    target_case_id: null
+    target_case_text: null
+    broad_approach_id: null
+    broad_approach_text: null
     some_names:
     - Dan Hendrycks (advisor)
     - Juntang Zhuang
@@ -1135,8 +1130,10 @@ items:
     see_also:
     - a:unlearning
     orthodox_problems: []
-    target_case: null
-    broad_approach: null
+    target_case_id: null
+    target_case_text: null
+    broad_approach_id: null
+    broad_approach_text: null
     some_names:
     - Shuchao Bi
     - Hongyuan Zhan
@@ -1259,6 +1256,7 @@ items:
       Structure: for-profit
       Teams: Safety "integrated into" capabilities research, Meta Superintelligence
         Lab. But also FAIR Alignment, [Brain and AI](https://www.metacareers.com/jobs/1319148726628205).
+      Public alignment agenda: None
       Framework: '[FAF](https://ai.meta.com/static-resource/meta-frontier-ai-framework/?utm_source=newsroom&utm_medium=web&utm_content=Frontier_AI_Framework_PDF&utm_campaign=Our_Approach_to_Frontier_AI_blog)'
   parsing_issues: []
 - id: sec:labs_others
@@ -1371,9 +1369,11 @@ items:
     - '[incrementalism](https://www.lesswrong.com/posts/TALmStNf6479uTwzT/ai-alignment-metastrategy#Incrementalist_Metastrategy)'
     - '[alignment-by-default](https://www.lesswrong.com/posts/Nwgdq6kHke5LY692J/alignment-by-default)'
     orthodox_problems:
-    - 'other: this agenda implicitly questions this framing'
-    target_case: average_case
-    broad_approach: engineering
+    - 'Other: this agenda implicitly questions this framing'
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Jan Leike
     - Stuart Armstrong
@@ -1474,9 +1474,11 @@ items:
     - '[incrementalism](https://www.lesswrong.com/posts/TALmStNf6479uTwzT/ai-alignment-metastrategy#Incrementalist_Metastrategy)'
     - a:psych_personas
     orthodox_problems:
-    - 'other: this agenda implicitly questions this framing.'
-    target_case: average_case
-    broad_approach: engineering
+    - 'Other: this agenda implicitly questions this framing'
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Adam Gleave
     - Anca Dragan
@@ -1750,7 +1752,10 @@ items:
       venue: arXiv (accepted to NeurIPS 2025)
       kind: paper_preprint
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - 'Orthodox problems field says ''this agenda implicitly questions this framing.''
+    - no matching problem found, kept as ''Other: this agenda implicitly questions
+    this framing'''
 - id: a:make_ai_solve_it_black_box
   name: Black-box make-AI-solve-it
   header_level: 3
@@ -1772,9 +1777,11 @@ items:
     - sec:ai_solve_alignment
     - a:debate
     orthodox_problems:
-    - 'other: this agenda implicitly questions this framing.'
-    target_case: average_case
-    broad_approach: engineering
+    - 'Other: this agenda implicitly questions this framing'
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Jacques Thibodeau
     - Matthew Shingle
@@ -1974,7 +1981,10 @@ items:
       venue: ICLR 2025 Workshop on Bidirectional Human-AI Alignment (BiAlign)
       kind: paper_preprint
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - 'Orthodox problems field says ''this agenda implicitly questions this framing''
+    - no matching problem found, kept as ''Other: this agenda implicitly questions
+    this framing'''
 - id: a:inoculation_prompting
   name: Inoculation prompting
   header_level: 3
@@ -1995,9 +2005,11 @@ items:
       us to avoid what we don''t want. Maybe assume that thoughts are translucent."'
     see_also: []
     orthodox_problems:
-    - 'other: this agenda implicitly questions this framing'
-    target_case: average_case
-    broad_approach: engineering
+    - 'Other: this agenda implicitly questions this framing.'
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Alex Turner
     - Victor Gillioz
@@ -2084,7 +2096,10 @@ items:
       venue: null
       kind: error_detected
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - 'Orthodox problems field says ''this agenda implicitly questions this framing.''
+    - no matching problem found, kept as ''Other: this agenda implicitly questions
+    this framing.'''
 - id: a:inference_time_in_context_learning
   name: 'Inference-time: In-context learning'
   header_level: 3
@@ -2104,10 +2119,13 @@ items:
       us to avoid what we don''t want. Maybe assume that thoughts are translucent."'
     see_also:
     - model spec as prompt
+    - a:specs_and_constitutions
     orthodox_problems:
-    - other:this agenda implicitly questions this framing
-    target_case: average_case
-    broad_approach: engineering
+    - 'Other: this agenda implicitly questions this framing.'
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Jacob Steinhardt
     - Kayo Yin
@@ -2195,7 +2213,12 @@ items:
       venue: ICML 2025
       kind: paper_preprint
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - 'Orthodox problems field says ''this agenda implicitly questions this framing.''
+    - no matching problem found, kept as ''Other: this agenda implicitly questions
+    this framing.'''
+  - See also mentions 'model spec as prompt' which likely refers to 'a:specs_and_constitutions'
+    - added both the original text and the resolved ID
 - id: a:inference_time_steering
   name: 'Inference-time: Steering'
   header_level: 3
@@ -2217,9 +2240,11 @@ items:
     - a:psych_personas
     - a:anthropic_safeguards
     orthodox_problems:
-    - other:this agenda implicitly questions this framing
-    target_case: average_case
-    broad_approach: engineering
+    - 'Other: this agenda implicitly questions this framing'
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Taylor Sorensen
     - Constanza Fierro
@@ -2303,7 +2328,10 @@ items:
       venue: arXiv
       kind: paper_preprint
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - 'Orthodox problems field contains ''this agenda implicitly questions this framing''
+    - no matching standard problem found, kept as ''Other: this agenda implicitly
+    questions this framing.'''
 - id: a:unlearning
   name: Capability removal, unlearning
   header_level: 2
@@ -2326,8 +2354,10 @@ items:
     - value_fragile
     - goals_misgeneralize
     - humanlike_minds_not_safe
-    target_case: pessimistic_case
-    broad_approach: cognitivist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Rowan Wang
     - Avery Griffin
@@ -2675,8 +2705,10 @@ items:
     see_also:
     - safety cases
     orthodox_problems: []
-    target_case: worst_case
-    broad_approach: engineering
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: null
+    broad_approach_text: engineering / behaviorist science
     some_names:
     - Redwood
     - UK AISI
@@ -3141,10 +3173,9 @@ items:
       kind: lesswrong
     other_attributes: {}
   parsing_issues:
-  - Broad approach field says 'engineering / behavioural' - mapped to 'engineering'
-    (first mentioned)
-  - See also references 'safety cases' which doesn't match any known agenda ID - kept
-    as text reference
+  - Broad approach field contains multiple approaches ('engineering / behavioural')
+    - normalized to 'engineering / behaviorist science' but left broad_approach_id
+    as null
 - id: a:anthropic_safeguards
   name: Safeguards (inference-time auxiliaries)
   header_level: 2
@@ -3165,8 +3196,10 @@ items:
     orthodox_problems:
     - superintelligence_fool_supervisors
     - boxed_agi_exfiltrate
-    target_case: average_case
-    broad_approach: engineering
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Mrinank Sharma
     - Meg Tong
@@ -3184,7 +3217,7 @@ items:
     - Keegan Hines
     - Jeff Bilmes
     estimated_ftes: 100+
-    critiques: '[Obfuscated Activations Bypass LLM Latent-Space Defenses](https://arxiv.org/abs/2412.09565)'
+    critiques: '[Obfuscated Activations Bypass LLM Latent-Space Defenses](https://arxiv.org/abs/2412.09565).'
     funded_by: most of the big labs
     outputs:
     - link_url: https://arxiv.org/abs/2501.18837
@@ -3376,9 +3409,12 @@ items:
     - superintelligence_fool_supervisors
     - superintelligence_hack_software
     - boxed_agi_exfiltrate
-    target_case: average_case
-    broad_approach: engineering
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
+    - Aether
     - Bowen Baker
     - Joost Huizinga
     - Leo Gao
@@ -3656,7 +3692,7 @@ items:
       venue: arXiv
       kind: paper_preprint
     - link_url: https://www.lesswrong.com/posts/B8Cmtf5gdHwxb8qtT/aether-july-2025-update
-      link_text: null
+      link_text: https://www.lesswrong.com/posts/B8Cmtf5gdHwxb8qtT/aether-july-2025-update
       original_md: '* [https://www.lesswrong.com/posts/B8Cmtf5gdHwxb8qtT/aether-july-2025-update](https://www.lesswrong.com/posts/B8Cmtf5gdHwxb8qtT/aether-july-2025-update)'
       title: Aether July 2025 Update
       authors:
@@ -3722,9 +3758,7 @@ items:
       venue: METR Blog
       kind: blog_post
     other_attributes: {}
-  parsing_issues:
-  - See also field mentions 'whitebox control / monitoring' which is interpreted as
-    general reference to white-box safety (sec:whitebox) rather than a specific agenda
+  parsing_issues: []
 - id: sec:model_psychology
   name: Model psychology
   header_level: 2
@@ -3752,12 +3786,14 @@ items:
       of the good.
     see_also:
     - auditing real models
-    - sec:interpretability
+    - applied interpretability
     orthodox_problems:
     - goals_misgeneralize
     - superintelligence_fool_supervisors
-    target_case: pessimistic_case
-    broad_approach: behaviorist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - Truthful AI
     - Jan Betley
@@ -4063,9 +4099,7 @@ items:
       venue: arXiv
       kind: paper_preprint
     other_attributes: {}
-  parsing_issues:
-  - See also field contains 'auditing real models' which doesn't match any known agenda
-    ID - kept as plain text
+  parsing_issues: []
 - id: a:psych_other
   name: Other surprising phenomena
   header_level: 3
@@ -4073,7 +4107,7 @@ items:
   content: null
   item_type: agenda
   agenda_attributes:
-    who_edits: Stephen✅
+    who_edits: Stephen ✅
     one_sentence_summary: Find unexpected LLM phenomena like glitch [tokens](https://vgel.me/posts/seahorse/)
       and the reversal curse; these are vital data for theory.
     theory_of_change: Understanding surprising or counter-intuitive failure modes
@@ -4085,8 +4119,10 @@ items:
     - mechanistic anomaly detection
     orthodox_problems:
     - goals_misgeneralize
-    target_case: pessimistic_case
-    broad_approach: behaviorist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - Truthful AI
     - Theia Vogel
@@ -4308,18 +4344,20 @@ items:
     theory_of_change: Model specs and constitutions serve three purposes. First, they
       provide a clear standard of behavior which can be used to *train* models to
       value what we want them to value. Second, they serve as something closer to
-      a ground truth standard for evaluating the degree of misalignment ranging from
-      "models straightforwardly obey the spec" to "models flagrantly disobey the spec".
-      A combination of scalable stress-testing and reinforcement for obedience can
-      be used to iteratively reduce the risk of misalignment. Third, they get more
-      useful as models' instruction-following capability improves.
+      a ground truth standard for evaluating the degree of misalignment ranging from  "models
+      straightforwardly obey the spec" to "models flagrantly disobey the spec". A
+      combination of scalable stress-testing and reinforcement for obedience can be
+      used to iteratively reduce the risk of misalignment. Third, they get more useful
+      as models' instruction-following capability improves.
     see_also:
     - sec:iterative_alignment
     - sec:model_psychology
     orthodox_problems:
     - value_fragile
-    target_case: average_case
-    broad_approach: engineering
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Amanda Askell
     - Joe Carlsmith
@@ -4357,51 +4395,6 @@ items:
       published_year: 2023
       venue: Anthropic News
       kind: blog_post
-    - link_url: https://www.anthropic.com/research/claude-character
-      link_text: Character
-      original_md: '* [Claude''s Constitution](https://www.anthropic.com/news/claudes-constitution)
-        (2023) and [Character](https://www.anthropic.com/research/claude-character)
-        (2024) and [Soul](https://www.lesswrong.com/posts/vpNG99GhbBoLov9og/claude-4-5-opus-soul-document%20)
-        (2025) and a [couple lines](https://github.com/elder-plinius/CL4R1T4S/blame/main/ANTHROPIC/Claude_Sonnet-4.5_Sep-29-2025.txt#L501)
-        in the system prompt.'
-      title: Claude's Character
-      authors: []
-      author_organizations:
-      - Anthropic
-      date: '2024-06-08'
-      published_year: 2024
-      venue: Anthropic Website
-      kind: blog_post
-    - link_url: https://www.lesswrong.com/posts/vpNG99GhbBoLov9og/claude-4-5-opus-soul-document%20
-      link_text: Soul
-      original_md: '* [Claude''s Constitution](https://www.anthropic.com/news/claudes-constitution)
-        (2023) and [Character](https://www.anthropic.com/research/claude-character)
-        (2024) and [Soul](https://www.lesswrong.com/posts/vpNG99GhbBoLov9og/claude-4-5-opus-soul-document%20)
-        (2025) and a [couple lines](https://github.com/elder-plinius/CL4R1T4S/blame/main/ANTHROPIC/Claude_Sonnet-4.5_Sep-29-2025.txt#L501)
-        in the system prompt.'
-      title: Claude 4.5 Opus' Soul Document
-      authors:
-      - Richard Weiss
-      author_organizations: []
-      date: '2025-11-28'
-      published_year: 2025
-      venue: LessWrong
-      kind: lesswrong
-    - link_url: https://github.com/elder-plinius/CL4R1T4S/blame/main/ANTHROPIC/Claude_Sonnet-4.5_Sep-29-2025.txt#L501
-      link_text: couple lines
-      original_md: '* [Claude''s Constitution](https://www.anthropic.com/news/claudes-constitution)
-        (2023) and [Character](https://www.anthropic.com/research/claude-character)
-        (2024) and [Soul](https://www.lesswrong.com/posts/vpNG99GhbBoLov9og/claude-4-5-opus-soul-document%20)
-        (2025) and a [couple lines](https://github.com/elder-plinius/CL4R1T4S/blame/main/ANTHROPIC/Claude_Sonnet-4.5_Sep-29-2025.txt#L501)
-        in the system prompt.'
-      title: Claude Sonnet 4.5 System Prompt (September 29, 2025)
-      authors: []
-      author_organizations:
-      - Anthropic
-      date: '2025-09-29'
-      published_year: 2025
-      venue: GitHub (CL4R1T4S repository)
-      kind: other
     - link_url: null
       link_text: Google doesn't have anything public. The [Gemini system prompt](https://github.com/elder-plinius/CL4R1T4S/blob/main/GOOGLE/Gemini-2.5-Pro-04-18-2025.md)
         is very short and dry and doesn't even have any rules for handling copyrighted,
@@ -4416,7 +4409,7 @@ items:
       published_year: null
       venue: null
       kind: null
-    - link_url: https://newsletter.forethought.org/p/how-important-is-the-model-spec-if?
+    - link_url: https://newsletter.forethought.org/p/how-important-is-the-model-spec-if
       link_text: How important is the model spec if alignment fails?
       original_md: '* [How important is the model spec if alignment fails?](https://newsletter.forethought.org/p/how-important-is-the-model-spec-if?)'
       title: How important is the model spec if alignment fails?
@@ -4569,8 +4562,7 @@ items:
       venue: arXiv
       kind: paper_preprint
     other_attributes: {}
-  parsing_issues:
-  - Broad approach field has 'engineering?' with a question mark, indicating uncertainty
+  parsing_issues: []
 - id: a:psych_personas
   name: Character training and persona steering
   header_level: 3
@@ -4598,8 +4590,10 @@ items:
     - '[Ward et al](https://arxiv.org/abs/2410.04272)'
     orthodox_problems:
     - value_fragile
-    target_case: average_case
-    broad_approach: cognitivist_science
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Truthful AI
     - OpenAI
@@ -4611,7 +4605,7 @@ items:
     - Evan Hubinger
     estimated_ftes: null
     critiques: '[Nostalgebraist](https://nostalgebraist.tumblr.com/post/785766737747574784/the-void)'
-    funded_by: Anthropic, Coefficient Giving.
+    funded_by: Anthropic, Coefficient Giving
     outputs:
     - link_url: https://arxiv.org/pdf/2511.01689%20
       link_text: 'Open Character Training: Shaping the Persona of AI Assistants through
@@ -4819,8 +4813,10 @@ items:
     - '[Persona Vectors: Monitoring and Controlling Character Traits in Language Models](https://arxiv.org/abs/2507.21509)'
     orthodox_problems:
     - value_fragile
-    target_case: pessimistic_case
-    broad_approach: cognitivist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Mantas Mazeika
     - Xuwang Yin
@@ -5071,7 +5067,7 @@ items:
       link_text: Moral Alignment for LLM Agents
       original_md: '* [**Moral Alignment for LLM Agents**](https://arxiv.org/abs/2410.01639),
         *Elizaveta Tennant, Stephen Hailes, Mirco Musolesi*, 2025-05-11, arXiv (ICLR
-        2025)'
+        2025\)'
       title: Moral Alignment for LLM Agents
       authors:
       - Elizaveta Tennant
@@ -5115,8 +5111,10 @@ items:
     orthodox_problems:
     - goals_misgeneralize
     - value_fragile
-    target_case: average_case
-    broad_approach: engineering
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Yanda Chen
     - Pratyush Maini
@@ -5130,7 +5128,7 @@ items:
     - Dylan Sam
     estimated_ftes: 10-50
     critiques: '[When Bad Data Leads to Good Models](https://arxiv.org/pdf/2505.04741),
-      [**Medical large language models are vulnerable to data-poisoning attacks**](https://www.nature.com/articles/s41591-024-03445-1)'
+      [Medical large language models are vulnerable to data-poisoning attacks](https://www.nature.com/articles/s41591-024-03445-1)'
     funded_by: Anthropic, various academics
     outputs:
     - link_url: https://alignment.anthropic.com/2025/pretraining-data-filtering/
@@ -5231,8 +5229,10 @@ items:
     - LLM whisperers
     orthodox_problems:
     - value_fragile
-    target_case: average_case
-    broad_approach: cognitivist_science
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Alex Turner
     - '[Hyperstition AI](https://www.hyperstitionai.com/)'
@@ -5292,10 +5292,7 @@ items:
       venue: arXiv
       kind: paper_preprint
     other_attributes: {}
-  parsing_issues:
-  - Broad approach field says 'cognitive' - mapped to 'cognitivist_science'
-  - Orthodox problems has prefatory text 'Skeptical of this framing, but partly' before
-    listing problem 1
+  parsing_issues: []
 - id: a:data_poisoning
   name: Data poisoning defense
   header_level: 2
@@ -5317,8 +5314,10 @@ items:
     orthodox_problems:
     - superintelligence_hack_software
     - someone_else_deploys
-    target_case: pessimistic_case
-    broad_approach: engineering
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Alexandra Souly
     - Javier Rando
@@ -5404,14 +5403,14 @@ items:
     **Orthodox problems:** goals misgeneralize out of distribution, superintelligence
     can fool human supervisors, value is fragile and hard to specify.
 
-    **Target case:** average_case.
+    **Target case:** average_case
 
-    **Broad approach:** engineering.
+    **Broad approach:** engineering
 
     **Some names:** Mianqiu Huang, Xiaoran Liu, Rylan Schaeffer, Nevan Wichers, Aram
-    Ebtekar, Jiaxin Wen, Vishakh Padmakumar, Benjamin Newman.
+    Ebtekar, Jiaxin Wen, Vishakh Padmakumar, Benjamin Newman
 
-    **Estimated FTEs:** 50-150.
+    **Estimated FTEs:** 50-150
 
     **Critiques:** [Synthetic Data in AI: Challenges, Applications, and Ethical Implications](https://arxiv.org/abs/2401.01629).
     Sort of [Demski](https://www.lesswrong.com/posts/nQwbDPgYvAbqAmAud/llms-for-alignment-research-a-safety-priority).
@@ -5468,8 +5467,10 @@ items:
     orthodox_problems:
     - superintelligence_fool_supervisors
     - value_fragile
-    target_case: average_case
-    broad_approach: engineering
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Maarten Buyl
     - Kelsey Kraus
@@ -5593,8 +5594,10 @@ items:
     see_also: []
     orthodox_problems:
     - value_fragile
-    target_case: null
-    broad_approach: cognitivist_science
+    target_case_id: null
+    target_case_text: mixed
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names: []
     estimated_ftes: 10-50
     critiques: null
@@ -5656,8 +5659,10 @@ items:
       kind: lesswrong
     other_attributes: {}
   parsing_issues:
-  - Target case field says 'mixed' which doesn't match any of the allowed values (average_case,
-    pessimistic_case, worst_case) - field omitted
+  - Target case field says 'mixed' - leaving target_case_id as null and target_case_text
+    as 'mixed' as instructed
+  - Broad approach field says 'cognitive' - mapped to 'cognitivist_science' (cognitivist
+    science)
 - id: a:rl_safety
   name: RL safety
   header_level: 3
@@ -5680,13 +5685,15 @@ items:
     - sec:iterative_alignment
     - a:mild_optimization
     - scalable oversight
-    - '[**The Theoretical Reward Learning Research Agenda: Introduction and Motivation**](https://www.alignmentforum.org/posts/pJ3mDD7LfEwp3s5vG/the-theoretical-reward-learning-research-agenda-introduction)'
+    - '[The Theoretical Reward Learning Research Agenda: Introduction and Motivation](https://www.alignmentforum.org/posts/pJ3mDD7LfEwp3s5vG/the-theoretical-reward-learning-research-agenda-introduction)'
     orthodox_problems:
     - goals_misgeneralize
     - value_fragile
     - superintelligence_fool_supervisors
-    target_case: pessimistic_case
-    broad_approach: engineering
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Joar Skalse
     - Karim Abdel Sadek
@@ -5874,7 +5881,9 @@ items:
       venue: arXiv
       kind: paper_preprint
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - See also references 'scalable oversight' which does not match any known agenda
+    ID - kept as plain text
 - id: a:assistance_games
   name: Assistance games, assistive agents
   header_level: 3
@@ -5893,8 +5902,10 @@ items:
     orthodox_problems:
     - value_fragile
     - humanlike_minds_not_safe
-    target_case: varies
-    broad_approach: engineering
+    target_case_id: null
+    target_case_text: varies
+    broad_approach_id: null
+    broad_approach_text: engineering / cognitive
     some_names:
     - Joar Skalse
     - Anca Dragan
@@ -5940,7 +5951,7 @@ items:
     - link_url: https://arxiv.org/abs/2504.07091
       link_text: 'AssistanceZero: Scalably Solving Assistance Games'
       original_md: '* [**AssistanceZero: Scalably Solving Assistance Games**](https://arxiv.org/abs/2504.07091),
-        *Cassidy Laidlaw, Eli Bronstein, Timothy Guo et al.*, 2025-04-09, arXiv'
+        *Cassidy Laidaw, Eli Bronstein, Timothy Guo et al.*, 2025-04-09, arXiv'
       title: 'AssistanceZero: Scalably Solving Assistance Games'
       authors:
       - Cassidy Laidlaw
@@ -5992,15 +6003,11 @@ items:
       published_year: 2024
       venue: NeurIPS 2024
       kind: paper_published
-    other_attributes:
-      Broad approach (secondary): cognitive
+    other_attributes: {}
   parsing_issues:
-  - See also field appears to be empty or has no content
-  - Target case is 'Varies' which doesn't match standard values (average_case, pessimistic_case,
-    worst_case) - appears to indicate multiple cases apply
-  - Broad approach lists 'engineering, cognitive' - primary approach set to 'engineering',
-    secondary 'cognitive' stored in other_attributes
-  - 'Invalid target_case ID: varies'
+  - Target case field says 'Varies' - cannot map to a specific target case ID
+  - Broad approach has multiple values 'engineering, cognitive' - cannot map to a
+    single ID
 - id: a:open_model_interventions
   name: Harm reduction for open weights
   header_level: 2
@@ -6023,8 +6030,10 @@ items:
     - a:data_poisoning
     orthodox_problems:
     - someone_else_deploys
-    target_case: average_case
-    broad_approach: engineering
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Kyle O'Brien
     - Stephen Casper
@@ -6161,8 +6170,10 @@ items:
     - Aligned AI
     orthodox_problems:
     - someone_else_deploys
-    target_case: average_case
-    broad_approach: engineering
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - AE Studio
     - Gunnar Zarncke
@@ -6266,8 +6277,10 @@ items:
     orthodox_problems:
     - goals_misgeneralize
     - superintelligence_fool_supervisors
-    target_case: worst_case
-    broad_approach: cognitivist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Lucius Bushnaq
     - Dan Braun
@@ -6284,8 +6297,8 @@ items:
       [MoSSAIC: AI Safety After Mechanism](https://openreview.net/forum?id=n7WYSJ35FU),
       [The Misguided Quest for Mechanistic AI Interpretability](https://ai-frontiers.org/articles/the-misguided-quest-for-mechanistic-ai-interpretability).
       [Mechanistic?](https://arxiv.org/abs/2410.09087), [Assessing skeptical views
-      of interpretability research](https://www.youtube.com/watch?v=woo_J0RKcpQ),
-      [Activation space interpretability may be doomed](https://www.lesswrong.com/posts/gYfpPbww3wQRaxAFD/activation-space-interpretability-may-be-doomed),
+      of interpretability research](https://www.youtube.com/watch?v=woo_J0RKcpQ),  [Activation
+      space interpretability may be doomed](https://www.lesswrong.com/posts/gYfpPbww3wQRaxAFD/activation-space-interpretability-may-be-doomed),
       [A Pragmatic Vision for Interpretability](https://www.alignmentforum.org/posts/StENzDcD3kpfGJssR/a-pragmatic-vision-for-interpretability)'
     funded_by: null
     outputs:
@@ -6865,8 +6878,10 @@ items:
     - value_fragile
     - goals_misgeneralize
     - boxed_agi_exfiltrate
-    target_case: pessimistic_case
-    broad_approach: cognitivist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Daniel Beaglehole
     - Adityanarayanan Radhakrishnan
@@ -7094,8 +7109,10 @@ items:
     - a:ai_deception
     - a:evals_sandbagging
     orthodox_problems: []
-    target_case: pessimistic_case
-    broad_approach: cognitivist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - '[Cadenza](https://cadenzalabs.org)'
     - Sam Marks
@@ -7263,8 +7280,7 @@ items:
       kind: paper_preprint
     - link_url: https://arxiv.org/html/2511.16035v1
       link_text: 'Liars'' Bench: Evaluating Lie Detectors for Language Models'
-      original_md: '* [Liars'' Bench: Evaluating Lie Detectors for Language Models](https://arxiv.org/html/2511.16035v1)[Evaluating
-        honesty and lie detection techniques on a diverse suite of dishonest models](https://alignment.anthropic.com/2025/honesty-elicitation/)'
+      original_md: '* [Liars'' Bench: Evaluating Lie Detectors for Language Models](https://arxiv.org/html/2511.16035v1)'
       title: 'Liars'' Bench: Evaluating Lie Detectors for Language Models'
       authors:
       - Kieron Kretschmar
@@ -7283,8 +7299,8 @@ items:
     - link_url: https://alignment.anthropic.com/2025/honesty-elicitation/
       link_text: Evaluating honesty and lie detection techniques on a diverse suite
         of dishonest models
-      original_md: '* [Liars'' Bench: Evaluating Lie Detectors for Language Models](https://arxiv.org/html/2511.16035v1)[Evaluating
-        honesty and lie detection techniques on a diverse suite of dishonest models](https://alignment.anthropic.com/2025/honesty-elicitation/)'
+      original_md: '[Evaluating honesty and lie detection techniques on a diverse
+        suite of dishonest models](https://alignment.anthropic.com/2025/honesty-elicitation/)'
       title: Evaluating honesty and lie detection techniques on a diverse suite of
         dishonest models
       authors:
@@ -7301,8 +7317,7 @@ items:
       kind: blog_post
     other_attributes: {}
   parsing_issues:
-  - Last output item appears to have two separate links concatenated without proper
-    separation between 'Liars' Bench' paper and 'Evaluating honesty' link
+  - Broad approach field says 'cognitivist' - mapped to 'cognitivist_science'
 - id: a:model_diff
   name: Model diffing
   header_level: 3
@@ -7324,8 +7339,10 @@ items:
     - a:interp_fundamental
     orthodox_problems:
     - value_fragile
-    target_case: pessimistic_case
-    broad_approach: cognitivist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Julian Minder
     - Clément Dumas
@@ -7374,7 +7391,7 @@ items:
       venue: NeurIPS 2025
       kind: paper_preprint
     - link_url: https://www.lesswrong.com/posts/xmpauEXEerzYcJKNm/what-we-learned-trying-to-diff-base-and-chat-models-and-why
-      link_text: null
+      link_text: https://www.lesswrong.com/posts/xmpauEXEerzYcJKNm/what-we-learned-trying-to-diff-base-and-chat-models-and-why
       original_md: '* [https://www.lesswrong.com/posts/xmpauEXEerzYcJKNm/what-we-learned-trying-to-diff-base-and-chat-models-and-why](https://www.lesswrong.com/posts/xmpauEXEerzYcJKNm/what-we-learned-trying-to-diff-base-and-chat-models-and-why)'
       title: What We Learned Trying to Diff Base and Chat Models (And Why It Matters)
       authors:
@@ -7466,7 +7483,7 @@ items:
       venue: OpenReview
       kind: error_detected
     - link_url: https://www.goodfire.ai/research/model-diff-amplification
-      link_text: null
+      link_text: https://www.goodfire.ai/research/model-diff-amplification
       original_md: '* [https://www.goodfire.ai/research/model-diff-amplification](https://www.goodfire.ai/research/model-diff-amplification)'
       title: Discovering Undesired Rare Behaviors via Model Diff Amplification
       authors:
@@ -7501,8 +7518,10 @@ items:
     - value_fragile
     - goals_misgeneralize
     - superintelligence_fool_supervisors
-    target_case: average_case
-    broad_approach: engineering
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: null
+    broad_approach_text: engineering / cognitive
     some_names:
     - Leo Gao
     - Dan Mossing
@@ -8243,7 +8262,7 @@ items:
         Learning
       original_md: '* [Interpreting Large Text-to-Image Diffusion Models with Dictionary
         Learning](https://arxiv.org/abs/2505.24360), Stepan Shabalin, Ayush Panda,
-        Dmitrii Kharlapenko et al., 2025-05-30, CVPR 2025 \- Mechanistic Interpretability
+        Dmitrii Kharlapenko et al., 2025-05-30, CVPR 2025 - Mechanistic Interpretability
         for Vision Workshop'
       title: Interpreting Large Text-to-Image Diffusion Models with Dictionary Learning
       authors:
@@ -8322,9 +8341,8 @@ items:
       kind: lesswrong
     other_attributes: {}
   parsing_issues:
-  - Broad approach field contains 'Engineering / cognitive' which appears to indicate
-    both engineering and cognitivist_science approaches. Mapped to 'engineering' as
-    the primary approach mentioned.
+  - Broad approach field says 'Engineering / cognitive' - mapped to multiple approaches,
+    set broad_approach_id to null and broad_approach_text to 'engineering / cognitive'
 - id: a:interp_causal_abstractions
   name: Causal Abstractions
   header_level: 3
@@ -8345,8 +8363,10 @@ items:
     - a:interp_fundamental
     orthodox_problems:
     - goals_misgeneralize
-    target_case: worst_case
-    broad_approach: cognitivist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Atticus Geiger
     - Christopher Potts
@@ -8358,7 +8378,7 @@ items:
     estimated_ftes: 10-30
     critiques: '[The Misguided Quest for Mechanistic AI Interpretability](https://www.google.com/search?q=https://open.substack.com/pub/aifrontiersmedia/p/the-misguided-quest-for-mechanistic),
       [Interpretability Will Not Reliably Find Deceptive AI](https://www.lesswrong.com/posts/PwnadG4BFjaER3MGf/interpretability-will-not-reliably-find-deceptive-ai).'
-    funded_by: Various academic groups, Google DeepMind, Goodfire.
+    funded_by: Various academic groups, Google DeepMind, Goodfire
     outputs:
     - link_url: https://arxiv.org/abs/2503.11429
       link_text: Combining Causal Models for More Accurate Abstractions of Neural
@@ -8431,8 +8451,10 @@ items:
     orthodox_problems:
     - goals_misgeneralize
     - value_fragile
-    target_case: average_case
-    broad_approach: behaviorist_science
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - Philipp Alexander Kreer
     - Wilson Wu
@@ -8713,7 +8735,10 @@ items:
       venue: NeurIPS 2025
       kind: paper_published
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - Field label 'Key people:' used instead of standard 'Some names:' - mapped to some_names
+  - Broad approach field says 'Behavioral' instead of 'Behaviorist science' - mapped
+    to behaviorist_science
 - id: a:interp_other
   name: Other interpretability
   header_level: 3
@@ -8731,8 +8756,10 @@ items:
     orthodox_problems:
     - superintelligence_fool_supervisors
     - goals_misgeneralize
-    target_case: average_case
-    broad_approach: null
+    target_case_id: null
+    target_case_text: mixed
+    broad_approach_id: null
+    broad_approach_text: engineering / cognitive
     some_names:
     - Lee Sharkey
     - Dario Amodei
@@ -9124,10 +9151,10 @@ items:
       kind: paper_preprint
     other_attributes: {}
   parsing_issues:
-  - Target case field says 'Mixed.' which doesn't match standard values (average_case,
-    pessimistic_case, worst_case). Mapped to 'average_case' as closest interpretation.
-  - Broad approach field says 'Engineering / cognitive.' which appears to be a mix.
-    No standard ID for mixed approaches, omitted from output.
+  - Target case is 'Mixed' which does not map to a specific target case ID (average_case,
+    pessimistic_case, worst_case)
+  - Broad approach is 'Engineering / cognitive' which contains multiple approaches
+    - cannot map to single ID
 - id: a:activation_engineering
   name: Activation engineering
   header_level: 2
@@ -9144,13 +9171,13 @@ items:
       of finetuning. Slightly encourage the model to be nice, add one more layer of
       defence to our bundle of partial alignment methods.'
     see_also:
-    - Representation engineering
     - a:interp_sparse_coding
-    - whitebox control
     orthodox_problems:
     - value_fragile
-    target_case: average_case
-    broad_approach: engineering
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: null
+    broad_approach_text: engineering / cognitive
     some_names:
     - Runjin Chen
     - Andy Arditi
@@ -9456,9 +9483,10 @@ items:
       kind: lesswrong
     other_attributes: {}
   parsing_issues:
-  - Broad approach field says 'engineering / cognitive' - appears to reference both
-    engineering and cognitivist science, but schema expects single value. Selected
-    'engineering' as primary.
+  - See also mentions 'Representation engineering' and 'whitebox control' which don't
+    match specific agenda IDs
+  - Broad approach is 'engineering / cognitive' which maps to multiple approaches;
+    broad_approach_id left null
 - id: a:learning_dev_interp
   name: Developmental interpretability
   header_level: 2
@@ -9481,8 +9509,10 @@ items:
     - '[ICL transience](https://proceedings.mlr.press/v267/singh25c.html)'
     orthodox_problems:
     - goals_misgeneralize
-    target_case: worst_case
-    broad_approach: cognitivist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Timaeus
     - Jesse Hoogland
@@ -9734,8 +9764,10 @@ items:
     orthodox_problems:
     - goals_misgeneralize
     - superintelligence_fool_supervisors
-    target_case: mixed
-    broad_approach: cognitivist_science
+    target_case_id: null
+    target_case_text: mixed
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Simplex
     - Insight + Interaction Lab
@@ -9954,9 +9986,8 @@ items:
       kind: paper_preprint
     other_attributes: {}
   parsing_issues:
-  - Target case field contains 'mixed' which is not one of the standard values (average_case,
-    pessimistic_case, worst_case)
-  - 'Invalid target_case ID: mixed'
+  - Target case is 'mixed' - target_case_id set to null, target_case_text set to 'mixed'
+  - Broad approach 'cognitive' mapped to 'cognitivist_science' / 'cognitivist science'
 - id: a:human_biases
   name: Human inductive biases
   header_level: 2
@@ -9975,8 +10006,10 @@ items:
     - ACS
     orthodox_problems:
     - goals_misgeneralize
-    target_case: pessimistic_case
-    broad_approach: cognitivist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Lukas Muttenthaler
     - Quentin Delfosse
@@ -10069,7 +10102,9 @@ items:
       venue: Google Docs
       kind: error_detected
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - See also references 'active learning' and 'ACS' do not match any known agenda
+    IDs - kept as plain text
 - id: sec:safety_by_construction
   name: Safety by construction
   header_level: 1
@@ -10107,8 +10142,10 @@ items:
     - superintelligence_fool_supervisors
     - humans_not_first_class
     - boxed_agi_exfiltrate
-    target_case: worst_case
-    broad_approach: cognitivist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - ARIA
     - Lawzero
@@ -10213,7 +10250,10 @@ items:
       venue: null
       kind: error_detected
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - Target case field says '(nearly) worst-case' - mapped to 'worst_case' but qualifier
+    '(nearly)' noted
+  - Broad approach field says 'cognitive' - mapped to 'cognitivist_science'
 - id: a:scientist_ai
   name: Scientist AI
   header_level: 2
@@ -10237,14 +10277,16 @@ items:
     - pivotal_dangerous_capabilities
     - goals_misgeneralize
     - instrumental_convergence
-    target_case: pessimistic_case
-    broad_approach: cognitivist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Yoshua Bengio
     estimated_ftes: 1-10
     critiques: Hard to find, but see [Raymond Douglas' comment](https://www.lesswrong.com/posts/p5gBcoQeBsvsMShvT/superintelligent-agents-pose-catastrophic-risks-can?commentId=tJXqhg3XZsqnyaZs2),
       [Karnofsky-Soares discussion](https://www.lesswrong.com/posts/iy2o4nQj9DnQD7Yhj/discussion-with-nate-soares-on-a-key-alignment-difficulty).
-      Perhaps also [Predict-O-Matic](https://www.lesswrong.com/posts/SwcyMEgLyd4C3Dern/the-parable-of-predict-o-matic)
+      Perhaps also [Predict-O-Matic](https://www.lesswrong.com/posts/SwcyMEgLyd4C3Dern/the-parable-of-predict-o-matic).
     funded_by: ARIA, Future of Life Institute, Jaan Tallinn, Schmidt Sciences
     outputs:
     - link_url: https://arxiv.org/abs/2502.15657
@@ -10314,8 +10356,10 @@ items:
       with other non-biological ingredients".
     see_also: []
     orthodox_problems: []
-    target_case: worst_case
-    broad_approach: cognitivist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Stephen Byrnes
     estimated_ftes: 1-5
@@ -10323,7 +10367,7 @@ items:
     funded_by: Astera Institute
     outputs:
     - link_url: https://www.lesswrong.com/posts/yew6zFWAKG4AGs3Wk/foom-and-doom-1-brain-in-a-box-in-a-basement
-      link_text: https://www.lesswrong.com/posts/yew6zFWAKG4AGs3Wk/foom-and-doom-1-brain-in-a-box-in-a-basement
+      link_text: null
       original_md: '* [https://www.lesswrong.com/posts/yew6zFWAKG4AGs3Wk/foom-and-doom-1-brain-in-a-box-in-a-basement](https://www.lesswrong.com/posts/yew6zFWAKG4AGs3Wk/foom-and-doom-1-brain-in-a-box-in-a-basement)'
       title: 'Foom and Doom 1: Brain in a Box in a Basement'
       authors: []
@@ -10333,7 +10377,7 @@ items:
       venue: LessWrong
       kind: blocked
     - link_url: https://www.lesswrong.com/posts/bnnKGSCHJghAvqPjS/foom-and-doom-2-technical-alignment-is-hard
-      link_text: https://www.lesswrong.com/posts/bnnKGSCHJghAvqPjS/foom-and-doom-2-technical-alignment-is-hard
+      link_text: null
       original_md: '* [https://www.lesswrong.com/posts/bnnKGSCHJghAvqPjS/foom-and-doom-2-technical-alignment-is-hard](https://www.lesswrong.com/posts/bnnKGSCHJghAvqPjS/foom-and-doom-2-technical-alignment-is-hard)'
       title: 'Foom and Doom 2: Technical Alignment is Hard'
       authors: []
@@ -10343,7 +10387,7 @@ items:
       venue: LessWrong
       kind: error_detected
     - link_url: https://www.lesswrong.com/posts/grgb2ipxQf2wzNDEG/perils-of-under-vs-over-sculpting-agi-desires
-      link_text: https://www.lesswrong.com/posts/grgb2ipxQf2wzNDEG/perils-of-under-vs-over-sculpting-agi-desires
+      link_text: null
       original_md: '* [https://www.lesswrong.com/posts/grgb2ipxQf2wzNDEG/perils-of-under-vs-over-sculpting-agi-desires](https://www.lesswrong.com/posts/grgb2ipxQf2wzNDEG/perils-of-under-vs-over-sculpting-agi-desires)'
       title: Perils of Under vs Over-sculpting AGI Desires
       authors: []
@@ -10378,7 +10422,7 @@ items:
       venue: LessWrong
       kind: lesswrong
     - link_url: https://elicit.com/blog/system-2-learning
-      link_text: https://elicit.com/blog/system-2-learning
+      link_text: null
       original_md: '* [https://elicit.com/blog/system-2-learning](https://elicit.com/blog/system-2-learning)'
       title: 'Against RL: The Case for System 2 Learning'
       authors:
@@ -10417,8 +10461,10 @@ items:
     - a:supervising_improvement
     orthodox_problems:
     - superintelligence_hack_software
-    target_case: average_case
-    broad_approach: engineering
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: engineering
+    broad_approach_text: engineering
     some_names:
     - Joshua Engels
     - Nora Belrose
@@ -10515,8 +10561,10 @@ items:
     orthodox_problems:
     - superintelligence_fool_supervisors
     - superintelligence_hack_software
-    target_case: pessimistic_case
-    broad_approach: behaviorist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - Roman Engeler
     - Akbir Khan
@@ -10664,8 +10712,10 @@ items:
     orthodox_problems:
     - superintelligence_fool_supervisors
     - superintelligence_hack_software
-    target_case: pessimistic_case
-    broad_approach: cognitivist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Jacob Steinhardt
     - Neil Chowdhury
@@ -10764,8 +10814,10 @@ items:
     orthodox_problems:
     - value_fragile
     - superintelligence_fool_supervisors
-    target_case: worst_case
-    broad_approach: engineering
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: null
+    broad_approach_text: engineering / cognitive
     some_names:
     - Rohin Shah
     - Jonah Brown-Cohen
@@ -10858,55 +10910,10 @@ items:
       published_year: 2025
       venue: arXiv
       kind: paper_preprint
-    - link_url: https://arxiv.org/abs/2506.02175
-      link_text: AI Debate Aids Assessment of Controversial Claims
-      original_md: '* [**AI Debate Aids Assessment of Controversial Claims**](https://arxiv.org/abs/2506.02175)'
-      title: AI Debate Aids Assessment of Controversial Claims
-      authors:
-      - Salman Rahman
-      - Sheriff Issaka
-      - Ashima Suvarna
-      - Genglin Liu
-      - James Shiffer
-      - Jaeyoung Lee
-      - Md Rizwan Parvez
-      - Hamid Palangi
-      - Shi Feng
-      - Nanyun Peng
-      - Yejin Choi
-      - Julian Michael
-      - Liwei Jiang
-      - Saadia Gabriel
-      author_organizations:
-      - University of Washington
-      - Microsoft Research
-      - UCLA
-      - NYU
-      date: '2025-06-02'
-      published_year: 2025
-      venue: arXiv
-      kind: paper_preprint
-    - link_url: https://arxiv.org/abs/2505.03989
-      link_text: An alignment safety case sketch based on debate
-      original_md: '* [**An alignment safety case sketch based on debate**](https://arxiv.org/abs/2505.03989)'
-      title: An alignment safety case sketch based on debate
-      authors:
-      - Marie Davidsen Buhl
-      - Jacob Pfau
-      - Benjamin Hilton
-      - Geoffrey Irving
-      author_organizations:
-      - Google DeepMind
-      date: '2025-05-23'
-      published_year: 2025
-      venue: arXiv
-      kind: paper_preprint
     other_attributes: {}
   parsing_issues:
-  - Broad approach field lists 'engineering, cognitive' but should be a single value
-    - used 'engineering' as primary value
-  - Outputs contain duplicate entries (items 1 and 6 are identical, items 2 and 7
-    are identical)
+  - Broad approach contains multiple approaches ('engineering, cognitive') - using
+    null for broad_approach_id and 'engineering / cognitive' for broad_approach_text
 - id: a:introspection_training
   name: LLM introspection training
   header_level: 2
@@ -10927,8 +10934,10 @@ items:
     - goals_misgeneralize
     - superintelligence_fool_supervisors
     - superintelligence_hack_software
-    target_case: other:mixed
-    broad_approach: cognitivist_science
+    target_case_id: null
+    target_case_text: mixed
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Belinda Z. Li
     - Zifan Carl Guo
@@ -10952,9 +10961,9 @@ items:
       kind: null
     other_attributes: {}
   parsing_issues:
-  - Target case 'mixed' does not match any standard values (average_case, pessimistic_case,
-    worst_case) - stored as 'other:mixed'
-  - 'Invalid target_case ID: other:mixed'
+  - Target case field says 'mixed' - left target_case_id as null and target_case_text
+    as 'mixed'
+  - Broad approach field says 'cognitive' - mapped to 'cognitivist_science'
 - id: sec:theory
   name: Theory
   header_level: 1
@@ -10988,8 +10997,10 @@ items:
     - value_fragile
     - corrigibility_anti_natural
     - goals_misgeneralize
-    target_case: worst_case
-    broad_approach: cognitivist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Abram Demski
     - Alex Altair
@@ -11119,7 +11130,9 @@ items:
       venue: LessWrong
       kind: lesswrong
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - Broad approach field says 'cognitive' - mapped to 'cognitivist_science' (cognitivist
+    science)
 - id: a:tiling_agents
   name: Tiling agents
   header_level: 2
@@ -11140,8 +11153,10 @@ items:
     - value_fragile
     - corrigibility_anti_natural
     - goals_misgeneralize
-    target_case: worst_case
-    broad_approach: cognitivist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Abram Demski
     estimated_ftes: 1-10
@@ -11214,11 +11229,11 @@ items:
     see_also:
     - a:agent_foundations
     orthodox_problems:
-    - other:intended to help make progress on understanding the nature of the problems
-      through formalization, so that they can be avoided or postponed, or more effectively
-      solved by other research agenda.
-    target_case: pessimistic_case
-    broad_approach: maths/philosophy
+    - 'Other: understanding the nature of the problems through formalization'
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: null
+    broad_approach_text: maths / philosophy
     some_names:
     - Alex Altair
     - Alfred Harwood
@@ -11244,9 +11259,10 @@ items:
       kind: lesswrong
     other_attributes: {}
   parsing_issues:
-  - Broad approach field says 'maths/philosophy' - does not match any of the standard
-    options (engineering, behaviorist_science, cognitivist_science)
-  - 'Invalid broad_approach ID: maths/philosophy'
+  - Orthodox problems field contains 'understanding the nature of the problems through
+    formalization' which doesn't match standard problems - kept as 'Other'
+  - Broad approach is 'maths/philosophy' which doesn't match standard approaches (engineering,
+    behaviorist_science, cognitivist_science) - broad_approach_id left null
 - id: a:live_theory
   name: High-Actuation Spaces
   header_level: 2
@@ -11271,9 +11287,11 @@ items:
     - '[Topos Institute](https://topos.institute/)'
     - a:agent_foundations
     orthodox_problems:
-    - 'other: actually a new and general one'
-    target_case: pessimistic_case
-    broad_approach: cognitivist_science
+    - 'Other: actually a new and general one'
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: null
+    broad_approach_text: maths / philosophy
     some_names:
     - Sahil K
     - Matt Farr
@@ -11299,7 +11317,7 @@ items:
       venue: null
       kind: null
     - link_url: https://openreview.net/forum?id=n7WYSJ35FU
-      link_text: https://openreview.net/forum?id=n7WYSJ35FU
+      link_text: null
       original_md: '* [https://openreview.net/forum?id=n7WYSJ35FU](https://openreview.net/forum?id=n7WYSJ35FU)'
       title: 'MoSSAIC: AI Safety After Mechanism'
       authors:
@@ -11315,7 +11333,7 @@ items:
       venue: ODYSSEY 2025 Conference
       kind: paper_preprint
     - link_url: https://www.lesswrong.com/s/aMz2JMvgXrLBkq4h3
-      link_text: https://www.lesswrong.com/s/aMz2JMvgXrLBkq4h3
+      link_text: null
       original_md: '* [https://www.lesswrong.com/s/aMz2JMvgXrLBkq4h3](https://www.lesswrong.com/s/aMz2JMvgXrLBkq4h3)'
       title: '429: Too Many Requests'
       authors: []
@@ -11325,7 +11343,7 @@ items:
       venue: LessWrong
       kind: error_detected
     - link_url: https://docs.google.com/document/d/1d-ARdZZDHFPIfGcTTOKK8IZWlQj0NZQrmteJj2mvmYA/edit?tab=t.0#heading=h.eg8luyrlsv2u
-      link_text: https://docs.google.com/document/d/1d-ARdZZDHFPIfGcTTOKK8IZWlQj0NZQrmteJj2mvmYA/edit?tab=t.0#heading=h.eg8luyrlsv2u
+      link_text: null
       original_md: '* [https://docs.google.com/document/d/1d-ARdZZDHFPIfGcTTOKK8IZWlQj0NZQrmteJj2mvmYA/edit?tab=t.0\#heading=h.eg8luyrlsv2u](https://docs.google.com/document/d/1d-ARdZZDHFPIfGcTTOKK8IZWlQj0NZQrmteJj2mvmYA/edit?tab=t.0#heading=h.eg8luyrlsv2u)'
       title: High Actuation Spaces - Sahil
       authors:
@@ -11336,7 +11354,7 @@ items:
       venue: Google Docs
       kind: error_detected
     - link_url: https://drive.google.com/drive/folders/1EaAJ4szuZsYR2_-DkS9cuhx3S6IWeCjW
-      link_text: https://drive.google.com/drive/folders/1EaAJ4szuZsYR2_-DkS9cuhx3S6IWeCjW
+      link_text: null
       original_md: '* [https://drive.google.com/drive/folders/1EaAJ4szuZsYR2_-DkS9cuhx3S6IWeCjW](https://drive.google.com/drive/folders/1EaAJ4szuZsYR2_-DkS9cuhx3S6IWeCjW)'
       title: HAS - Public (High Actuation Spaces)
       authors: []
@@ -11346,7 +11364,7 @@ items:
       venue: Google Drive
       kind: error_detected
     - link_url: https://www.lesswrong.com/posts/tQ9vWm4b57HFqbaRj/what-if-not-agency
-      link_text: https://www.lesswrong.com/posts/tQ9vWm4b57HFqbaRj/what-if-not-agency
+      link_text: null
       original_md: '* [https://www.lesswrong.com/posts/tQ9vWm4b57HFqbaRj/what-if-not-agency](https://www.lesswrong.com/posts/tQ9vWm4b57HFqbaRj/what-if-not-agency)'
       title: Unknown - Content Unavailable (429 Error)
       authors: []
@@ -11368,7 +11386,10 @@ items:
       kind: error_detected
     other_attributes: {}
   parsing_issues:
-  - Broad approach field says 'maths/philosophy' - mapped to closest match 'cognitivist_science'
+  - 'Orthodox problems field says ''actually a new and general one'' - no matching
+    standard problem found, kept as ''Other: actually a new and general one'''
+  - Broad approach 'maths/philosophy' doesn't match standard approaches (engineering/behaviorist_science/cognitivist_science)
+    - normalized to 'maths / philosophy' and left broad_approach_id as null
 - id: a:simulators
   name: Simulators
   header_level: 2
@@ -11387,8 +11408,10 @@ items:
     see_also: []
     orthodox_problems:
     - goals_misgeneralize
-    target_case: pessimistic_case
-    broad_approach: cognitivist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Jan Kulveit
     - Will Petillo
@@ -11443,8 +11466,10 @@ items:
     orthodox_problems:
     - goals_misgeneralize
     - superintelligence_fool_supervisors
-    target_case: pessimistic_case
-    broad_approach: cognitivist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - AISI
     - Jacob Pfau
@@ -11524,12 +11549,17 @@ items:
       tasks well enough that Eliciting Latent Knowledge and deceptive alignment are
       solved.
     see_also:
-    - ARC Theory, ELK, mechanistic anomaly detection, [Acorn](https://acausal.org/)
+    - ARC Theory
+    - ELK
+    - mechanistic anomaly detection
+    - '[Acorn](https://acausal.org/)'
     orthodox_problems:
     - goals_misgeneralize
     - superintelligence_hack_software
-    target_case: worst_case
-    broad_approach: cognitivist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: null
+    broad_approach_text: cognitive / maths/philosophy
     some_names:
     - Jacob Hilton
     - Mark Xu
@@ -11604,8 +11634,9 @@ items:
       kind: null
     other_attributes: {}
   parsing_issues:
-  - Broad approach field says 'cognitive, maths/philosophy' - mapped to 'cognitivist_science'
-    but may not be exact match
+  - Broad approach field contains 'cognitive, maths/philosophy' which doesn't map
+    cleanly to standard approaches (engineering/behaviorist_science/cognitivist_science).
+    Kept as 'cognitive / maths/philosophy' with null ID.
 - id: sec:corrigibility
   name: Corrigibility
   header_level: 2
@@ -11624,19 +11655,21 @@ items:
     who_edits: Rory ✅
     one_sentence_summary: Predict properties of future AGI (e.g. power-seeking) with
       formal models; formally state and prove hypotheses about the properties powerful
-      systems will have and how we might try to change them
+      systems will have and how we might try to change them.
     theory_of_change: Figure out hypotheses about properties powerful agents will
       have → attempt to rigorously prove under what conditions the hypotheses hold
       → test these hypotheses where feasible → design training environments that lead
-      to more salutary properties
+      to more salutary properties.
     see_also:
     - a:agent_foundations
     - a:control
     orthodox_problems:
     - corrigibility_anti_natural
     - instrumental_convergence
-    target_case: worst_case
-    broad_approach: cognitivist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: null
+    broad_approach_text: maths / philosophy
     some_names:
     - Ram Potham
     - Michael K. Cohen
@@ -11790,9 +11823,8 @@ items:
       kind: lesswrong
     other_attributes: {}
   parsing_issues:
-  - Broad approach field says 'maths/philosophy' - mapped to 'cognitivist_science'
-    as closest match, but this may not be accurate for a primarily mathematical/theoretical
-    agenda
+  - Broad approach 'maths/philosophy' does not match standard categories (engineering,
+    behaviorist_science, cognitivist_science) - broad_approach_id left null
 - id: a:corrigibility_other
   name: Other corrigibility
   header_level: 3
@@ -11813,8 +11845,10 @@ items:
     orthodox_problems:
     - corrigibility_anti_natural
     - instrumental_convergence
-    target_case: pessimistic_case
-    broad_approach: varies; math/philosophy + engineering
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: null
+    broad_approach_text: varies
     some_names:
     - Jan Kulveit
     - Jeremy Gillen
@@ -11941,10 +11975,9 @@ items:
       kind: null
     other_attributes: {}
   parsing_issues:
-  - Broad approach field contains 'varies; math/philosophy + engineering' which doesn't
-    map cleanly to one of the three standard broad approaches (engineering, behaviorist_science,
-    cognitivist_science). Kept as-is.
-  - 'Invalid broad_approach ID: varies; math/philosophy + engineering'
+  - Broad approach field says 'varies; math/philosophy + engineering' which doesn't
+    match standard values (engineering, behaviorist science, cognitivist science).
+    Set broad_approach_text to 'varies' and broad_approach_id to null.
 - id: sec:ontology_identification
   name: Ontology Identification
   header_level: 2
@@ -11980,8 +12013,10 @@ items:
     - instrumental_convergence
     - superintelligence_fool_supervisors
     - humans_not_first_class
-    target_case: worst_case
-    broad_approach: cognitivist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - John Wentworth
     - Paul Colognese
@@ -12159,9 +12194,8 @@ items:
       kind: lesswrong
     other_attributes: {}
   parsing_issues:
-  - Broad approach field says 'cognitive' - matched to 'cognitivist_science'
-  - 'Duplicate output link for ''Natural Latents: Latent Variables Stable Across Ontologies''
-    appears twice in outputs list'
+  - 'Duplicate output: ''Natural Latents: Latent Variables Stable Across Ontologies''
+    appears twice in the outputs list'
 - id: a:learning_theoretic_agenda
   name: The Learning-Theoretic Agenda
   header_level: 2
@@ -12181,8 +12215,10 @@ items:
     - value_fragile
     - goals_misgeneralize
     - humans_not_first_class
-    target_case: worst_case
-    broad_approach: cognitivist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Vanessa Kosoy
     - Diffractor
@@ -12297,8 +12333,10 @@ items:
     - goals_misgeneralize
     - instrumental_convergence
     - fair_sane_pivotal
-    target_case: null
-    broad_approach: behaviorist_science
+    target_case_id: null
+    target_case_text: mixed
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behavioral
     some_names:
     - Full Stack Alignment
     - Meaning Alignment Institute
@@ -12422,8 +12460,9 @@ items:
       kind: null
     other_attributes: {}
   parsing_issues:
-  - Target case field says 'Mixed' which doesn't match any of the standard values
-    (average_case, pessimistic_case, worst_case). Field omitted.
+  - Target case is 'Mixed' - setting target_case_id to null and target_case_text to
+    'mixed'
+  - Broad approach is 'Behavioural' (UK spelling) - mapped to 'behaviorist_science'
 - id: a:contractualist_alignment
   name: Aligning to the social contract
   header_level: 2
@@ -12447,8 +12486,10 @@ items:
     - instrumental_convergence
     - humanlike_minds_not_safe
     - fair_sane_pivotal
-    target_case: null
-    broad_approach: cognitivist_science
+    target_case_id: null
+    target_case_text: mixed
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Gillian Hadfield
     - Tan Zhi-Xuan
@@ -12472,7 +12513,7 @@ items:
       kind: null
     - link_url: https://arxiv.org/abs/2506.17434
       link_text: 2506.17434 - Resource Rational Contractualism Should Guide AI Alignment
-      original_md: '[2506.17434 - Resource Rational Contractualism Should Guide AI
+      original_md: '[2506.17434 \- Resource Rational Contractualism Should Guide AI
         Alignment](https://arxiv.org/abs/2506.17434)'
       title: Resource Rational Contractualism Should Guide AI Alignment
       authors:
@@ -12499,7 +12540,7 @@ items:
       kind: paper_preprint
     - link_url: https://arxiv.org/abs/2509.07955
       link_text: 2509.07955 - ACE and Diverse Generalization via Selective Disagreement
-      original_md: '[2509.07955 - ACE and Diverse Generalization via Selective Disagreement](https://arxiv.org/abs/2509.07955)'
+      original_md: '[2509.07955 \- ACE and Diverse Generalization via Selective Disagreement](https://arxiv.org/abs/2509.07955)'
       title: ACE and Diverse Generalization via Selective Disagreement
       authors:
       - Oliver Daniels
@@ -12560,7 +12601,7 @@ items:
       kind: paper_preprint
     - link_url: https://arxiv.org/abs/2408.16984
       link_text: 2408.16984 - Beyond Preferences in AI Alignment
-      original_md: '[2408.16984 - Beyond Preferences in AI Alignment](https://arxiv.org/abs/2408.16984)'
+      original_md: '[2408.16984 \- Beyond Preferences in AI Alignment](https://arxiv.org/abs/2408.16984)'
       title: Beyond Preferences in AI Alignment
       authors:
       - Tan Zhi-Xuan
@@ -12584,8 +12625,8 @@ items:
       kind: null
     other_attributes: {}
   parsing_issues:
-  - Target case field says 'Mixed' which doesn't match any of the standard target
-    cases (average_case, pessimistic_case, worst_case). Field omitted.
+  - Target case field says 'Mixed' - does not map to standard cases (average_case,
+    pessimistic_case, worst_case), transformed to 'mixed'
 - id: a:aligning_multiple_game_theory
   name: Theory for aligning multiple AIs
   header_level: 2
@@ -12596,12 +12637,12 @@ items:
     who_edits: Peli
     one_sentence_summary: Use realistic game-theory variants (e.g. evolutionary game
       theory, computational game theory) to describe/predict the collective and individual
-      behaviours of AI agents in multi-agent scenarios
+      behaviours of AI agents in multi-agent scenarios.
     theory_of_change: While traditional AGI safety focuses on idealized decision-theory
       and individual agents, it's plausible that strategic AI agents will first emerge
       (or are emerging now) in a complex, multi-AI strategic landscape. We need granular,
       realistic formal models of AIs' strategic interactions and collective dynamics
-      to understand this future
+      to understand this future.
     see_also:
     - a:aligning_multiple_tools
     - a:aligning_what
@@ -12609,8 +12650,10 @@ items:
     - goals_misgeneralize
     - superintelligence_fool_supervisors
     - superintelligence_hack_software
-    target_case: average_case
-    broad_approach: cognitivist_science
+    target_case_id: null
+    target_case_text: mixed
+    broad_approach_id: cognitivist_science
+    broad_approach_text: cognitivist science
     some_names:
     - Lewis Hammond
     - Emery Cooper
@@ -12792,9 +12835,10 @@ items:
       kind: paper_preprint
     other_attributes: {}
   parsing_issues:
-  - Target case field says 'Mixed' - doesn't match standard values (average_case,
-    pessimistic_case, worst_case), mapped to 'average_case'
-  - Broad approach field says 'Cognitive' - mapped to 'cognitivist_science'
+  - Target case field says 'Mixed' - set target_case_id to null and target_case_text
+    to 'mixed'
+  - Broad approach field says 'Cognitive' - mapped to 'cognitivist_science' (cognitivist
+    science)
 - id: a:aligning_multiple_tools
   name: Tools for aligning multiple AIs
   header_level: 2
@@ -12817,8 +12861,10 @@ items:
     - goals_misgeneralize
     - superintelligence_fool_supervisors
     - superintelligence_hack_software
-    target_case: null
-    broad_approach: null
+    target_case_id: null
+    target_case_text: mixed
+    broad_approach_id: null
+    broad_approach_text: engineering / behavioral
     some_names:
     - Lewis Hammond
     - Emery Cooper
@@ -12937,8 +12983,8 @@ items:
       venue: arXiv
       kind: paper_preprint
     - link_url: https://arxiv.org/abs/2502.12203
-      link_text: An Interpretable Automated Mechanism Design Framework with Large
-        Language Models
+      link_text: 2502.12203 - An Interpretable Automated Mechanism Design Framework
+        with Large Language Models
       original_md: '[2502.12203 \- An Interpretable Automated Mechanism Design Framework
         with Large Language Models](https://arxiv.org/abs/2502.12203)'
       title: An Interpretable Automated Mechanism Design Framework with Large Language
@@ -13007,11 +13053,10 @@ items:
       kind: paper_preprint
     other_attributes: {}
   parsing_issues:
-  - Target case is 'Mixed' which does not match any standard target case value (average_case,
-    pessimistic_case, worst_case). Field omitted.
-  - Broad approach is 'Engineering/Behavioural' which appears to be a combination
-    of multiple approaches. Field omitted to avoid ambiguity.
-  - 'Typo in one-sentence summary: ''muti-agent'' corrected to ''multi-agent'''
+  - Target case is 'Mixed' - leaving target_case_id as null and setting target_case_text
+    to 'mixed'
+  - Broad approach is 'Engineering/Behavioural' - leaving broad_approach_id as null
+    and setting broad_approach_text to 'engineering / behavioral'
 - id: a:aligned_to_who
   name: Aligned to who?
   header_level: 2
@@ -13032,8 +13077,10 @@ items:
     orthodox_problems:
     - value_fragile
     - fair_sane_pivotal
-    target_case: average_case
-    broad_approach: behaviorist_science
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - Joel Z. Leibo
     - Divya Siddarth
@@ -13208,7 +13255,9 @@ items:
       venue: arXiv
       kind: paper_preprint
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - 'Broad approach field says ''Behavioural'' - mapped to ''behaviorist_science''
+    (standard spelling: ''behaviorist science'')'
 - id: a:aligning_what
   name: Aligning what?
   header_level: 2
@@ -13235,8 +13284,10 @@ items:
     - goals_misgeneralize
     - instrumental_convergence
     - fair_sane_pivotal
-    target_case: null
-    broad_approach: null
+    target_case_id: null
+    target_case_text: mixed
+    broad_approach_id: null
+    broad_approach_text: behavioral / cognitive
     some_names:
     - Richard Ngo
     - Emmett Shear
@@ -13249,14 +13300,145 @@ items:
     estimated_ftes: 5-10
     critiques: null
     funded_by: Future of Life Institute, Emmet Shear
-    outputs: []
+    outputs:
+    - link_url: https://www.alignmentforum.org/posts/5tYTKX4pNpiG4vzYg/towards-a-scale-free-theory-of-intelligent-agency
+      link_text: Towards a Scale-Free Theory of Intelligent Agency
+      original_md: '[Towards a Scale-Free Theory of Intelligent Agency](https://www.alignmentforum.org/posts/5tYTKX4pNpiG4vzYg/towards-a-scale-free-theory-of-intelligent-agency)'
+      title: Towards a scale-free theory of intelligent agency
+      authors:
+      - Richard Ngo
+      author_organizations:
+      - Independent
+      date: '2025-03-21'
+      published_year: 2025
+      venue: AI Alignment Forum
+      kind: lesswrong
+    - link_url: https://chrislakin.blog/p/alignment-first-intelligence-later
+      link_text: Alignment first, intelligence later
+      original_md: '[Alignment first, intelligence later](https://chrislakin.blog/p/alignment-first-intelligence-later)'
+      title: null
+      authors: []
+      author_organizations: []
+      date: null
+      published_year: null
+      venue: null
+      kind: null
+    - link_url: https://a16z.simplecast.com/episodes/emmett-shear-on-building-ai-that-actually-cares-beyond-control-and-steering-TRwfxH0r
+      link_text: 'Emmett Shear on Building AI That Actually Cares: Beyond Control
+        and Steering'
+      original_md: '[Emmett Shear on Building AI That Actually Cares: Beyond Control
+        and Steering](https://a16z.simplecast.com/episodes/emmett-shear-on-building-ai-that-actually-cares-beyond-control-and-steering-TRwfxH0r)'
+      title: 'Emmett Shear on Building AI That Actually Cares: Beyond Control and
+        Steering'
+      authors:
+      - Emmett Shear
+      - Erik Torenberg
+      - Séb Krier
+      author_organizations:
+      - Softmax
+      - a16z
+      date: '2025-11-17'
+      published_year: 2025
+      venue: a16z Podcast
+      kind: podcast
+    - link_url: https://www.anthropic.com/research/end-subset-conversations
+      link_text: End A Subset Of Conversations
+      original_md: '[End A Subset Of Conversations](https://www.anthropic.com/research/end-subset-conversations)'
+      title: null
+      authors: []
+      author_organizations: []
+      date: null
+      published_year: null
+      venue: null
+      kind: null
+    - link_url: https://www.full-stack-alignment.ai
+      link_text: Full-Stack Alignment
+      original_md: '[Full-Stack Alignment](https://www.full-stack-alignment.ai)'
+      title: 'Full-Stack Alignment: Co-Aligning AI and Institutions with Thick Models
+        of Value'
+      authors: []
+      author_organizations:
+      - Meaning Alignment Institute
+      date: null
+      published_year: null
+      venue: null
+      kind: personal_page
+    - link_url: https://docs.google.com/document/d/1cKbqYSGspfJavXvnhsp3mAuxHh08rNbP7tzYieqLiXw/edit?tab=t.0%20
+      link_text: On Eudaimonia and Optimization
+      original_md: '[On Eudaimonia and Optimization](https://docs.google.com/document/d/1cKbqYSGspfJavXvnhsp3mAuxHh08rNbP7tzYieqLiXw/edit?tab=t.0%20)'
+      title: On Eudaimonia and Optimization
+      authors: []
+      author_organizations: []
+      date: null
+      published_year: null
+      venue: Google Docs
+      kind: error_detected
+    - link_url: https://arxiv.org/abs/2501.17755
+      link_text: AI Governance through Markets
+      original_md: '[AI Governance through Markets](https://arxiv.org/abs/2501.17755)'
+      title: null
+      authors: []
+      author_organizations: []
+      date: null
+      published_year: null
+      venue: null
+      kind: null
+    - link_url: https://www.pnas.org/doi/abs/10.1073/pnas.2319948121
+      link_text: Collective cooperative intelligence
+      original_md: '[Collective cooperative intelligence](https://www.pnas.org/doi/abs/10.1073/pnas.2319948121)'
+      title: null
+      authors: []
+      author_organizations: []
+      date: null
+      published_year: null
+      venue: null
+      kind: null
+    - link_url: https://www.lesswrong.com/posts/JjYu75q3hEMBgtvr8/multipolar-ai-is-underrated
+      link_text: Multipolar AI is Underrated
+      original_md: '[Multipolar AI is Underrated](https://www.lesswrong.com/posts/JjYu75q3hEMBgtvr8/multipolar-ai-is-underrated)'
+      title: null
+      authors: []
+      author_organizations: []
+      date: null
+      published_year: null
+      venue: null
+      kind: null
+    - link_url: https://www.lesswrong.com/posts/tQ9vWm4b57HFqbaRj/what-if-not-agency
+      link_text: What, if not agency?
+      original_md: '[What, if not agency?](https://www.lesswrong.com/posts/tQ9vWm4b57HFqbaRj/what-if-not-agency)'
+      title: Unknown - Content Unavailable (429 Error)
+      authors: []
+      author_organizations: []
+      date: null
+      published_year: null
+      venue: LessWrong
+      kind: error_detected
+    - link_url: https://substack.com/home/post/p-171042125
+      link_text: https://substack.com/home/post/p-171042125
+      original_md: '[https://substack.com/home/post/p-171042125](https://substack.com/home/post/p-171042125)'
+      title: null
+      authors: []
+      author_organizations: []
+      date: null
+      published_year: null
+      venue: null
+      kind: null
+    - link_url: https://themultiplicity.ai/blog/thesis
+      link_text: The Multiplicity Thesis, Collective Intelligence, and Morality
+      original_md: '[The Multiplicity Thesis, Collective Intelligence, and Morality](https://themultiplicity.ai/blog/thesis)'
+      title: null
+      authors: []
+      author_organizations: []
+      date: null
+      published_year: null
+      venue: null
+      kind: null
     other_attributes: {}
   parsing_issues:
-  - Target case field says 'Mixed' which does not match any of the standard options
-    (average_case, pessimistic_case, worst_case)
-  - Broad approach field says 'Behavioural/Cognitive' which appears to combine multiple
-    approaches rather than being one of the standard options (engineering, behaviorist_science,
-    cognitivist_science)
+  - Target case field says 'Mixed' - leaving target_case_id as null and setting target_case_text
+    to 'mixed'
+  - Broad approach field says 'Behavioural/Cognitive' which is mixed - leaving broad_approach_id
+    as null and setting broad_approach_text to 'behavioral / cognitive'
 - id: sec:evals
   name: Evals
   header_level: 1
@@ -13279,9 +13461,11 @@ items:
     see_also:
     - a:evals_capability
     orthodox_problems:
-    - other:none; a barometer of risk.
-    target_case: null
-    broad_approach: behaviorist_science
+    - 'Other: none; a barometer of risk.'
+    target_case_id: null
+    target_case_text: mixed
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - CAIS
     - CFI Kinds of Intelligence
@@ -13291,7 +13475,7 @@ items:
     - Lexin Zhou
     - Adam Scholl
     - Lorenzo Pacchiardi
-    estimated_ftes: '20'
+    estimated_ftes: 10-50
     critiques: '[Is the Definition of AGI a Percentage?](https://aievaluation.substack.com/p/is-the-definition-of-agi-a-percentage),
       [The "Length" of "Horizons"](https://www.lesswrong.com/posts/PzLSuaT6WGLQGJJJD/the-length-of-horizons)'
     funded_by: Leverhulme Trust, Open Philanthropy, Long-Term Future Fund
@@ -13438,10 +13622,10 @@ items:
       kind: paper_preprint
     other_attributes: {}
   parsing_issues:
-  - Target case field contains 'mixed' which doesn't match any standard target case
-    (average_case, pessimistic_case, worst_case) - field omitted
-  - Orthodox problems field contains 'none; a barometer of risk.' which doesn't match
-    standard problems - kept as 'other:none; a barometer of risk.'
+  - Target case is 'mixed' - leaving target_case_id as null and setting target_case_text
+    to 'mixed'
+  - 'Orthodox problems field says ''none; a barometer of risk.'' - no matching orthodox
+    problem found, kept as ''Other: none; a barometer of risk.'''
 - id: a:evals_capability
   name: Capability evals
   header_level: 2
@@ -13461,9 +13645,11 @@ items:
     - '[Deepmind''s frontier safety framework](https://deepmind.google/blog/strengthening-our-frontier-safety-framework/)'
     - '[Aether](https://www.lesswrong.com/posts/B8Cmtf5gdHwxb8qtT/aether-july-2025-update)'
     orthodox_problems:
-    - 'other: none; a barometer for risk'
-    target_case: average_case
-    broad_approach: behaviorist_science
+    - 'Other: none; a barometer for risk'
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - METR
     - AISI
@@ -14201,9 +14387,11 @@ items:
     - '[OpenAI Preparedness](https://openai.com/index/updating-our-preparedness-framework/)'
     - '[Anthropic RSP](https://www.anthropic.com/rsp-updates)'
     orthodox_problems:
-    - other:none; a barometer for risk
-    target_case: average_case
-    broad_approach: behaviorist_science
+    - 'Other: none; a barometer for risk.'
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - METR
     - Thomas Kwa
@@ -14483,7 +14671,8 @@ items:
       kind: null
     other_attributes: {}
   parsing_issues:
-  - Broad approach field says 'behavioral' - closest match is 'behaviorist_science'
+  - 'Orthodox problems field says ''none; a barometer for risk.'' - no matching problem
+    found, kept as ''Other: none; a barometer for risk.'''
 - id: a:evals_wmd
   name: WMD evals (Weapons of Mass Destruction)
   header_level: 2
@@ -14503,9 +14692,11 @@ items:
     - a:evals_autonomy
     - a:various_redteams
     orthodox_problems:
-    - 'other: malicious actors using AI'
-    target_case: pessimistic_case
-    broad_approach: behaviorist_science
+    - 'Other: malicious actors using AI'
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - Lennart Justen
     - Haochen Zhao
@@ -14517,7 +14708,7 @@ items:
     estimated_ftes: 10-50
     critiques: '[The Reality of AI and Biorisk](https://arxiv.org/abs/2412.01946)'
     funded_by: Open Philanthropy, UK AI Safety Institute (AISI), frontier labs, Scale
-      AI, various academic institutions (Peking University, Yale, etc.), Meta.
+      AI, various academic institutions (Peking University, Yale, etc.), Meta
     outputs:
     - link_url: https://arxiv.org/abs/2504.16137
       link_text: 'Virology Capabilities Test (VCT): A Multimodal Virology Q&A Benchmark'
@@ -14637,7 +14828,11 @@ items:
       venue: arXiv
       kind: paper_preprint
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - 'Orthodox problems field says ''malicious actors using AI'' - no matching standard
+    problem found, kept as ''Other: malicious actors using AI'''
+  - Broad approach field says 'behavioral' - mapped to 'behaviorist_science' with
+    text 'behaviorist science'
 - id: a:evals_situational_awareness
   name: Situational awareness and self-awareness evals
   header_level: 2
@@ -14660,8 +14855,10 @@ items:
     orthodox_problems:
     - superintelligence_fool_supervisors
     - superintelligence_hack_software
-    target_case: worst_case
-    broad_approach: behaviorist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - Jan Betley
     - Xuchan Bao
@@ -14887,8 +15084,10 @@ items:
     orthodox_problems:
     - boxed_agi_exfiltrate
     - superintelligence_fool_supervisors
-    target_case: worst_case
-    broad_approach: behaviorist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - Antonio Norelli
     - Michael Bronstein
@@ -15010,8 +15209,10 @@ items:
     orthodox_problems:
     - superintelligence_fool_supervisors
     - superintelligence_hack_software
-    target_case: worst_case
-    broad_approach: engineering
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: null
+    broad_approach_text: behaviorist science / engineering
     some_names:
     - Cadenza
     - Fred Heiding
@@ -15030,7 +15231,7 @@ items:
       is "overattributing human traits" to models.
     funded_by: Lab funders (Anthropic, OpenAI), academic institutions (e.g., Harvard,
       CMU, Barcelona Institute of Science and Technology), NSFC, ML Alignment Theory
-      & Scholars (MATS) Program, FAR AI.
+      & Scholars (MATS) Program, FAR AI
     outputs:
     - link_url: https://arxiv.org/abs/2511.16035
       link_text: 'Liars'' Bench: Evaluating Lie Detectors for Language Models'
@@ -15274,8 +15475,8 @@ items:
       kind: lesswrong
     other_attributes: {}
   parsing_issues:
-  - Broad approach field specifies 'behavioural / engineering' - ambiguous between
-    behaviorist_science and engineering. Selected 'engineering' as primary.
+  - Broad approach field contains multiple approaches ('behavioural / engineering')
+    - broad_approach_id left null
 - id: a:evals_sandbagging
   name: Sandbagging evals
   header_level: 2
@@ -15299,8 +15500,10 @@ items:
     orthodox_problems:
     - superintelligence_fool_supervisors
     - superintelligence_hack_software
-    target_case: pessimistic_case
-    broad_approach: behaviorist_science
+    target_case_id: pessimistic_case
+    target_case_text: pessimistic
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - Teun van der Weij
     - Cameron Tice
@@ -15494,7 +15697,7 @@ items:
   content: null
   item_type: agenda
   agenda_attributes:
-    who_edits: Stephen ✅
+    who_edits: Stephen✅
     one_sentence_summary: evaluate whether AI agents can autonomously replicate themselves
       by obtaining their own weights, securing compute resources, and creating copies
       of themselves.
@@ -15508,8 +15711,10 @@ items:
     orthodox_problems:
     - instrumental_convergence
     - boxed_agi_exfiltrate
-    target_case: worst_case
-    broad_approach: behaviorist_science
+    target_case_id: worst_case
+    target_case_text: worst-case
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - Sid Black
     - Asa Cooper Stickland
@@ -15594,12 +15799,14 @@ items:
       vulnerabilities, specification gaming, and deceptive behaviors before they are
       exploited, thereby informing the development of more robust defenses.
     see_also:
-    - other evals categories
+    - a:evals_other
     orthodox_problems:
     - boxed_agi_exfiltrate
     - goals_misgeneralize
-    target_case: average_case
-    broad_approach: behaviorist_science
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - Ryan Greenblatt
     - Benjamin Wright
@@ -15637,7 +15844,7 @@ items:
       venue: Alignment Science Blog
       kind: blog_post
     - link_url: https://arxiv.org/pdf/2406.18510
-      link_text: https://arxiv.org/pdf/2406.18510
+      link_text: null
       original_md: '* [https://arxiv.org/pdf/2406.18510](https://arxiv.org/pdf/2406.18510)'
       title: 'WildTeaming at Scale: From In-the-Wild Jailbreaks to (Adversarially)
         Safer Language Models'
@@ -15661,7 +15868,7 @@ items:
       venue: arXiv
       kind: paper_preprint
     - link_url: https://arxiv.org/abs/2412.18693
-      link_text: https://arxiv.org/abs/2412.18693
+      link_text: null
       original_md: '* [https://arxiv.org/abs/2412.18693](https://arxiv.org/abs/2412.18693)'
       title: Diverse and Effective Red Teaming with Auto-generated Rewards and Multi-step
         Reinforcement Learning
@@ -15833,7 +16040,7 @@ items:
       venue: arXiv
       kind: paper_preprint
     - link_url: https://arxiv.org/abs/2512.03771
-      link_text: https://arxiv.org/abs/2512.03771
+      link_text: null
       original_md: '* [https://arxiv.org/abs/2512.03771](https://arxiv.org/abs/2512.03771)'
       title: null
       authors: []
@@ -16691,7 +16898,7 @@ items:
   content: null
   item_type: agenda
   agenda_attributes:
-    who_edits: Stephen ✅
+    who_edits: Stephen✅
     one_sentence_summary: A collection of miscellaneous evaluations for specific alignment
       properties, such as honesty, shutdown resistance and sycophancy.
     theory_of_change: By developing novel benchmarks for specific, hard-to-measure
@@ -16702,9 +16909,11 @@ items:
     see_also:
     - other more specific sections on evals
     orthodox_problems:
-    - other:none; a barometer of risk
-    target_case: average_case
-    broad_approach: behaviorist_science
+    - 'Other: none; a barometer of risk.'
+    target_case_id: average_case
+    target_case_text: average
+    broad_approach_id: behaviorist_science
+    broad_approach_text: behaviorist science
     some_names:
     - Richard Ren
     - Mantas Mazeika
@@ -17006,4 +17215,7 @@ items:
       venue: LessWrong
       kind: lesswrong
     other_attributes: {}
-  parsing_issues: []
+  parsing_issues:
+  - 'Orthodox problems field says ''none; a barometer of risk.'' - no matching problem
+    found, kept as ''Other: none; a barometer of risk.'''
+  - Broad approach field says 'behavioral.' - mapped to 'behaviorist_science'

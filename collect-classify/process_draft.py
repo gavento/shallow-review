@@ -446,14 +446,14 @@ def validate_document_structure(
                         1 if item.agenda_attributes.theory_of_change else 0,
                         1 if item.agenda_attributes.see_also else 0,
                         1 if item.agenda_attributes.orthodox_problems else 0,
-                        1 if item.agenda_attributes.target_case else 0,
-                        1 if item.agenda_attributes.broad_approach else 0,
+                        1 if item.agenda_attributes.target_case_text else 0,
+                        1 if item.agenda_attributes.broad_approach_text else 0,
                         1 if item.agenda_attributes.some_names else 0,
                         1 if item.agenda_attributes.estimated_ftes else 0,
                         1 if item.agenda_attributes.critiques else 0,
                         1 if item.agenda_attributes.funded_by else 0,
                         1 if item.agenda_attributes.outputs else 0,
-                        1 if item.agenda_attributes.other_attributes else 0,
+                        len(item.agenda_attributes.other_attributes) if item.agenda_attributes.other_attributes else 0,
                     ]
                 )
                 if field_count < 5:

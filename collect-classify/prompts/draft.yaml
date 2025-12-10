@@ -33,8 +33,10 @@ extract_agenda_attributes:
     - theory_of_change: From "**Theory of change:**" - How this work contributes to safety as one markdown text block (optional)
     - see_also: From "**See also:**" - Related agenda IDs (list of strings like "a:id1", "a:id2", "sec:id1"), mixed with markdown text (external see also links and text that does not match any of the agendas). Use the agenda list below to resolve plain text references to IDs.
     - orthodox_problems: From "**Orthodox problems:**" - List of orthodox problem IDs (see table below)
-    - target_case: From "**Target case:**" - Target case ID (see table below). If present, this must be one of: "average_case", "pessimistic_case", or "worst_case".
-    - broad_approach: From "**Broad approach:**" - Broad approach ID (see table below). If present, this must be one of: "engineering", "behaviorist_science", or "cognitivist_science".
+    - target_case_id: From "**Target case:**" - Target case ID (see table below). If present, this must be one of: "average_case", "pessimistic_case", or "worst_case". "optimistic" should be mapped to "average_case" (do not warn about this). In case of "mixed", "varies" etc, leave null.
+    - target_case_text: From "**Target case:**" - Target case texttual representation. This should be one of "average" (also use for "optimistic"), "pessimistic", "worst-case". In case of "mixed", "varies" etc, transform to small-caps plain-text short version (e.g. "mixed") and warn about this. May be null if target case is not present.
+    - broad_approach_id: From "**Broad approach:**" - Broad approach ID (see table below). If present, this must be one of: "engineering", "behaviorist_science" (also for "behaviorist" or "behavioral"), or "cognitivist_science" (also for "cognitivist" or "cognitive"). In case of "mixed", "varies", a longer comment, etc, leave this field null.
+    - broad_approach_text: From "**Broad approach:**" - Broad approach text (if present, this must be one of: "engineering", "behaviorist science", or "cognitivist science". In case of "mixed", "varies", multiple approaches, a longer comment, etc, transform the text to a small-caps plain-text short version (e.g. "mixed") and warn about this. Separate multiple approaches with "/" with space between them. May be null if broad approach info is not present.
     - some_names: From "**Some names:**" - Key researchers (list)
     - estimated_ftes: From "**Estimated FTEs:**" - Workforce estimate
     - critiques: From "**Critiques:**" - Critiques as one markdown text block (links, descriptions, etc., optional)
@@ -60,7 +62,7 @@ extract_agenda_attributes:
 
     # Orthodox Problems
 
-    Use IDs from this list. Note the match is semantic and can be approximate. In some cases, the ortodox problem may not match any of the listed problems - in that case, include it as "other: <original_text>".
+    Use IDs from this list. Note the match is semantic and can be approximate. In some cases, the ortodox problem may not match any of the listed problems - in that case, include it as "Other: <original_text>".
     {% for problem_id, problem_info in orthodox_problems.items() %}
     - {{ problem_info.name }}: {{ problem_id }}
     {% endfor %}
@@ -94,7 +96,8 @@ extract_agenda_attributes:
     - Source document issues: missing headers, wrong sec:/a: markers, serious formatting problems, parsing ambiguity, etc.
     - Content issues: empty/minimal content, mismatched titles, clearly wrong company/org info, etc.
     - Parsing issues: confusion about structure, ambiguous attributions, etc.
-    - If a field is empty or just "None", "Unknown", "?", "N/A" etc., do not mention it as a parsing issue.
+    - If a field is empty or just "None", "Unknown", "?", "N/A" etc., leave it null. Do not mention this as a parsing issue.
+    
     If everything looks correct and complete, return an empty list.
 
     # General instructions
@@ -103,7 +106,7 @@ extract_agenda_attributes:
     - Do not output null values for fields that are absent (incl. above) or empty - leave the field undefined.
     - Fix mismatched markdown formatting in the content. Tend to remove formatting rather than add item.
     - Remove trailing periods from text items, except for one-sentence summaries, theory of change, and any markdown field that already consists of sentences. Plain lists should never end in a period.
-    - Ignore minor formatting issues like extra spaces, trailing spaces, etc. Similarly, some of the attribute names may be not bolded, slanted, etc. Remove spurious formatting from attribute values, e.g. when the entire value is in italic, remove the italic formatting.
+    - Ignore minor formatting issues like extra spaces, trailing spaces, etc. Similarly, some of the attribute names may be not bolded, slanted, etc. Remove spurious formatting from attribute values, e.g. when the *entire* value is in italics or bold, remove the italics or bold formatting.
     - Produce valid JSON. In particular, make sure to properly escape double quotes and backslashes in the JSON output.
 
     # EXAMPLES
@@ -207,7 +210,7 @@ extract_agenda_attributes:
     **See also:** [Deepmind’s frontier safety framework](https://deepmind.google/blog/strengthening-our-frontier-safety-framework/), [Aether](https://www.lesswrong.com/posts/B8Cmtf5gdHwxb8qtT/aether-july-2025-update). AGI metrics
     **Orthodox problems:** none; a barometer for risk.
     **Target case:** optimistic.
-    **Broad approach:** behavioral.
+    **Broad approach:** Behavioral / Engineering.
     **Some names:** METR, AISI, Apollo Research, Marrius Hobbhahn, Meg Tong, Mary Phuong, Beth Barnes, Thomas Kwa, Joel Becker.
 
     **Estimated FTEs:** 100+
@@ -238,9 +241,11 @@ extract_agenda_attributes:
         "one_sentence_summary": "Make tools that can actually check whether a model has a certain capability or propensity. We default to low-n sampling of a vast latent space but aim to do better.",
         "theory_of_change": "Keep a close eye on what capabilities are acquired when, so that frontier labs and regulators are better informed on what security measures are already necessary (and hopefully they extrapolate). You can’t regulate without them.",
         "see_also": ["[Deepmind’s frontier safety framework](https://deepmind.google/blog/strengthening-our-frontier-safety-framework/)", "[Aether](https://www.lesswrong.com/posts/B8Cmtf5gdHwxb8qtT/aether-july-2025-update)", "a:agi_metrics"],
-        "orthodox_problems": ["other:none; a barometer for risk."],
-        "target_case": "average_case",
-        "broad_approach": "behaviorist_science",
+        "orthodox_problems": ["Other: none; a barometer for risk."],
+        "target_case_id": "average_case",
+        "target_case_text": "average",
+        "broad_approach_id": null,
+        "broad_approach_text": "behavioral / engineering",
         "some_names": ["METR", "AISI", "Apollo Research", "Marrius Hobbhahn", "Meg Tong", "Mary Phuong", "Beth Barnes", "Thomas Kwa", "Joel Becker"],
         "estimated_ftes": "100+",
         "funded_by": "basically everyone. Google, Microsoft, Open Philanthropy, LTFF, Governments etc",
@@ -273,7 +278,7 @@ extract_agenda_attributes:
         ]
       },
       "parsing_issues": [
-        "Orthodox problems field says 'none; a barometer for risk.' - no matching problem found, kept as 'other: none; a barometer for risk.'",
+        "Orthodox problems field says 'none; a barometer for risk.' - no matching problem found, kept as 'Other: none; a barometer for risk.'",
         "Target case field says 'optimistic.' - closest match is 'average_case'",
       ]
     }
