@@ -38,17 +38,11 @@
 {% endif -%}
 
 {# Metadata lines with labels as list items #}
-{% if attrs.broad_approach and attrs.broad_approach in broad_approaches -%}
-* *General [approach](https://www.lesswrong.com/posts/67fNBeHrjdrZZNDDK/defining-alignment-research#A_better_definition_of_alignment_research):* {{ broad_approaches[attrs.broad_approach].name.lower() -}}
-{% if attrs.target_case and attrs.target_case in target_cases -%}
-{{" · " -}}
-{% else -%}
-{{"  \n" -}}
+{% if attrs.broad_approach_text -%}
+* *General [approach](https://www.lesswrong.com/posts/67fNBeHrjdrZZNDDK/defining-alignment-research#A_better_definition_of_alignment_research):* {{ attrs.broad_approach_text }}
 {% endif -%}
-{% endif -%}
-{% if attrs.target_case and attrs.target_case in target_cases -%}
-{% set target_name = target_cases[attrs.target_case].name.lower().replace('-case', '') -%}
-* *Target [case](https://www.lesswrong.com/posts/67fNBeHrjdrZZNDDK/defining-alignment-research#A_better_definition_of_alignment_research):* {{ target_name }}  
+{% if attrs.target_case_text -%}
+{{" · " -}} *Target [case](https://www.lesswrong.com/posts/67fNBeHrjdrZZNDDK/defining-alignment-research#A_better_definition_of_alignment_research):* {{ attrs.target_case_text }}
 {% endif -%}
 
 {# Orthodox problems with full names #}
@@ -56,44 +50,45 @@
 {% set problem_names = [] -%}
 {% for problem_key in attrs.orthodox_problems -%}
 {% if problem_key in orthodox_problems -%}
-{% set _ = problem_names.append(problem_key) -%}
+{% set _ = problem_names.append(orthodox_problems[problem_key].name) -%}
 {% endif -%}
 {% endfor -%}
 {% if problem_names -%}
-* *Orthodox alignment [problems](https://docs.google.com/document/d/1xRtmO_TLgPeHxWNQFN0kkNnd6jfiUettPfEcdl6FIc0/view)*: {{ problem_names | join(', ') }}  
+* *Orthodox alignment [problems](https://docs.google.com/document/d/1xRtmO_TLgPeHxWNQFN0kkNnd6jfiUettPfEcdl6FIc0/view)*: {{ problem_names | join(', ') }}
 {% endif -%}
 {% endif -%}
 
 {# Other attributes - one per line #}
 {% if attrs.other_attributes -%}
 {% for key, value in attrs.other_attributes.items() -%}
-* *{{ key }}*: {{ value }}  
+* *{{ key }}*: {{ value }}
 {% endfor -%}
 {% endif -%}
 
 {# See also with label #}
 {% if attrs.see_also -%}
-* *See also:* {{ attrs.see_also | map('format_see_also_ref', items_by_id) | join(' · ') }}  
+* *See also:* {{ attrs.see_also | map('format_see_also_ref', items_by_id) | join(' · ') }}
 {% endif -%}
 
 {# Key people/researchers with label #}
 {% if attrs.some_names -%}
-* *Some names:* {{ attrs.some_names | join(', ') }}  
+* *Some names:* {{ attrs.some_names | join(', ') }}
 {% endif -%}
 
 {# Critiques with label #}
 {% if attrs.critiques -%}
 * *Critiques:* {% for item in attrs.critiques | split_critiques -%}
 {% if not loop.first %}, {% endif %}{{ item }}
-{%- endfor %}  
+{%- endfor %}
+
 {% endif -%}
 
 {# Funding and FTEs as separate list items #}
 {% if attrs.funded_by -%}
-* *Funded by:* {{ attrs.funded_by }}  
+* *Funded by:* {{ attrs.funded_by }}
 {% endif -%}
 {% if attrs.estimated_ftes -%}
-* *Estimated FTEs:* {{ attrs.estimated_ftes }}  
+* *Estimated FTEs:* {{ attrs.estimated_ftes }}
 {% endif -%}
 
 {# Outputs section #}

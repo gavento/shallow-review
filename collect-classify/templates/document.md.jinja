@@ -40,12 +40,11 @@
 
 {# Metadata lines with labels and two spaces for line breaks #}
 {% set line1_parts = [] -%}
-{% if attrs.broad_approach and attrs.broad_approach in broad_approaches -%}
-{% set _ = line1_parts.append('⚙ *General [approach](https://www.lesswrong.com/posts/67fNBeHrjdrZZNDDK/defining-alignment-research#A_better_definition_of_alignment_research):* ' + broad_approaches[attrs.broad_approach].name.lower()) -%}
+{% if attrs.broad_approach_text -%}
+{% set _ = line1_parts.append('⚙ *General [approach](https://www.lesswrong.com/posts/67fNBeHrjdrZZNDDK/defining-alignment-research#A_better_definition_of_alignment_research):* ' + attrs.broad_approach_text) -%}
 {% endif -%}
-{% if attrs.target_case and attrs.target_case in target_cases -%}
-{% set target_name = target_cases[attrs.target_case].name.lower().replace('-case', '') -%}
-{% set _ = line1_parts.append('◐ *Target [case](https://www.lesswrong.com/posts/67fNBeHrjdrZZNDDK/defining-alignment-research#A_better_definition_of_alignment_research):* ' + target_name) -%}
+{% if attrs.target_case_text -%}
+{% set _ = line1_parts.append('◐ *Target [case](https://www.lesswrong.com/posts/67fNBeHrjdrZZNDDK/defining-alignment-research#A_better_definition_of_alignment_research):* ' + attrs.target_case_text) -%}
 {% endif -%}
 {% if line1_parts -%}
 {{ line1_parts | join(' · ') }}  
@@ -56,7 +55,7 @@
 {% set problem_names = [] -%}
 {% for problem_key in attrs.orthodox_problems -%}
 {% if problem_key in orthodox_problems -%}
-{% set _ = problem_names.append(problem_key) -%}
+{% set _ = problem_names.append(orthodox_problems[problem_key].name) -%}
 {% endif -%}
 {% endfor -%}
 {% if problem_names -%}
