@@ -21,7 +21,13 @@ export const SunburstChart: React.FC<SunburstChartProps> = ({ onNodeClick, weigh
     if (!chartInstance.current) {
       chartInstance.current = echarts.init(chartRef.current);
       
-      // Handle resize
+      // Handle resize with ResizeObserver for container size changes
+      const resizeObserver = new ResizeObserver(() => {
+        chartInstance.current?.resize();
+      });
+      resizeObserver.observe(chartRef.current);
+
+      // Also listen to window resize as backup
       window.addEventListener('resize', () => {
         chartInstance.current?.resize();
       });
