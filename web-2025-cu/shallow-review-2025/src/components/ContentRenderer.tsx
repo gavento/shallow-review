@@ -16,8 +16,8 @@ const ICONS: Record<string, string> = {
   see_also: '↔',
   some_names: '☉',
   critiques: '✗',
-  funded_by: '*$',
-  estimated_ftes: '*⫼',
+  funded_by: '$',
+  estimated_ftes: '⫼',
   outputs: '▹',
   default: '○'
 };

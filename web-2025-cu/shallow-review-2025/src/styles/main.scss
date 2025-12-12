@@ -75,16 +75,29 @@ a {
   top: 0;
   left: 0;
   right: 0;
-  padding: 1rem 2rem;
+  padding: 2rem;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   z-index: 10;
   pointer-events: none; /* Allow clicking through to chart */
   
-  h1 {
-    font-size: 1.5rem;
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
     pointer-events: auto;
+  }
+
+  h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0;
+    line-height: 1.1;
+    color: var(--text-color);
+    letter-spacing: -0.02em;
+    font-family: var(--font-serif);
+    text-shadow: 0 0 1px var(--bg-color); /* Subtle readability against chart */
   }
   
   .controls {
@@ -93,7 +106,37 @@ a {
 }
 
 .weight-controls {
-  pointer-events: auto; /* Ensure clickable */
+  pointer-events: auto;
+  display: inline-flex;
+  background: rgba(128, 128, 128, 0.1);
+  border-radius: 6px;
+  padding: 3px;
+  width: fit-content;
+
+  button {
+    background: none;
+    border: none;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.85rem;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    font-weight: 500;
+
+    &:hover {
+      color: var(--text-color);
+      background-color: rgba(128, 128, 128, 0.05);
+    }
+
+    &.active {
+      background: var(--bg-color);
+      color: var(--text-color);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      font-weight: 600;
+    }
+  }
 }
 
 .theme-toggle {
@@ -105,6 +148,8 @@ a {
   border-radius: 4px;
   font-family: var(--font-sans);
   font-size: 0.9rem;
+  background: rgba(var(--bg-color), 0.5); /* Semi-transparent background */
+  backdrop-filter: blur(2px);
   
   &:hover {
     background-color: rgba(128, 128, 128, 0.1);

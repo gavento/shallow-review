@@ -101,50 +101,56 @@ export const SunburstChart: React.FC<SunburstChartProps> = ({ onNodeClick, weigh
             // Level -1: Center
             {
                 radius: ['0%', '10%'],
-                itemStyle: { borderWidth: 2 },
+                itemStyle: { borderWidth: 0,  },
                 label: { 
-                  // rotate: 0, 
+                    textBorderWidth: 0,
+                  rotate: 0, 
                   fontWeight: 'bold', 
-                  fontSize: 14,
-                  minAngle: 10
+                  fontSize: 16,
+                  minAngle: 10,
+                  silent: true,
+                  color: '#000',
                 }
             },
             // Level 0: Roots
             {
-              radius: ['10%', '70%'],
+              radius: ['10%', '65%'],
               itemStyle: { borderWidth: 2 },
               label: { 
                 // rotate: 0, 
                 fontWeight: 'bold', 
-                fontSize: 15,
+                fontSize: 14,
                 minAngle: 10,
                 align: 'left',
-                padding: 15,
+                padding: 10,
+                silent: true,
               }
             },
             // Level 1: Middle Ring (Sections/Extensions)
             {
-              radius: ['45%', '70%'],
+              radius: ['37%', '65%'],
               itemStyle: { borderWidth: 1 },
               label: { 
                 // rotate: 'radial', 
                 align: 'left',
                 minAngle: 5,
-                fontSize: 13,
+                fontSize: 14,
                 padding: 10,
+                silent: true,
               }
             },
             // Level 2: Outer Ring (Agendas)
             {
-              radius: ['70%', '73%'],
+              radius: ['65%', '68%'],
               itemStyle: { borderWidth: 1 },
               label: { 
                 rotate: 'radial',
-                padding: 5, 
+                padding: 4, 
                 color: theme === 'light' ? '#000' : '#fff', // Black in light mode
                 textBorderWidth: 0,
                 minAngle: 2,
                 fontSize: 15,
+                silent: false,
                 // align: 'center',
                 position: 'outside',
               }

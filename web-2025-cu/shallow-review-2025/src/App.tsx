@@ -80,33 +80,21 @@ function App() {
   return (
     <div className="app-container">
       <header className="header">
-        <div style={{display: 'flex', gap: '1rem', alignItems: 'center'}}>
-           <h1>Shallow Review 2025</h1>
-           <div className="weight-controls" style={{display: 'flex', gap: '0.5rem', marginLeft: '1rem', fontSize: '0.9rem', background: 'rgba(128,128,128,0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px'}}>
-              <label>
-                <input 
-                  type="radio" 
-                  name="weight" 
-                  checked={weightMode === 'uniform'} 
-                  onChange={() => setWeightMode('uniform')}
-                /> Uniform
-              </label>
-              <label>
-                <input 
-                  type="radio" 
-                  name="weight" 
-                  checked={weightMode === 'fte'} 
-                  onChange={() => setWeightMode('fte')}
-                /> FTEs
-              </label>
-              <label>
-                <input 
-                  type="radio" 
-                  name="weight" 
-                  checked={weightMode === 'papers'} 
-                  onChange={() => setWeightMode('papers')}
-                /> Papers
-              </label>
+        <div className="header-left">
+           <h1>Shallow Review of Technical AI Safety 2025</h1>
+           <div className="weight-controls">
+              <button 
+                className={weightMode === 'uniform' ? 'active' : ''} 
+                onClick={() => setWeightMode('uniform')}
+              >Uniform</button>
+              <button 
+                className={weightMode === 'fte' ? 'active' : ''} 
+                onClick={() => setWeightMode('fte')}
+              >FTEs</button>
+              <button 
+                className={weightMode === 'papers' ? 'active' : ''} 
+                onClick={() => setWeightMode('papers')}
+              >Papers</button>
            </div>
         </div>
         <div className="controls">
