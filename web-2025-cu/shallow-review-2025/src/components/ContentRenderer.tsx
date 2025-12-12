@@ -32,13 +32,12 @@ const Attribute = ({ label, icon, children }: { label: string, icon: string, chi
   </div>
 );
 
+const MarkdownInline = ({ children }: { children: string }) => (
+  <ReactMarkdown components={{ p: 'span' }}>{children}</ReactMarkdown>
+);
+
 export const ContentRenderer: React.FC<ContentRendererProps> = ({ attributes }) => {
   
-  const resolveSeeAlso = (id: string) => {
-    const item = getItemById(id);
-    return item ? item.name : id;
-  };
-
   return (
     <div className="content-renderer">
       {attributes.one_sentence_summary && (
@@ -50,7 +49,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ attributes }) 
       {attributes.theory_of_change && (
         <div className="content-section">
           <Attribute label="Theory of Change:" icon={ICONS.theory_of_change}>
-             <ReactMarkdown components={{ p: 'span' }}>{attributes.theory_of_change}</ReactMarkdown>
+             <MarkdownInline>{attributes.theory_of_change}</MarkdownInline>
           </Attribute>
         </div>
       )}
@@ -59,26 +58,26 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ attributes }) 
         {attributes.broad_approach_text && attributes.broad_approach_id && (
           <Attribute label="General Approach:" icon={ICONS.broad_approach}>
             <a href={`#def:approach:${attributes.broad_approach_id}`}>
-              <ReactMarkdown components={{ p: 'span' }}>{attributes.broad_approach_text}</ReactMarkdown>
+              <MarkdownInline>{attributes.broad_approach_text}</MarkdownInline>
             </a>
           </Attribute>
         )}
         {attributes.broad_approach_text && !attributes.broad_approach_id && (
           <Attribute label="General Approach:" icon={ICONS.broad_approach}>
-            <ReactMarkdown components={{ p: 'span' }}>{attributes.broad_approach_text}</ReactMarkdown>
+            <MarkdownInline>{attributes.broad_approach_text}</MarkdownInline>
           </Attribute>
         )}
         
         {attributes.target_case_text && attributes.target_case_id && (
           <Attribute label="Target Case:" icon={ICONS.target_case}>
             <a href={`#def:case:${attributes.target_case_id}`}>
-              <ReactMarkdown components={{ p: 'span' }}>{attributes.target_case_text}</ReactMarkdown>
+              <MarkdownInline>{attributes.target_case_text}</MarkdownInline>
             </a>
           </Attribute>
         )}
         {attributes.target_case_text && !attributes.target_case_id && (
           <Attribute label="Target Case:" icon={ICONS.target_case}>
-            <ReactMarkdown components={{ p: 'span' }}>{attributes.target_case_text}</ReactMarkdown>
+            <MarkdownInline>{attributes.target_case_text}</MarkdownInline>
           </Attribute>
         )}
       </div>
@@ -88,12 +87,16 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ attributes }) 
           <Attribute label="Orthodox Problems:" icon={ICONS.orthodox_problems}>
             {attributes.orthodox_problems.map((probId, idx) => {
               const prob = ORTHODOX_PROBLEMS[probId];
-              return prob ? (
+              return (
                  <span key={probId}>
                    {idx > 0 && ', '}
-                   <a href={`#def:problem:${probId}`}>{prob.name}</a>
+                   {prob ? (
+                       <a href={`#def:problem:${probId}`}>{prob.name}</a>
+                   ) : (
+                       <MarkdownInline>{probId}</MarkdownInline>
+                   )}
                  </span>
-              ) : null;
+              );
             })}
           </Attribute>
         </div>
@@ -104,7 +107,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ attributes }) 
         <div className="content-section">
            {Object.entries(attributes.other_attributes).map(([key, value]) => (
              <Attribute key={key} label={`${key}:`} icon={ICONS.default}>
-               {String(value)}
+               <MarkdownInline>{String(value)}</MarkdownInline>
              </Attribute>
            ))}
         </div>
@@ -113,12 +116,21 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ attributes }) 
       {attributes.see_also.length > 0 && (
         <div className="content-section">
           <Attribute label="See Also:" icon={ICONS.see_also}>
-            {attributes.see_also.map((refId, idx) => (
-              <span key={refId}>
-                {idx > 0 && ' · '}
-                <a href={`#${refId}`}>{resolveSeeAlso(refId)}</a>
-              </span>
-            ))}
+            {attributes.see_also.map((refId, idx) => {
+                const item = getItemById(refId);
+                return (
+                  <span key={refId}>
+                    {idx > 0 && ' · '}
+                    {item ? (
+                        <a href={`#${item.id}`}>
+                            <MarkdownInline>{item.name}</MarkdownInline>
+                        </a>
+                    ) : (
+                        <MarkdownInline>{refId}</MarkdownInline>
+                    )}
+                  </span>
+                );
+            })}
           </Attribute>
         </div>
       )}
@@ -134,7 +146,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ attributes }) 
       {attributes.critiques && (
         <div className="content-section">
           <Attribute label="Critiques:" icon={ICONS.critiques}>
-            <ReactMarkdown components={{ p: 'span' }}>{attributes.critiques}</ReactMarkdown>
+            <MarkdownInline>{attributes.critiques}</MarkdownInline>
           </Attribute>
         </div>
       )}
@@ -142,7 +154,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ attributes }) 
       <div className="content-section">
         {attributes.funded_by && (
           <Attribute label="Funded By:" icon={ICONS.funded_by}>
-            <ReactMarkdown components={{ p: 'span' }}>{attributes.funded_by}</ReactMarkdown>
+            <MarkdownInline>{attributes.funded_by}</MarkdownInline>
           </Attribute>
         )}
         
@@ -168,7 +180,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ attributes }) 
                     {paper.link_url ? (
                       <>
                           <a href={paper.link_url} target="_blank" rel="noopener noreferrer">
-                          {paper.link_text || paper.title || paper.link_url}
+                            <MarkdownInline>{paper.link_text || paper.title || paper.link_url}</MarkdownInline>
                           </a>
                           {paper.authors && paper.authors.length > 0 && (
                               <span className="paper-authors"> {paper.authors.join(', ')}</span>
